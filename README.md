@@ -42,7 +42,6 @@ The primary driver for the platform selection is the unique partnership with our
 
 By centralizing the project on Google Cloud Platform, we eliminate the budget constraints typically associated with high-frequency AI inference and live search APIs. This enables a more robust “Proxy/Fake Guard” logic that requires multiple visual passes, which would be cost-prohibitive on other platforms like AWS or Azure.
 
-> Note: Most of these decisions prioritize seamless integration between the AI model (Gemini) and the hosting environment (Cloud Run). Using a unified Google ecosystem reduces glue code and minimizes latency for real-time appraisals.
 
 **Final Stack Components**
 
