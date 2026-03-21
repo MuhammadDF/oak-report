@@ -10,5 +10,6 @@ Coverage:
 Routes added here will simply collect HTTP concerns (auth, pagination, filtering)
 before delegating to the underlying services.
 """
+from fastapi import APIRouter
 
-# TODO: Define route signatures for add/edit/delete/search flows once the UX contract is finalized.
+router = APIRouter()

@@ -1,17 +1,31 @@
-"""
-Placeholder for Instant Appraisal endpoints.
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
-Coverage:
-- FR-1 Image-Based Identification
-- FR-2 Real-Time Valuation
-- FR-6 Visual Reasoning (red-flag overlays)
-- FR-8 Basic Proxy Detection
-- NFR-1 Performance SLA (<=5s round-trip)
-- I-2 Camera Integration trigger hooks
-- I-3 External Pricing API fan-out
+from ..models.card_model import CardModel
+from ..services.scan_service import identify_card_from_image
 
-Routes defined here will accept raw scan metadata and hand off to the service layer
-without introducing business logic at the transport edge.
-"""
+router = APIRouter()
 
-# TODO: Wire FastAPI/Starlette router once request & response contracts are signed off.
+
+@router.post(
+	"/scan",
+	response_model=CardModel,
+	summary="Identify a card from an uploaded image",
+	response_description="Normalized card metadata derived from the scan.",
+)
+async def scan_card(image: UploadFile = File(...)) -> CardModel:
+	allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+	if image.content_type not in allowed_types:
+		raise HTTPException(
+			status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+			detail="Only JPEG, PNG, WebP, or HEIC images are supported.",
+		)
+
+	image_bytes = await image.read()
+	if not image_bytes:
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST,
+			detail="Uploaded image is empty.",
+		)
+
+	return await identify_card_from_image(image_bytes)
+

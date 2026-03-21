@@ -9,5 +9,6 @@ Coverage:
 
 Routes here will expose privileged operations guarded by RBAC/MFA once available.
 """
+from fastapi import APIRouter
 
-# TODO: Document granular permission scopes before exposing administrative endpoints.
+router = APIRouter()
