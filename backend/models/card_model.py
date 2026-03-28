@@ -1,24 +1,50 @@
-"""Data model describing the normalized state of a scanned Pokémon card."""
+"""Data models for normalized Pokemon card metadata."""
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl
+
+
+class CardIdentity(BaseModel):
+    """Canonical card fields extracted from a scan."""
+
+    card_id: str
+    name: str
+    supertype: str
+    set_name: Optional[str] = None
+    card_number: Optional[str] = None
+    set_size: Optional[int] = None
+    rarity: Optional[str] = None
+    types: List[str] = Field(default_factory=list)
+    is_holo: Optional[bool] = None
+    is_reverse_holo: Optional[bool] = None
+    promo: bool = False
+    image_url: Optional[HttpUrl] = None
+
+
+class CardCondition(BaseModel):
+    """Condition details used for pricing context."""
+
+    grade: Optional[float] = None
+    grading_company: Optional[str] = None
+    condition_label: str = "Near Mint"
 
 
 class CardModel(BaseModel):
-	id: str  # Unique identifier for the card instance
-	name: str
-	supertype: str  # e.g., "Pokémon", "Trainer", "Energy"
-	types: Optional[List[str]] = None  # e.g., ["Fire", "Water"]
-	set_name: Optional[str] = None
-	number: Optional[Tuple[int, int]] = None  # (card_number, set_size)
-	rarity: Optional[str] = None  # e.g., "Common", "Rare"
-	is_holo: Optional[bool] = None
-	is_reverse_holo: Optional[bool] = None
-	promo: Optional[bool] = None
-	grade: Optional[float] = None  # e.g., 10.0
-	grading_company: Optional[str] = None  # e.g., "PSA", "Beckett"
-	current_value: Optional[float] = None  # Latest valuation (e.g., USD)
-	image_url: Optional[HttpUrl] = None
+    """Backward-compatible aggregate card model for collection records."""
 
-
+    id: str
+    name: str
+    supertype: str
+    types: List[str] = Field(default_factory=list)
+    set_name: Optional[str] = None
+    number: Optional[str] = None
+    set_size: Optional[int] = None
+    rarity: Optional[str] = None
+    is_holo: Optional[bool] = None
+    is_reverse_holo: Optional[bool] = None
+    promo: bool = False
+    grade: Optional[float] = None
+    grading_company: Optional[str] = None
+    current_value: Optional[float] = None
+    image_url: Optional[HttpUrl] = None

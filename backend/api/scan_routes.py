@@ -1,6 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
-from ..models.card_model import CardModel
+from ..models.scan_result_model import ScanResultModel
 from ..services.scan_service import identify_card_from_image
 
 router = APIRouter()
@@ -8,11 +8,11 @@ router = APIRouter()
 
 @router.post(
 	"/scan",
-	response_model=CardModel,
-	summary="Identify a card from an uploaded image",
-	response_description="Normalized card metadata derived from the scan.",
+	response_model=ScanResultModel,
+	summary="Scan a card image and return a mocked appraisal",
+	response_description="Normalized card identity, authenticity signals, and pricing.",
 )
-async def scan_card(image: UploadFile = File(...)) -> CardModel:
+async def scan_card(image: UploadFile = File(...)) -> ScanResultModel:
 	allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 	if image.content_type not in allowed_types:
 		raise HTTPException(
@@ -28,4 +28,3 @@ async def scan_card(image: UploadFile = File(...)) -> CardModel:
 		)
 
 	return await identify_card_from_image(image_bytes)
-
