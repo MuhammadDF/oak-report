@@ -1,14 +1,70 @@
-# Pokémon Collection Backend
+# Oak Report
 
-Container image builds stop after installing dependencies, so you launch the FastAPI app yourself once the image is ready. Choose whichever route fits your workflow:
+This repository now contains a first vertical slice of the Pokemon appraisal app:
 
-## Local Python environment
-1. Create and activate a virtual environment.
-2. Install dependencies with `pip install -r requirements.txt`.
-3. Start FastAPI via `uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload`.
+- A FastAPI backend with a mocked `POST /api/scan/scan` workflow
+- A React/Vite frontend for uploading a card image and viewing appraisal results
+- Product context docs under `docs/context/`
 
-## Docker
-1. Build: `docker build -t pokemon-api .`
-2. Run: `docker run --rm -p 8000:8000 pokemon-api`
+## Local backend with uv
+1. Install `uv` if you do not already have it.
+2. Create the environment with `uv sync`.
+3. Start FastAPI with `uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload`.
 
-Once running, the API is available at http://localhost:8000 and the interactive docs live at http://localhost:8000/docs.
+The API will be available at `http://localhost:8000` and Swagger at `http://localhost:8000/docs`.
+
+## Frontend
+1. Copy `.env.example` values into your local environment if needed.
+2. From `frontend/`, install dependencies with `npm install`.
+3. Start the frontend with `npm run dev`.
+
+The Vite app runs at `http://localhost:5173` and is already allowed by backend CORS.
+
+## Containers
+
+Start the full stack with:
+
+```bash
+docker compose up --build
+```
+
+This launches:
+
+- FastAPI backend on `http://localhost:8000`
+- React/Vite frontend on `http://localhost:5173`
+
+The backend image uses `uv` and `pyproject.toml` for Python dependency management.
+
+## Dev Container
+
+This repo also includes a VS Code dev container in [.devcontainer/devcontainer.json](/Users/muhammadfouly/COMP523/pokemon/.devcontainer/devcontainer.json).
+
+It provides:
+
+- Python 3.12
+- `uv` for backend dependency management
+- Node 20 and npm for the frontend
+
+From VS Code:
+
+1. Open the repository.
+2. Run `Dev Containers: Reopen in Container`.
+3. Wait for the `postCreateCommand` to finish `uv sync` and `npm install`.
+
+Then inside the dev container you can either run the apps directly:
+
+```bash
+uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+cd frontend && npm run dev -- --host 0.0.0.0 --port 5173
+```
+
+## Current scope
+
+The scan flow is intentionally mocked. It returns:
+
+- normalized card identity
+- proxy/authenticity signals
+- estimated market value
+- sample pricing sources
+
+This gives you a stable contract to build around before wiring in Vertex AI, Firestore, and live market providers.
