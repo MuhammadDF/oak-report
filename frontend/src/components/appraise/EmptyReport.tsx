@@ -1,11 +1,11 @@
 export function EmptyReport() {
   return (
     <article className="panel empty-panel">
-      <p className="panel__eyebrow">Appraisal report</p>
+      <p className="panel__eyebrow">Card overview</p>
       <h2>Waiting for a scan</h2>
       <p className="report-copy">
-        Upload a card image to populate the identity, authenticity, and market
-        data panels.
+        Upload a card image to populate the identity, condition, and market data
+        panels.
       </p>
       <div className="empty-panel__stats">
         <div>
@@ -13,8 +13,8 @@ export function EmptyReport() {
           <strong>Set match</strong>
         </div>
         <div>
-          <span>Authenticity</span>
-          <strong>Proxy checks</strong>
+          <span>Condition</span>
+          <strong>Surface review</strong>
         </div>
         <div>
           <span>Pricing</span>

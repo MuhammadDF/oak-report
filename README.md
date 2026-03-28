@@ -63,7 +63,7 @@ cd frontend && npm run dev -- --host 0.0.0.0 --port 5173
 The scan flow is intentionally mocked. It returns:
 
 - normalized card identity
-- proxy/authenticity signals
+- condition snapshot
 - estimated market value
 - sample pricing sources
 

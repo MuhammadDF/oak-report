@@ -8,23 +8,6 @@ from pydantic import BaseModel, Field
 from .card_model import CardCondition, CardIdentity
 
 
-class AuthenticitySignal(BaseModel):
-    """One proxy-detection signal surfaced to the user."""
-
-    name: str
-    passed: bool
-    detail: str
-
-
-class AuthenticityReport(BaseModel):
-    """Aggregated authenticity result."""
-
-    is_authentic_guess: bool
-    confidence: float = Field(ge=0.0, le=1.0)
-    summary: str
-    signals: List[AuthenticitySignal]
-
-
 class PricePoint(BaseModel):
     """One market datapoint used to estimate card value."""
 
@@ -49,5 +32,4 @@ class ScanResultModel(BaseModel):
     processed_at: datetime
     card: CardIdentity
     condition: CardCondition
-    authenticity: AuthenticityReport
     pricing: PricingSnapshot

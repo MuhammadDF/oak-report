@@ -46,7 +46,7 @@ export function SettingsScreen({
           <h2>Collection handoff</h2>
           <p className="report-copy">
             Appraisal results stay on the scan screen for now. The next backend
-            step is persisting accepted cards into the memory bank.
+            step is persisting accepted cards into the collection service.
           </p>
         </article>
       </div>

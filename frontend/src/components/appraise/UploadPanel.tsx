@@ -1,47 +1,64 @@
-import { ChangeEventHandler, FormEventHandler } from "react";
+import { ChangeEventHandler, useEffect, useId, useRef } from "react";
 import { CameraCard } from "./CameraCard";
 
 type UploadPanelProps = {
   error: string | null;
+  isMobile: boolean;
   loading: boolean;
   onFileChange: ChangeEventHandler<HTMLInputElement>;
-  onReset: () => void;
-  onSubmit: FormEventHandler<HTMLFormElement>;
   previewUrl: string | null;
 };
 
 export function UploadPanel({
   error,
+  isMobile,
   loading,
   onFileChange,
-  onReset,
-  onSubmit,
   previewUrl,
 }: UploadPanelProps) {
+  const uploadInputId = useId();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const acceptTypes = isMobile
+    ? "image/*"
+    : "image/png,image/jpeg,image/webp,image/heic";
+  const panelClass = `panel upload-panel ${isMobile ? "upload-panel--mobile" : "upload-panel--desktop"}`;
+
+  useEffect(() => {
+    if (!loading && !previewUrl && inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }, [loading, previewUrl]);
+
   return (
-    <section className="panel upload-panel">
-      <CameraCard loading={loading} />
+    <section className={panelClass}>
+      <input
+        accept={acceptTypes}
+        capture={isMobile ? "environment" : undefined}
+        className="sr-only"
+        id={uploadInputId}
+        ref={inputRef}
+        onChange={onFileChange}
+        type="file"
+      />
 
-      <form className="scan-form" onSubmit={onSubmit}>
-        <label className="upload-field">
-          <span className="upload-field__label">Card image</span>
-          <input
-            accept="image/png,image/jpeg,image/webp,image/heic"
-            onChange={onFileChange}
-            type="file"
-          />
-        </label>
-
-        <div className="scan-form__actions">
-          <button className="primary-button" disabled={loading} type="submit">
-            {loading ? "Scanning..." : "Appraise card"}
-          </button>
-
-          <button className="secondary-button" onClick={onReset} type="button">
-            Clear report
-          </button>
+      {isMobile ? (
+        <div className="mobile-capture">
+          <CameraCard loading={loading} />
+          <label
+            aria-disabled={loading}
+            className={`primary-button camera-button ${loading ? "camera-button--disabled" : ""}`}
+            htmlFor={uploadInputId}
+          >
+            {loading ? "Capturing..." : "Use camera"}
+          </label>
         </div>
-      </form>
+      ) : (
+        <DesktopDropzone inputId={uploadInputId} loading={loading} />
+      )}
+
+      {loading ? (
+        <p className="upload-status">Analyzing upload... building report.</p>
+      ) : null}
 
       {previewUrl ? (
         <div className="preview-card">
@@ -51,5 +68,39 @@ export function UploadPanel({
 
       {error ? <p className="error-banner">{error}</p> : null}
     </section>
+  );
+}
+
+type DesktopDropzoneProps = {
+  inputId: string;
+  loading: boolean;
+};
+
+function DesktopDropzone({ inputId, loading }: DesktopDropzoneProps) {
+  return (
+    <div className={`desktop-dropzone ${loading ? "desktop-dropzone--loading" : ""}`}>
+      <h2>Card Appraisal</h2>
+      <p className="desktop-dropzone__copy">
+        Upload or drag a card image to authenticate and value.
+      </p>
+      <label className="desktop-dropzone__field" htmlFor={inputId}>
+        {loading ? (
+          <>
+            <div className="desktop-dropzone__spinner" aria-hidden="true" />
+            <p>Uploading card image...</p>
+            <span>We'll open the report as soon as it's ready.</span>
+          </>
+        ) : (
+          <>
+            <div className="desktop-dropzone__icon" aria-hidden="true">
+              ↥
+            </div>
+            <p>Drag & drop your card image here</p>
+            <span>PNG, JPG up to 10MB</span>
+            <span className="desktop-dropzone__button">Select File</span>
+          </>
+        )}
+      </label>
+    </div>
   );
 }

@@ -12,7 +12,7 @@ export function CameraCard({ loading }: CameraCardProps) {
         <div className="viewfinder__corner viewfinder__corner--bl" />
         <div className="viewfinder__corner viewfinder__corner--br" />
         {loading ? <div className="viewfinder__scanner" /> : null}
-        <p>{loading ? "Running authenticity checks..." : "Align card within frame"}</p>
+        <p>{loading ? "Building appraisal..." : "Align card within frame"}</p>
       </div>
     </div>
   );

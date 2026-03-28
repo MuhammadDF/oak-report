@@ -1,45 +1,54 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { API_BASE_URL } from "../constants/api";
 import { ScanResult } from "../types/app";
 
 export function useAppraisal() {
-  const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [reportPreviewUrl, setReportPreviewUrl] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      if (previewUrl && previewUrl !== reportPreviewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [previewUrl]);
+  }, [previewUrl, reportPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (reportPreviewUrl) {
+        URL.revokeObjectURL(reportPreviewUrl);
+      }
+    };
+  }, [reportPreviewUrl]);
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const nextFile = event.target.files?.[0] ?? null;
+    const nextPreview = nextFile ? URL.createObjectURL(nextFile) : null;
+    event.target.value = "";
 
-    if (previewUrl) {
+    if (previewUrl && previewUrl !== reportPreviewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
 
-    setFile(nextFile);
     setResult(null);
     setError(null);
-    setPreviewUrl(nextFile ? URL.createObjectURL(nextFile) : null);
+    setPreviewUrl(nextPreview);
+
+    if (nextFile) {
+      void submitSelectedFile(nextFile, nextPreview);
+    }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!file) {
-      setError("Choose an image before running an appraisal.");
-      return;
-    }
-
+  async function submitSelectedFile(
+    selectedFile: File,
+    previewForReport: string | null,
+  ) {
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", selectedFile);
 
     setLoading(true);
     setError(null);
@@ -56,6 +65,10 @@ export function useAppraisal() {
 
       const payload = (await response.json()) as ScanResult;
       setResult(payload);
+      if (previewForReport) {
+        setReportPreviewUrl(previewForReport);
+      }
+      setPreviewUrl(null);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -70,14 +83,16 @@ export function useAppraisal() {
   function resetAppraisal() {
     setResult(null);
     setError(null);
+    setPreviewUrl(null);
+    setReportPreviewUrl(null);
   }
 
   return {
     error,
     handleFileChange,
-    handleSubmit,
     loading,
     previewUrl,
+    reportPreviewUrl,
     resetAppraisal,
     result,
   };

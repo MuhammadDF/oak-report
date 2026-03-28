@@ -2,12 +2,6 @@ export type Screen = "appraise" | "collection" | "library" | "settings";
 
 export type ThemeMode = "dark" | "light";
 
-export type ScanSignal = {
-  name: string;
-  passed: boolean;
-  detail: string;
-};
-
 export type PricePoint = {
   source: string;
   label: string;
@@ -32,12 +26,6 @@ export type ScanResult = {
   };
   condition: {
     condition_label: string;
-  };
-  authenticity: {
-    is_authentic_guess: boolean;
-    confidence: number;
-    summary: string;
-    signals: ScanSignal[];
   };
   pricing: {
     currency: string;

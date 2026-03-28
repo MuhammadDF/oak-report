@@ -6,7 +6,6 @@ import hashlib
 from pydantic import HttpUrl
 from ..models.card_model import CardCondition, CardIdentity
 from ..models.scan_result_model import ScanResultModel
-from .authentication_service import analyze_authenticity
 from .pricing_service import get_pricing_snapshot
 
 _MOCK_CARD_CATALOG = [
@@ -62,7 +61,6 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
     """Analyze an uploaded image and return a mocked appraisal payload."""
 
     card = _select_card_identity(image_bytes)
-    authenticity = await analyze_authenticity(image_bytes)
     pricing = await get_pricing_snapshot(card)
 
     return ScanResultModel(
@@ -70,7 +68,6 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
         processed_at=datetime.now(timezone.utc),
         card=card,
         condition=CardCondition(condition_label="Near Mint"),
-        authenticity=authenticity,
         pricing=pricing,
     )
 

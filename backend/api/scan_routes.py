@@ -10,7 +10,7 @@ router = APIRouter()
 	"/scan",
 	response_model=ScanResultModel,
 	summary="Scan a card image and return a mocked appraisal",
-	response_description="Normalized card identity, authenticity signals, and pricing.",
+	response_description="Normalized card identity details and pricing snapshot.",
 )
 async def scan_card(image: UploadFile = File(...)) -> ScanResultModel:
 	allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic"}

@@ -5,17 +5,17 @@
 ● Role: An individual focused on building, maintaining, and protecting a personal Pokémon TCG collection.  
 
 ● Primary Goals:  
-○ Verify the authenticity of cards to avoid purchasing "proxies" or counterfeits.  
+○ Quickly identify card details with a single camera scan.  
 ○ Track the current market value of cards already in their possession.  
 ○ Maintain a digital inventory of their physical collection.  
 
 ● Needs:  
-○ Fast, "low-friction" authentication via a smartphone camera.  
+○ Fast, "low-friction" scanning via a smartphone camera.  
 ○ A searchable library for general Pokémon card research.  
 ○ A "Memory Bank" to view historical scan data and value trends.  
 
 ● Pain Points:  
-○ Difficulty identifying high-quality fakes (e.g., incorrect fonts or flat holographic patterns).  
+○ Difficulty matching obscure cards to the correct set without digital help.  
 ○ Manual effort required to look up prices across multiple platforms like eBay and TCGPlayer.  
 ○ The challenge of keeping a collection inventory up-to-date as market prices shift.  
 
@@ -26,16 +26,16 @@
 ● Primary Goals:  
 ○ Obtain real-time, grounded pricing data to ensure competitive and fair listings.  
 ○ Monitor market shifts to time the sale of specific cards.  
-○ Quickly authenticate inventory before listing it for sale to maintain seller reputation.  
+○ Rapidly capture listing-ready details for inventory headed to market.  
 
 ● Needs:  
 ○ Live web grounding for price accuracy across multiple sources (Pricecharting, eBay, Google Shopping).  
-○ Clear visual reasoning from the AI explaining why a card is flagged as a proxy.  
+○ Clear summaries that explain the drivers behind the suggested price.  
 ○ Efficient "Instant Appraisal" to process multiple cards quickly.  
 
 ● Pain Points:  
 ○ Static price charts that do not reflect "sold" data or sudden market spikes.  
-○ Risk of financial loss due to accidentally selling a high-value counterfeit.  
+○ Risk of financial loss due to mispricing a high-value card.  
 ○ Time-consuming manual research for pricing across different card conditions and sets.  
 
 ## Alice Admin (Tentative)
@@ -60,8 +60,6 @@
 
 ## For Cal Collector
 
-● Authentication: As a Cal Collector, I want to perform a "Proxy Check" on a card’s font and holographic texture, so that I can be confident I am not purchasing a fake card.  
-
 ● Valuation: As a Cal Collector, I want to point my camera at a card and receive an instant dollar value, so that I can understand the worth of my collection without manual research.  
 
 ● Collection Management: As a Cal Collector, I want to add, edit, and delete scanned cards in my personal "collection," so that I have a persistent digital record of my assets.  
@@ -73,8 +71,6 @@
 ## For Sally Seller
 
 ● Live Pricing: As a Sally Seller, I want the app to use live web grounding (eBay/TCGPlayer), so that I can price my cards based on real-time market shifts rather than static data.  
-
-● Detailed Reasoning: As a Sally Seller, I want to see the specific "red flags" (like the "Accent Test" or "Spelling Test") the AI found, so that I can explain to potential buyers why a card was flagged as suspicious.  
 
 ● Market Comparison: As a Sally Seller, I want the agent to search multiple pricing APIs simultaneously, so that I can identify the best platform on which to list a specific card for sale.  
 
