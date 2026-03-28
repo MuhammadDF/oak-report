@@ -1,0 +1,20 @@
+[project]
+name = "oak-report"
+version = "0.1.0"
+description = "Pokemon TCG appraisal backend for the Oak Report project."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "email-validator==2.2.0",
+    "fastapi==0.115.12",
+    "pydantic==2.11.2",
+    "python-multipart==0.0.20",
+    "uvicorn[standard]==0.34.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false

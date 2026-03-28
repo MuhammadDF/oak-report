@@ -1,0 +1,39 @@
+{
+  "name": "oak-report-dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "root",
+  "forwardPorts": [5173, 8000],
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "postCreateCommand": "uv sync && cd frontend && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "openai.chatgpt",
+        "GitHub.copilot-chat",
+        "Anthropic.claude-code",
+        "google.geminicodeassist"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${localWorkspaceFolder}/.venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "containerEnv": {
+    "VITE_API_BASE_URL": "http://localhost:8000",
+    "DOCKER_HOST": "unix:///var/run/docker.sock",
+    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  }
+}
