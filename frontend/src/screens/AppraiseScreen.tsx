@@ -1,119 +1,102 @@
 import { MouseEvent, useEffect, useState } from "react";
 import { ResultsColumn } from "../components/appraise/ResultsColumn";
 import { UploadPanel } from "../components/appraise/UploadPanel";
-import { CollectionSelectionPanel } from "../components/appraise/CollectionSelectionPanel";
+import { SearchResultsPanel } from "../components/appraise/SearchResultsPanel";
 import { useAppraisal } from "../hooks/useAppraisal";
 import { useMediaQuery } from "../hooks/useMediaQuery";
-import { CollectionCard } from "../types/app";
+import { CardSearchResult } from "../types/app";
 
-type AppraiseScreenProps = {
-  selectedCollectionCard: CollectionCard | null;
-  onClearCollectionSelection: () => void;
-  onRemoveCollectionCard: (cardId: string) => void;
-};
+export function AppraiseScreen() {
+	const {
+		error,
+		handleFileChange,
+		loading,
+		previewUrl,
+		reportPreviewUrl,
+		resetAppraisal,
+		result,
+	} = useAppraisal();
 
-export function AppraiseScreen({
-  onClearCollectionSelection,
-  onRemoveCollectionCard,
-  selectedCollectionCard,
-}: AppraiseScreenProps) {
-  const {
-    error,
-    handleFileChange,
-    loading,
-    previewUrl,
-    reportPreviewUrl,
-    resetAppraisal,
-    result,
-  } = useAppraisal();
+	const [isReportOpen, setIsReportOpen] = useState(false);
+	const [searchSummary, setSearchSummary] = useState<{
+		query: string;
+		results: CardSearchResult[];
+	} | null>(null);
+	const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const [isReportOpen, setIsReportOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+	useEffect(() => {
+		if (result) {
+			setIsReportOpen(true);
+			setSearchSummary(null);
+		}
+	}, [result]);
 
-  useEffect(() => {
-    if (result) {
-      setIsReportOpen(true);
-    }
-  }, [result]);
+	function handleReportClose() {
+		setIsReportOpen(false);
+		resetAppraisal();
+		setSearchSummary(null);
+	}
 
-  useEffect(() => {
-    if (selectedCollectionCard) {
-      setIsReportOpen(true);
-    }
-  }, [selectedCollectionCard]);
+	function handleModalBackdropClick(event: MouseEvent<HTMLDivElement>) {
+		if (event.target === event.currentTarget) {
+			handleReportClose();
+		}
+	}
 
-  function handleReportClose() {
-    setIsReportOpen(false);
-    resetAppraisal();
-    onClearCollectionSelection();
-  }
+	function handleSearchResults(query: string, results: CardSearchResult[]) {
+		resetAppraisal();
+		setSearchSummary({ query, results });
+		setIsReportOpen(true);
+	}
 
-  function handleModalBackdropClick(event: MouseEvent<HTMLDivElement>) {
-    if (event.target === event.currentTarget) {
-      handleReportClose();
-    }
-  }
+	return (
+		<section className="screen screen--appraise">
+			<div className="appraise-layout">
+				<UploadPanel
+					error={error}
+					isMobile={isMobile}
+					loading={loading}
+					onFileChange={handleFileChange}
+					onSearchResults={handleSearchResults}
+					previewUrl={previewUrl}
+				/>
+			</div>
 
-  function handleRemoveFromCollection(cardId: string) {
-    onRemoveCollectionCard(cardId);
-    resetAppraisal();
-    setIsReportOpen(false);
-    onClearCollectionSelection();
-  }
-
-  return (
-    <section className="screen screen--appraise">
-      <div className="appraise-layout">
-        <UploadPanel
-          error={error}
-          isMobile={isMobile}
-          loading={loading}
-          onFileChange={handleFileChange}
-          previewUrl={previewUrl}
-        />
-      </div>
-
-      {isReportOpen && (result || selectedCollectionCard) ? (
-        <div
-          aria-modal="true"
-          className="report-modal"
-          onClick={handleModalBackdropClick}
-          role="dialog"
-        >
-          <div
-            className="report-modal__panel"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="report-modal__header">
-              <p className="panel__eyebrow">Card overview</p>
-              <button
-                className="report-modal__close"
-                onClick={handleReportClose}
-                type="button"
-              >
-                Close
-              </button>
-            </div>
-            {result ? (
-              <ResultsColumn
-                collectionCardId={selectedCollectionCard?.id ?? null}
-                onRemoveFromCollection={
-                  selectedCollectionCard
-                    ? () => handleRemoveFromCollection(selectedCollectionCard.id)
-                    : undefined
-                }
-                reportPreviewUrl={reportPreviewUrl}
-                result={result}
-              />
-            ) : selectedCollectionCard ? (
-              <CollectionSelectionPanel
-                card={selectedCollectionCard}
-                onRemove={() => handleRemoveFromCollection(selectedCollectionCard.id)}
-              />
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-    </section>
-  );
+			{isReportOpen && (result || searchSummary) ? (
+				<div
+					aria-modal="true"
+					className="report-modal"
+					onClick={handleModalBackdropClick}
+					role="dialog"
+				>
+					<div
+						className="report-modal__panel"
+						onClick={(event) => event.stopPropagation()}
+					>
+						<div className="report-modal__header">
+							<p className="panel__eyebrow">Card overview</p>
+							<button
+								className="report-modal__close"
+								onClick={handleReportClose}
+								type="button"
+							>
+								Close
+							</button>
+						</div>
+						{result ? (
+							<ResultsColumn
+								reportPreviewUrl={reportPreviewUrl}
+								result={result}
+							/>
+						) : searchSummary ? (
+							<SearchResultsPanel
+								query={searchSummary.query}
+								results={searchSummary.results}
+							/>
+						) : null}
+					</div>
+				</div>
+			) : null}
+		</section>
+	);
 }

@@ -12,6 +12,7 @@ export const COLLECTION_CARDS: CollectionCard[] = [
     image:
       "https://images.unsplash.com/photo-1613771404738-65d22f979710?auto=format&fit=crop&w=900&q=80",
     grade: "PSA 9",
+    quantity: 1,
   },
   {
     id: "2",
@@ -24,6 +25,7 @@ export const COLLECTION_CARDS: CollectionCard[] = [
     image:
       "https://images.unsplash.com/photo-1611931969235-9ad843243189?auto=format&fit=crop&w=900&q=80",
     grade: "PSA 10",
+    quantity: 2,
   },
   {
     id: "3",
@@ -35,6 +37,7 @@ export const COLLECTION_CARDS: CollectionCard[] = [
     trendPct: 18.4,
     image:
       "https://images.unsplash.com/photo-1647893977173-59619da505d9?auto=format&fit=crop&w=900&q=80",
+    quantity: 1,
   },
   {
     id: "4",
@@ -46,6 +49,7 @@ export const COLLECTION_CARDS: CollectionCard[] = [
     trendPct: 3.2,
     image:
       "https://images.unsplash.com/photo-1595428316542-6ce94f69a02d?auto=format&fit=crop&w=900&q=80",
+    quantity: 3,
   },
 ];
 

@@ -1,4 +1,4 @@
-export type Screen = "appraise" | "collection" | "library" | "settings";
+export type Screen = "appraise" | "collection" | "settings";
 
 export type ThemeMode = "dark" | "light";
 
@@ -44,6 +44,7 @@ export type CollectionCard = {
   trendPct: number;
   image: string;
   grade?: string;
+  quantity: number;
 };
 
 export type LibraryCard = {
@@ -54,4 +55,13 @@ export type LibraryCard = {
   rarity: string;
   type: string;
   price: number;
+};
+
+export type CardSearchResult = {
+  id: string;
+  name: string;
+  set: string;
+  rarity: string;
+  type: string;
+  lowest_listing: number;
 };

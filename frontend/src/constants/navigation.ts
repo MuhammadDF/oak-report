@@ -8,6 +8,5 @@ export const NAV_ITEMS: Array<{
 }> = [
   { id: "appraise", label: "Appraise", mobileLabel: "Scan", icon: "◎" },
   { id: "collection", label: "Collection", mobileLabel: "Collection", icon: "▣" },
-  { id: "library", label: "Library", mobileLabel: "Library", icon: "⌕" },
   { id: "settings", label: "Settings", mobileLabel: "Settings", icon: "◌" },
 ];

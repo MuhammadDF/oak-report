@@ -8,13 +8,9 @@ import { PricingReport } from "./PricingReport";
 type ResultsColumnProps = {
   reportPreviewUrl: string | null;
   result: ScanResult | null;
-  collectionCardId?: string | null;
-  onRemoveFromCollection?: (cardId: string) => void;
 };
 
 export function ResultsColumn({
-  collectionCardId,
-  onRemoveFromCollection,
   reportPreviewUrl,
   result,
 }: ResultsColumnProps) {
@@ -66,15 +62,6 @@ export function ResultsColumn({
                 ? "Adding..."
                 : "Add to collection"}
             </button>
-            {collectionCardId && onRemoveFromCollection ? (
-              <button
-                className="secondary-button danger-button"
-                onClick={() => onRemoveFromCollection(collectionCardId)}
-                type="button"
-              >
-                Remove from collection
-              </button>
-            ) : null}
             {collectionStatus === "success" ? (
               <span className="report-actions__status report-actions__status--success">
                 Saved to collection placeholder.

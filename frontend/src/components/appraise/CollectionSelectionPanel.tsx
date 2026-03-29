@@ -3,13 +3,22 @@ import { formatCurrency } from "../../utils/format";
 
 type CollectionSelectionPanelProps = {
   card: CollectionCard;
+  onQuantityChange: (nextQuantity: number) => void;
   onRemove: () => void;
 };
 
 export function CollectionSelectionPanel({
   card,
+  onQuantityChange,
   onRemove,
 }: CollectionSelectionPanelProps) {
+  const totalHeld = card.price * card.quantity;
+
+  function handleAdjustQuantity(delta: number) {
+    const nextQuantity = Math.max(0, card.quantity + delta);
+    onQuantityChange(nextQuantity);
+  }
+
   return (
     <section className="results-column">
       <article className="panel report-panel">
@@ -45,15 +54,59 @@ export function CollectionSelectionPanel({
                 {card.trendPct}%
               </dd>
             </div>
+            <div>
+              <dt>Total held</dt>
+              <dd>{formatCurrency("USD", totalHeld)}</dd>
+            </div>
           </dl>
         </div>
 
-        <div className="report-actions">
-          <button className="danger-button" onClick={onRemove} type="button">
-            Remove from collection
-          </button>
+        <div className="collection-quantity">
+          <span>Quantity owned</span>
+          <div className="quantity-stepper">
+            <button
+              aria-label="Decrease quantity"
+              onClick={() => handleAdjustQuantity(-1)}
+              type="button"
+              disabled={card.quantity === 0}
+            >
+              -
+            </button>
+            <strong>{card.quantity}</strong>
+            <button
+              aria-label="Increase quantity"
+              onClick={() => handleAdjustQuantity(1)}
+              type="button"
+            >
+              +
+            </button>
+            <button className="trash-button" onClick={onRemove} type="button">
+              <TrashIcon />
+              <span className="sr-only">Remove card</span>
+            </button>
+          </div>
         </div>
       </article>
     </section>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height="18"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.8"
+      viewBox="0 0 24 24"
+      width="18"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6v13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" />
+      <path d="M10 6V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2" />
+    </svg>
   );
 }
