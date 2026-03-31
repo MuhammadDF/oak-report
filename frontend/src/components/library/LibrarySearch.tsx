@@ -9,7 +9,7 @@ export function LibrarySearch({ onChange, value }: LibrarySearchProps) {
       <span>Search</span>
       <input
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Search by card name, set, or type"
+        placeholder="Search by card name and card number"
         type="search"
         value={value}
       />

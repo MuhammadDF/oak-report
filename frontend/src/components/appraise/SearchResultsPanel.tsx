@@ -2,11 +2,20 @@ import { CardSearchResult } from "../../types/app";
 import { formatCurrency } from "../../utils/format";
 
 type SearchResultsPanelProps = {
+	activeCardId?: string | null;
+	onResultSelect?: (card: CardSearchResult) => void;
 	query: string;
 	results: CardSearchResult[];
 };
 
-export function SearchResultsPanel({ query, results }: SearchResultsPanelProps) {
+export function SearchResultsPanel({
+	activeCardId,
+	onResultSelect,
+	query,
+	results,
+}: SearchResultsPanelProps) {
+	const isInteractive = typeof onResultSelect === "function";
+
 	return (
 		<section className="results-column">
 			<article className="panel report-panel">
@@ -22,17 +31,29 @@ export function SearchResultsPanel({ query, results }: SearchResultsPanelProps) 
 
 				{results.length ? (
 					<ul className="search-results-list">
-						{results.map((card) => (
-							<li key={card.id}>
-								<div>
-									<strong>{card.name}</strong>
-									<span>
-										{card.set} &middot; {card.rarity} &middot; {card.type}
-									</span>
-								</div>
-								<strong>{formatCurrency("USD", card.lowest_listing)}</strong>
-							</li>
-						))}
+						{results.map((card) => {
+							const isActive = activeCardId === card.id;
+							return (
+								<li key={card.id}>
+									<button
+										className={`search-results-row ${
+											isActive ? "search-results-row--active" : ""
+										}`}
+										onClick={() => (isInteractive ? onResultSelect?.(card) : undefined)}
+										disabled={!isInteractive}
+										type="button"
+									>
+										<div>
+											<strong>{card.name}</strong>
+											<span>
+												{card.set} &middot; {card.rarity} &middot; {card.type}
+											</span>
+										</div>
+										<strong>{formatCurrency("USD", card.lowest_listing)}</strong>
+									</button>
+								</li>
+							);
+						})}
 					</ul>
 				) : (
 					<p className="card-search__status">No matches returned yet. Try another query.</p>

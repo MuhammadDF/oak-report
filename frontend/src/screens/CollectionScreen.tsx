@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ScreenHeader } from "../components/common/ScreenHeader";
 import { CollectionGrid } from "../components/collection/CollectionGrid";
 import { CollectionStats } from "../components/collection/CollectionStats";
+import { CollectionSearch } from "../components/collection/CollectionSearch";
 import { CollectionSelectionPanel } from "../components/appraise/CollectionSelectionPanel";
 import { CollectionCard } from "../types/app";
 
@@ -17,10 +18,25 @@ export function CollectionScreen({
   onRemoveCard,
 }: CollectionScreenProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const activeCard = useMemo(
     () => cards.find((card) => card.id === activeCardId) ?? null,
     [activeCardId, cards],
   );
+  const normalizedQuery = search.trim().toLowerCase();
+  const filteredCards = useMemo(() => {
+    if (!normalizedQuery) {
+      return cards;
+    }
+
+    return cards.filter((card) => {
+      return (
+        card.name.toLowerCase().includes(normalizedQuery) ||
+        card.set.toLowerCase().includes(normalizedQuery) ||
+        card.number.toLowerCase().includes(normalizedQuery)
+      );
+    });
+  }, [cards, normalizedQuery]);
 
   useEffect(() => {
     if (activeCardId && !activeCard) {
@@ -40,16 +56,22 @@ export function CollectionScreen({
   return (
     <section className="screen">
       <ScreenHeader
-        description="A local version of the Figma collection view with quick stats and card tiles."
-        eyebrow="Collection"
-        title="Your authenticated collection."
+        title="Your collection."
       />
 
-      <CollectionStats cards={cards} />
-      <CollectionGrid
-        cards={cards}
-        onSelectCard={(card) => setActiveCardId(card.id)}
-      />
+      <CollectionSearch onChange={setSearch} value={search} />
+
+      <CollectionStats cards={filteredCards} />
+      {filteredCards.length ? (
+        <CollectionGrid
+          cards={filteredCards}
+          onSelectCard={(card) => setActiveCardId(card.id)}
+        />
+      ) : (
+        <p className="collection-empty">
+          No cards matched “{search.trim()}”.
+        </p>
+      )}
 
       {activeCard ? (
         <div
@@ -62,25 +84,14 @@ export function CollectionScreen({
           }}
           role="dialog"
         >
-          <div className="report-modal__panel">
-            <div className="report-modal__header">
-              <p className="panel__eyebrow">Collection card</p>
-              <button
-                className="report-modal__close"
-                onClick={handleCloseModal}
-                type="button"
-              >
-                Close
-              </button>
-            </div>
-            <CollectionSelectionPanel
-              card={activeCard}
-              onQuantityChange={(quantity) =>
-                onCardQuantityChange(activeCard.id, quantity)
-              }
-              onRemove={() => handleRemoveCard(activeCard.id)}
-            />
-          </div>
+          <CollectionSelectionPanel
+            card={activeCard}
+            onQuantityChange={(quantity) =>
+              onCardQuantityChange(activeCard.id, quantity)
+            }
+            onRemove={() => handleRemoveCard(activeCard.id)}
+            onClose={handleCloseModal}
+          />
         </div>
       ) : null}
     </section>

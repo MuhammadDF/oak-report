@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 type ScreenHeaderProps = {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   aside?: ReactNode;
@@ -16,7 +16,9 @@ export function ScreenHeader({
   return (
     <header className="screen-header">
       <div>
-        <p className="screen-header__eyebrow">{eyebrow}</p>
+        {eyebrow ? (
+          <p className="screen-header__eyebrow">{eyebrow}</p>
+        ) : null}
         <h1>{title}</h1>
         <p className="screen-header__copy">{description}</p>
       </div>

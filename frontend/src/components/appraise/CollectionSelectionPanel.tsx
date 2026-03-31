@@ -5,12 +5,14 @@ type CollectionSelectionPanelProps = {
   card: CollectionCard;
   onQuantityChange: (nextQuantity: number) => void;
   onRemove: () => void;
+  onClose?: () => void;
 };
 
 export function CollectionSelectionPanel({
   card,
   onQuantityChange,
   onRemove,
+  onClose,
 }: CollectionSelectionPanelProps) {
   const totalHeld = card.price * card.quantity;
 
@@ -20,14 +22,26 @@ export function CollectionSelectionPanel({
   }
 
   return (
-    <section className="results-column">
-      <article className="panel report-panel">
-        <div className="report-panel__header">
+    <section className="results-column collection-panel__wrap">
+      <article className="panel report-panel collection-panel">
+        <div className="report-panel__header collection-detail__header">
           <div>
             <p className="panel__eyebrow">Collection card</p>
             <h2>{card.name}</h2>
           </div>
-          {card.grade ? <span className="report-badge">{card.grade}</span> : null}
+          <div className="collection-detail__actions">
+            {card.grade ? <span className="report-badge">{card.grade}</span> : null}
+            {onClose ? (
+              <button
+                aria-label="Close collection card"
+                className="report-modal__close"
+                onClick={onClose}
+                type="button"
+              >
+                Close
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <div className="collection-detail">
