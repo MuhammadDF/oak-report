@@ -1,9 +1,16 @@
 """Mock pricing service for the first appraisal vertical slice."""
 
+from io import StringIO
 from statistics import mean
+import requests
+from dotenv import load_dotenv
+import os
+import pandas as pd
 
 from ..models.card_model import CardIdentity
 from ..models.scan_result_model import PricePoint, PricingSnapshot
+
+load_dotenv()
 
 
 async def get_pricing_snapshot(card: CardIdentity) -> PricingSnapshot:
@@ -30,7 +37,8 @@ async def get_pricing_snapshot(card: CardIdentity) -> PricingSnapshot:
             url="https://www.ebay.com/",
         ),
     ]
-    estimated_market_value = round(mean(point.price for point in price_points), 2)
+    estimated_market_value = round(
+        mean(point.price for point in price_points), 2)
     return PricingSnapshot(
         estimated_market_value=estimated_market_value,
         price_points=price_points,
@@ -47,3 +55,24 @@ def _base_price_for_card(card: CardIdentity) -> float:
     }.get(card.rarity or "", 1.3)
     holo_bonus = 6.5 if card.is_holo else 0.0
     return ((name_score % 22) + 4) * rarity_multiplier + holo_bonus
+
+
+def get_all_cards():
+    "Returns a csv of all cards from price charting."
+    response = requests.get(
+        f"https://www.pricecharting.com/price-guide/download-custom?t={os.getenv('PRICE_CHARTING')}&category=pokemon-cards")
+    if response.status_code == 200:
+        return response.text
+    else:
+        raise Exception(f"Failed to fetch card data: {response.status_code}")
+
+def get_card_image(ID):
+    """Fetches card image and returns it as a DataFrame."""
+    response = requests.get(
+        f"https://www.pricecharting.com/api/offers?t={os.getenv('PRICE_CHARTING')}&ID={ID}&status=available")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to fetch card data: {response.status_code}")
+    
+print(get_card_image(7569349))
