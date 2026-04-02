@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 type ScreenHeaderProps = {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   aside?: ReactNode;
 };
 
