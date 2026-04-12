@@ -7,6 +7,7 @@ This repository now contains a first vertical slice of the Pokemon appraisal app
 - Product context docs under `docs/context/`
 
 ## Local backend with uv
+
 1. Install `uv` if you do not already have it.
 2. Create the environment with `uv sync`.
 3. Start FastAPI with `uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload`.
@@ -14,6 +15,7 @@ This repository now contains a first vertical slice of the Pokemon appraisal app
 The API will be available at `http://localhost:8000` and Swagger at `http://localhost:8000/docs`.
 
 ## Frontend
+
 1. Copy `.env.example` values into your local environment if needed.
 2. From `frontend/`, install dependencies with `npm install`.
 3. Start the frontend with `npm run dev`.
@@ -68,3 +70,26 @@ The scan flow is intentionally mocked. It returns:
 - sample pricing sources
 
 This gives you a stable contract to build around before wiring in Vertex AI, Firestore, and live market providers.
+
+## Data provider boundaries (Firestore-ready)
+
+Mock-backed data now sits behind repository adapters so Firestore can be introduced
+without changing routes or screens:
+
+- Backend provider switch:
+  - `DATA_PROVIDER=mock` (default)
+  - `DATA_PROVIDER=firestore` (placeholder, adapter not implemented yet)
+- Backend repository boundaries:
+  - `backend/repositories/collection_repository.py`
+  - `backend/repositories/search_repository.py`
+  - `backend/repositories/scan_catalog_repository.py`
+  - `backend/repositories/factory.py`
+- Frontend provider switch:
+  - `VITE_DATA_PROVIDER=mock` (default)
+  - `VITE_DATA_PROVIDER=api` (calls backend endpoints)
+- Frontend repository boundaries:
+  - `frontend/src/repositories/collectionRepository.ts`
+  - `frontend/src/repositories/libraryRepository.ts`
+
+To migrate to Firestore later, add Firestore repository implementations and register
+them in the provider factories while keeping existing service and UI call sites unchanged.

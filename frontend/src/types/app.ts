@@ -1,4 +1,4 @@
-export type Screen = "appraise" | "collection" | "settings";
+export type Screen = "appraise" | "collection" | "profile" | "signin";
 
 export type ThemeMode = "dark" | "light";
 
@@ -64,4 +64,17 @@ export type CardSearchResult = {
   rarity: string;
   type: string;
   lowest_listing: number;
+};
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  display_name: string;
+  role: string;
+};
+
+export type AuthTokenResponse = {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
 };

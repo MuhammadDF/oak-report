@@ -6,7 +6,15 @@ import { useAppraisal } from "../hooks/useAppraisal";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { CardSearchResult, ScanResult } from "../types/app";
 
-export function AppraiseScreen() {
+type AppraiseScreenProps = {
+	authToken: string | null;
+	onCollectionChanged?: () => void;
+};
+
+export function AppraiseScreen({
+	authToken,
+	onCollectionChanged,
+}: AppraiseScreenProps) {
 	const {
 		error,
 		handleFileChange,
@@ -113,6 +121,8 @@ export function AppraiseScreen() {
 										</p>
 									) : null}
 									<ResultsColumn
+										authToken={authToken}
+										onCollectionAdded={onCollectionChanged}
 										reportPreviewUrl={searchAppraisal ? null : reportPreviewUrl}
 										result={derivedResult}
 									/>

@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { API_BASE_URL } from "../../constants/api";
+import { getCollectionRepository } from "../../repositories/collectionRepository";
 import { ScanResult } from "../../types/app";
 import { EmptyReport } from "./EmptyReport";
 import { IdentityReport } from "./IdentityReport";
 import { PricingReport } from "./PricingReport";
 
 type ResultsColumnProps = {
+  authToken: string | null;
+  onCollectionAdded?: () => void;
   reportPreviewUrl: string | null;
   result: ScanResult | null;
 };
 
+const collectionRepository = getCollectionRepository();
+
 export function ResultsColumn({
+  authToken,
+  onCollectionAdded,
   reportPreviewUrl,
   result,
 }: ResultsColumnProps) {
@@ -26,19 +32,18 @@ export function ResultsColumn({
     setCollectionStatus("loading");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/collection/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ scan_id: result.scan_id }),
+      await collectionRepository.addScanToCollection(authToken, {
+        scan_id: result.scan_id,
+        name: result.card.name,
+        set: result.card.set_name ?? "Unknown Set",
+        number: result.card.card_number ?? "--",
+        price: result.pricing.estimated_market_value,
+        image: result.card.image_url ?? reportPreviewUrl,
+        grade: result.condition.condition_label,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to add card");
-      }
-
       setCollectionStatus("success");
+      onCollectionAdded?.();
     } catch (caughtError) {
       console.error(caughtError);
       setCollectionStatus("error");
@@ -64,12 +69,12 @@ export function ResultsColumn({
             </button>
             {collectionStatus === "success" ? (
               <span className="report-actions__status report-actions__status--success">
-                Saved to collection placeholder.
+                Saved to collection.
               </span>
             ) : null}
             {collectionStatus === "error" ? (
               <span className="report-actions__status report-actions__status--error">
-                Could not reach the collection API.
+                Could not save to collection.
               </span>
             ) : null}
           </div>

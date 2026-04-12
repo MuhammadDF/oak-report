@@ -9,7 +9,7 @@ type MobileNavProps = {
 export function MobileNav({ screen, setScreen }: MobileNavProps) {
   return (
     <nav className="mobile-nav" aria-label="Mobile primary">
-      {NAV_ITEMS.filter((item) => item.id !== "settings").map((item) => (
+      {NAV_ITEMS.map((item) => (
         <button
           key={item.id}
           className={`mobile-nav__button ${

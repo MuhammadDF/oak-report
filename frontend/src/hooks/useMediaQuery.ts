@@ -25,6 +25,7 @@ export function useMediaQuery(query: string) {
     // Safari < 14 fallback
     // @ts-expect-error addListener exists on older MediaQueryList
     mediaQuery.addListener(handleChange);
+    // @ts-expect-error removeListener exists on older MediaQueryList
     return () => mediaQuery.removeListener(handleChange);
   }, [query]);
 

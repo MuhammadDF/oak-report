@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: backend.Dockerfile
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+      DATA_PROVIDER: ${DATA_PROVIDER:-mock}
     ports:
       - "8000:8000"
     volumes:
@@ -15,7 +19,9 @@ services:
       context: .
       dockerfile: frontend.Dockerfile
     environment:
-      VITE_API_BASE_URL: http://localhost:8000
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
+      VITE_DATA_PROVIDER: ${VITE_DATA_PROVIDER:-api}
     ports:
       - "5173:5173"
     volumes:
