@@ -1,13 +1,7 @@
-import {
-  ChangeEventHandler,
-  FormEvent,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEventHandler, useEffect, useId, useRef } from "react";
 import { CameraCard } from "./CameraCard";
-import { API_BASE_URL } from "../../constants/api";
+import { CardSearchBar } from "./CardSearchBar";
+import { useCardSearch } from "../../hooks/useCardSearch";
 import { CardSearchResult } from "../../types/app";
 
 type UploadPanelProps = {
@@ -29,10 +23,7 @@ export function UploadPanel({
 }: UploadPanelProps) {
   const uploadInputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [lastSearchTerm, setLastSearchTerm] = useState("");
+  const search = useCardSearch(onSearchResults);
   const acceptTypes = isMobile
     ? "image/*"
     : "image/png,image/jpeg,image/webp,image/heic";
@@ -43,42 +34,6 @@ export function UploadPanel({
       inputRef.current.value = "";
     }
   }, [loading, previewUrl]);
-
-  async function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const trimmedQuery = searchQuery.trim();
-
-    if (!trimmedQuery || searchLoading) {
-      return;
-    }
-
-    setSearchLoading(true);
-    setSearchError(null);
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/search/cards?query=${encodeURIComponent(trimmedQuery)}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Search request failed.");
-      }
-
-      const payload = (await response.json()) as {
-        query: string;
-        results: CardSearchResult[];
-      };
-
-      onSearchResults(trimmedQuery, payload.results);
-      setLastSearchTerm(trimmedQuery);
-    } catch (caughtError) {
-      setSearchError(
-        caughtError instanceof Error ? caughtError.message : "Search could not complete.",
-      );
-    } finally {
-      setSearchLoading(false);
-    }
-  }
 
   return (
     <section className={panelClass}>
@@ -108,12 +63,12 @@ export function UploadPanel({
       )}
 
       <CardSearchBar
-        error={searchError}
-        lastSearchTerm={lastSearchTerm}
-        loading={searchLoading}
-        onQueryChange={setSearchQuery}
-        onSubmit={handleSearchSubmit}
-        query={searchQuery}
+        error={search.error}
+        lastSearchTerm={search.lastSearchTerm}
+        loading={search.loading}
+        onQueryChange={search.setQuery}
+        onSubmit={search.handleSubmit}
+        query={search.query}
       />
 
       {loading ? (
@@ -165,56 +120,3 @@ function DesktopDropzone({ inputId, loading }: DesktopDropzoneProps) {
   );
 }
 
-type CardSearchBarProps = {
-  error: string | null;
-  lastSearchTerm: string;
-  loading: boolean;
-  onQueryChange: (value: string) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  query: string;
-};
-
-function CardSearchBar({
-  error,
-  lastSearchTerm,
-  loading,
-  onQueryChange,
-  onSubmit,
-  query,
-}: CardSearchBarProps) {
-  return (
-    <div className="card-search">
-      <form className="search-field" onSubmit={onSubmit}>
-        <div className="search-field__control">
-          <input
-            aria-label="Search reference cards"
-            disabled={loading}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search a card or set"
-            type="search"
-            value={query}
-          />
-          <button
-            className="search-field__action"
-            disabled={loading || !query.trim()}
-            type="submit"
-          >
-            {loading ? "Searching" : "Search"}
-          </button>
-        </div>
-      </form>
-
-      {loading ? (
-        <p className="card-search__status">
-          Looking for "{query.trim() || lastSearchTerm || "your card"}"...
-        </p>
-      ) : lastSearchTerm && !error ? (
-        <p className="card-search__status card-search__status--success">
-          Appraisal window refreshed with matches for "{lastSearchTerm}".
-        </p>
-      ) : null}
-
-      {error ? <p className="error-banner">{error}</p> : null}
-    </div>
-  );
-}
