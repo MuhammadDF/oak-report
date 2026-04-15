@@ -37,12 +37,32 @@ export function LiveCameraPanel({ error, loading, onFileCaptured, onSearchResult
     let cancelled = false;
 
     async function startCamera() {
+      // getUserMedia requires a secure context (HTTPS). On mobile browsers it
+      // is simply absent when the page is loaded over plain HTTP.
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraError("Camera is not available. Make sure the page is loaded over HTTPS.");
+        return;
+      }
+
+      async function openStream(constraints: MediaStreamConstraints): Promise<MediaStream> {
+        return navigator.mediaDevices.getUserMedia(constraints);
+      }
+
       try {
         // `facingMode: "environment"` requests the rear camera on mobile.
         // On desktop (MacBook) this is ignored and the built-in webcam is used.
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-        });
+        let stream: MediaStream;
+        try {
+          stream = await openStream({ video: { facingMode: "environment" } });
+        } catch (err) {
+          // OverconstrainedError means the browser couldn't satisfy facingMode.
+          // Fall back to any available camera before giving up.
+          if (err instanceof DOMException && (err.name === "OverconstrainedError" || err.name === "ConstraintNotSatisfiedError")) {
+            stream = await openStream({ video: true });
+          } else {
+            throw err;
+          }
+        }
 
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
@@ -55,10 +75,26 @@ export function LiveCameraPanel({ error, loading, onFileCaptured, onSearchResult
         }
       } catch (err) {
         if (cancelled) return;
-        // NotAllowedError = user denied the browser permission prompt.
-        // Any other error means the hardware is unavailable or in use.
-        if (err instanceof DOMException && err.name === "NotAllowedError") {
-          setCameraError("Camera access was denied. Please allow camera permissions and try again.");
+        if (err instanceof DOMException) {
+          switch (err.name) {
+            case "NotAllowedError":
+            case "PermissionDeniedError":
+              setCameraError("Camera access was denied. Please allow camera permissions and try again.");
+              break;
+            case "NotFoundError":
+            case "DevicesNotFoundError":
+              setCameraError("No camera was found on this device.");
+              break;
+            case "NotReadableError":
+            case "TrackStartError":
+              setCameraError("Camera is in use by another app. Close other apps and try again.");
+              break;
+            case "SecurityError":
+              setCameraError("Camera requires a secure connection (HTTPS).");
+              break;
+            default:
+              setCameraError(`Could not access camera (${err.name}). Make sure no other app is using it.`);
+          }
         } else {
           setCameraError("Could not access camera. Make sure no other app is using it.");
         }
