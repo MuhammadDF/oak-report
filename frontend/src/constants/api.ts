@@ -1,15 +1,5 @@
-const protocol = window.location.protocol === "https:" ? "https" : "http";
-const host = window.location.hostname;
-const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-const configuredPointsToLocalhost =
-  configuredBaseUrl?.includes("localhost") ||
-  configuredBaseUrl?.includes("127.0.0.1");
-
-const viewingFromLocalhost = host === "localhost" || host === "127.0.0.1";
-
-const shouldUseHostFallback =
-  !configuredBaseUrl || (configuredPointsToLocalhost && !viewingFromLocalhost);
-
-export const API_BASE_URL =
-  shouldUseHostFallback ? `${protocol}://${host}:8000` : configuredBaseUrl;
+// All API requests use a relative base URL so they go through the Vite dev
+// server proxy (vite.config.ts → server.proxy). The proxy forwards /api/*
+// to the backend over plain HTTP internally, which avoids mixed-content
+// errors when the frontend is served over HTTPS.
+export const API_BASE_URL = "";
