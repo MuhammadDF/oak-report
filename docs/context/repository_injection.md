@@ -32,6 +32,27 @@ Used for scan/search/library flows.
   - `backend/services/scan_service.py` -> `get_scan_catalog_repository()`
 - The factory stores these in module globals (`_search_repo`, `_library_repo`, `_scan_catalog_repo`) and reuses them.
 
+### "module-level instance"
+
+A module-level instance is an object saved in a top-level variable in a Python file and reused later.
+
+- In this project, variables like `_search_repo` are defined once at file scope in `backend/repositories/factory.py`.
+- On first call, `get_search_repository()` creates and stores the object.
+- On later calls, it returns the same stored object.
+
+This is singleton-like behavior per Python process (not globally across all processes).
+
+## Why keep a factory at all?
+
+The factory mainly helps with wiring and consistency:
+
+- Centralized provider selection: one place maps `DATA_PROVIDER` to concrete classes.
+- Centralized construction rules: one place enforces requirements like "session required".
+- Cleaner service/route code: callers request an interface and avoid direct class construction details.
+- Easier swapping in tests or future implementations: update wiring in one file, not many call sites.
+
+Tradeoff: this adds an extra indirection layer, which can feel unnecessary if there is only one implementation and no switching need.
+
 ## Provider Selection
 
 Provider selection is environment-driven:
