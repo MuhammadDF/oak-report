@@ -10,23 +10,14 @@ export type PricePoint = {
 };
 
 export type ScanResult = {
-  scan_id: string;
   processed_at: string;
   card: {
-    card_id: string;
     name: string;
-    supertype: string;
-    set_name?: string | null;
     card_number?: string | null;
-    set_size?: number | null;
-    rarity?: string | null;
-    types: string[];
-    is_holo?: boolean | null;
-    image_url?: string | null;
+    language?: string | null;
   };
-  condition: {
-    condition_label: string;
-  };
+  image_url?: string | null;
+  set_name?: string | null;
   pricing: {
     currency: string;
     estimated_market_value: number;
