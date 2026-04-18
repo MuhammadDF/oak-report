@@ -101,6 +101,52 @@ This launches:
 
 The backend image uses `uv` and `pyproject.toml` for Python dependency management.
 
+### Environment precedence and DB switching
+
+When using Docker Compose, variable precedence matters:
+
+1. Exported shell variables
+2. `.env` file values
+3. Defaults in `docker-compose.yml`
+
+That means exported `DB_*` or `APP_DATABASE_URL` values can override your `.env` and make the backend point at a different database than expected.
+
+Use this check from repo root before startup:
+
+```bash
+env | grep -E '^(APP_DATABASE_URL|DB_NAME|DB_USER|DB_PASSWORD|DB_HOST|DB_PORT)='
+```
+
+If you want Compose to use `.env` values in your current shell session, unset the exported overrides:
+
+```bash
+unset APP_DATABASE_URL DB_NAME DB_USER DB_PASSWORD DB_HOST DB_PORT
+```
+
+You can also do a one-off run without changing shell state:
+
+```bash
+env -u APP_DATABASE_URL -u DB_NAME -u DB_USER -u DB_PASSWORD -u DB_HOST -u DB_PORT docker compose up --build
+```
+
+Quick switching patterns:
+
+1. Stack Postgres: set `APP_DATABASE_URL=` and use `DB_HOST=postgres`, `DB_PORT=5432` in `.env`.
+2. External Postgres: set `APP_DATABASE_URL` to full external URL in `.env`.
+
+`DATABASE_URL` note:
+
+1. In Docker Compose runs, backend `DATABASE_URL` is populated from `APP_DATABASE_URL` in `docker-compose.yml`.
+2. In local non-compose backend runs (`uv run ...`), `DATABASE_URL` is read directly by backend settings.
+3. Alembic migrations read `DATABASE_URL` (or fall back to `POSTGRES_*`) from process environment.
+4. If `APP_DATABASE_URL` is empty in Compose, backend and Alembic both fall back to `POSTGRES_*` values.
+
+To verify what backend will actually receive:
+
+```bash
+docker compose config | sed -n '1,180p'
+```
+
 ## Dev Container
 
 This repo also includes a VS Code dev container in [.devcontainer/devcontainer.json](/Users/muhammadfouly/COMP523/pokemon/.devcontainer/devcontainer.json).
