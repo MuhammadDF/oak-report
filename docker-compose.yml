@@ -1,17 +1,48 @@
 services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pokemon}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-pokemon}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build:
       context: .
       dockerfile: backend.Dockerfile
+    command: >-
+      sh -c "uv run alembic upgrade head && uv run uvicorn backend.main:app --host 0.0.0.0 --port 8000"
     environment:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       JWT_SECRET: ${JWT_SECRET}
-      DATA_PROVIDER: ${DATA_PROVIDER:-mock}
+      DATA_PROVIDER: ${DATA_PROVIDER:-postgres}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-pokemon}
+      POSTGRES_DB: ${POSTGRES_DB:-pokemon}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
     ports:
       - "8000:8000"
     volumes:
       - ${HOST_WORKSPACE_FOLDER:-.}/backend:/app/backend
       - ${HOST_WORKSPACE_FOLDER:-.}/pyproject.toml:/app/pyproject.toml:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/alembic:/app/alembic
+      - ${HOST_WORKSPACE_FOLDER:-.}/alembic.ini:/app/alembic.ini:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/data:/app/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
@@ -33,3 +64,4 @@ services:
 
 volumes:
   frontend_node_modules:
+  postgres_data:

@@ -14,8 +14,10 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
-from ..repositories.factory import get_collection_repository
-from ..repositories.collection_repository import CollectionItemRecord
+from ..repositories.collection_repository import (
+	CollectionItemRecord,
+	CollectionRepository,
+)
 
 
 class CollectionCardModel(BaseModel):
@@ -81,10 +83,12 @@ def _to_summary(owner_id: str, items: list[CollectionItemRecord]) -> CollectionS
 	)
 
 
-async def get_collection_for_user(owner_id: str) -> CollectionSummary:
+async def get_collection_for_user(
+	owner_id: str,
+	repository: CollectionRepository,
+) -> CollectionSummary:
 	"""Return collection data for the authenticated user."""
 
-	repository = get_collection_repository()
 	record = await repository.get_collection(owner_id)
 	return _to_summary(record.owner_id, record.items)
 
@@ -92,6 +96,7 @@ async def get_collection_for_user(owner_id: str) -> CollectionSummary:
 async def add_scan_to_collection(
 	owner_id: str,
 	payload: AddCollectionItemInput,
+	repository: CollectionRepository,
 ) -> AddToCollectionResult:
 	"""Add or merge a collection card based on a scan/search action."""
 
@@ -109,7 +114,6 @@ async def add_scan_to_collection(
 		quantity=1,
 	)
 
-	repository = get_collection_repository()
 	record = await repository.add_item(owner_id, item)
 	return AddToCollectionResult(
 		owner_id=record.owner_id,
@@ -122,17 +126,20 @@ async def update_collection_quantity(
 	owner_id: str,
 	item_id: str,
 	quantity: int,
+	repository: CollectionRepository,
 ) -> CollectionSummary:
 	"""Update quantity for a collection card and return refreshed summary."""
 
-	repository = get_collection_repository()
 	record = await repository.update_quantity(owner_id, item_id, quantity)
 	return _to_summary(record.owner_id, record.items)
 
 
-async def remove_collection_item(owner_id: str, item_id: str) -> CollectionSummary:
+async def remove_collection_item(
+	owner_id: str,
+	item_id: str,
+	repository: CollectionRepository,
+) -> CollectionSummary:
 	"""Remove a collection card and return refreshed summary."""
 
-	repository = get_collection_repository()
 	record = await repository.remove_item(owner_id, item_id)
 	return _to_summary(record.owner_id, record.items)

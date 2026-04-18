@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+
+from .db.config import get_database_settings
+from .db.session import SessionLocal
 from .api import (
     admin_routes,
     auth_routes,
@@ -10,6 +14,18 @@ from .api import (
 )
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def verify_database_connection() -> None:
+    """Fail fast on startup if postgres provider cannot reach the database."""
+
+    settings = get_database_settings()
+    if settings.data_provider != "postgres":
+        return
+
+    async with SessionLocal() as session:
+        await session.exec(text("SELECT 1"))
 
 app.add_middleware(
     CORSMiddleware,

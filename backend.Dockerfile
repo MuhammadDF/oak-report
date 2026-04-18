@@ -7,10 +7,13 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 COPY pyproject.toml ./
+COPY alembic.ini ./
 
 RUN uv sync --no-dev
 
 COPY backend ./backend
+COPY alembic ./alembic
+COPY data ./data
 
 EXPOSE 8000
 

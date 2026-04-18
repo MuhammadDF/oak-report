@@ -31,7 +31,7 @@ const apiCollectionRepository: CollectionRepository = {
       return [];
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/collection`, {
+    const response = await fetch(`${API_BASE_URL}/api/collection/`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },

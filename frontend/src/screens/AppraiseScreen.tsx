@@ -9,12 +9,12 @@ import { CardSearchResult, ScanResult } from "../types/app";
 
 type AppraiseScreenProps = {
 	authToken: string | null;
-	onCollectionChanged?: () => void;
+	onCollectionAdded?: () => void;
 };
 
 export function AppraiseScreen({
 	authToken,
-	onCollectionChanged,
+	onCollectionAdded,
 }: AppraiseScreenProps) {
 	const {
 		error,
@@ -165,7 +165,7 @@ export function AppraiseScreen({
 										// Don't show the scanned image preview for search results
 										// since we never captured a physical card image.
 										authToken={authToken}
-										onCollectionAdded={onCollectionChanged}
+										onCollectionAdded={onCollectionAdded}
 										reportPreviewUrl={searchAppraisal ? null : reportPreviewUrl}
 										result={derivedResult}
 									/>

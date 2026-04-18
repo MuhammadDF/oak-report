@@ -3,40 +3,41 @@
 from __future__ import annotations
 
 import os
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from .collection_repository import CollectionRepository, InMemoryCollectionRepository
+from .collection_repository import (
+    CollectionRepository,
+    PostgresCollectionRepository,
+)
 from .library_repository import LibraryRepository, MockLibraryRepository
 from .search_repository import MockSearchRepository, SearchRepository
 from .scan_catalog_repository import MockScanCatalogRepository, ScanCatalogRepository
+from .user_repository import (
+    PostgresUserRepository,
+    UserRepository,
+)
 
 _collection_repo: CollectionRepository | None = None
 _library_repo: LibraryRepository | None = None
 _search_repo: SearchRepository | None = None
 _scan_catalog_repo: ScanCatalogRepository | None = None
+_user_repo: UserRepository | None = None
 
 
 def _provider_name() -> str:
-    return os.getenv("DATA_PROVIDER", "mock").strip().lower()
+    return os.getenv("DATA_PROVIDER", "postgres").strip().lower()
 
 
-def get_collection_repository() -> CollectionRepository:
-    global _collection_repo
-
-    if _collection_repo is not None:
-        return _collection_repo
-
+def get_collection_repository(session: AsyncSession | None = None) -> CollectionRepository:
     provider = _provider_name()
-    if provider == "mock":
-        _collection_repo = InMemoryCollectionRepository()
-        return _collection_repo
 
-    if provider == "firestore":
-        raise NotImplementedError(
-            "Firestore collection repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_collection_repository()."
-        )
+    if provider != "postgres":
+        raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'. Collection data must come from Postgres.")
 
-    raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
+    if session is None:
+        raise ValueError("A database session is required for postgres collection repository.")
+
+    return PostgresCollectionRepository(session)
 
 
 def get_search_repository() -> SearchRepository:
@@ -50,11 +51,9 @@ def get_search_repository() -> SearchRepository:
         _search_repo = MockSearchRepository()
         return _search_repo
 
-    if provider == "firestore":
-        raise NotImplementedError(
-            "Firestore search repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_search_repository()."
-        )
+    if provider == "postgres":
+        _search_repo = MockSearchRepository()
+        return _search_repo
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
 
@@ -70,11 +69,9 @@ def get_library_repository() -> LibraryRepository:
         _library_repo = MockLibraryRepository()
         return _library_repo
 
-    if provider == "firestore":
-        raise NotImplementedError(
-            "Firestore library repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_library_repository()."
-        )
+    if provider == "postgres":
+        _library_repo = MockLibraryRepository()
+        return _library_repo
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
 
@@ -90,10 +87,20 @@ def get_scan_catalog_repository() -> ScanCatalogRepository:
         _scan_catalog_repo = MockScanCatalogRepository()
         return _scan_catalog_repo
 
-    if provider == "firestore":
-        raise NotImplementedError(
-            "Firestore scan-catalog repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_scan_catalog_repository()."
-        )
+    if provider == "postgres":
+        _scan_catalog_repo = MockScanCatalogRepository()
+        return _scan_catalog_repo
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
+
+
+def get_user_repository(session: AsyncSession | None = None) -> UserRepository:
+    provider = _provider_name()
+
+    if provider != "postgres":
+        raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'. User data must come from Postgres.")
+
+    if session is None:
+        raise ValueError("A database session is required for postgres user repository.")
+
+    return PostgresUserRepository(session)

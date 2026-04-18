@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 
 from ..auth.dependencies import get_current_user
+from ..db.dependencies import UserRepositoryDI
 from ..auth.google_auth import verify_google_id_token
 from ..auth.jwt_service import AuthTokenPayload, issue_auth_token
 from ..services.auth_service import get_user_by_id, upsert_google_user
@@ -31,7 +32,10 @@ class AuthTokenResponse(BaseModel):
     response_model=AuthTokenResponse,
     summary="Exchange a Google ID token for an application bearer token",
 )
-async def authenticate_with_google(payload: GoogleAuthRequest) -> AuthTokenResponse:
+async def authenticate_with_google(
+    payload: GoogleAuthRequest,
+    user_repository: UserRepositoryDI,
+) -> AuthTokenResponse:
     try:
         identity = verify_google_id_token(payload.id_token)
     except ValueError as error:
@@ -40,7 +44,7 @@ async def authenticate_with_google(payload: GoogleAuthRequest) -> AuthTokenRespo
             detail=str(error),
         ) from error
 
-    user = upsert_google_user(identity)
+    user = await upsert_google_user(identity, user_repository)
     access_token = issue_auth_token(
         user_id=user.id,
         email=user.email,
@@ -61,9 +65,10 @@ async def authenticate_with_google(payload: GoogleAuthRequest) -> AuthTokenRespo
 
 @router.get("/me", response_model=AuthenticatedUser, summary="Get current authenticated user")
 async def get_current_user_profile(
+    user_repository: UserRepositoryDI,
     current_user: AuthTokenPayload = Depends(get_current_user),
 ) -> AuthenticatedUser:
-    user = get_user_by_id(current_user.sub)
+    user = await get_user_by_id(current_user.sub, user_repository)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -104,7 +104,7 @@ export default function App() {
         setCollectionCards(cards);
       })
       .catch(() => {
-        setCollectionCards([]);
+        return;
       });
   }
 
@@ -133,7 +133,7 @@ export default function App() {
       {screen === "appraise" ? (
         <AppraiseScreen
           authToken={authToken}
-          onCollectionChanged={handleCollectionChanged}
+          onCollectionAdded={handleCollectionChanged}
         />
       ) : null}
       {screen === "collection" && authUser ? (
