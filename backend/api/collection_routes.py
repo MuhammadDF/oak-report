@@ -19,102 +19,104 @@ from ..auth.dependencies import get_current_user
 from ..db.dependencies import CollectionRepositoryDI
 from ..auth.jwt_service import AuthTokenPayload
 from ..services.collection_service import (
-	AddCollectionItemInput,
-	AddToCollectionResult,
-	CollectionSummary,
-	add_scan_to_collection,
-	get_collection_for_user,
-	remove_collection_item,
-	update_collection_quantity,
+    AddCollectionItemInput,
+    AddToCollectionResult,
+    CollectionSummary,
+    add_scan_to_collection,
+    get_collection_for_user,
+    remove_collection_item,
+    update_collection_quantity,
 )
 
 router = APIRouter()
 
 
 class AddScanRequest(BaseModel):
-	name: str
-	set: str
-	number: str
-	price: float = Field(ge=0.0)
-	image: str | None = None
-	grade: str | None = None
-	language: str | None = None
+    name: str
+    set: str
+    number: str
+    price: float = Field(ge=0.0)
+    image: str | None = None
+    grade: str | None = None
+    language: str | None = None
 
 
 class UpdateQuantityRequest(BaseModel):
-	quantity: int = Field(ge=0)
+    quantity: int = Field(ge=0)
 
 
 @router.get(
-	"/",
-	response_model=CollectionSummary,
-	summary="Get the current user's collection",
+    "/",
+    response_model=CollectionSummary,
+    summary="Get the current user's collection",
 )
 async def get_collection(
-	repository: CollectionRepositoryDI,
-	current_user: AuthTokenPayload = Depends(get_current_user),
+        repository: CollectionRepositoryDI,
+        current_user: AuthTokenPayload = Depends(get_current_user),
 ) -> CollectionSummary:
-	return await get_collection_for_user(current_user.sub, repository)
+    return await get_collection_for_user(current_user.sub, repository)
 
 
 @router.post(
-	"/add",
-	response_model=AddToCollectionResult,
-	summary="Add a scan result to the current user's collection",
+    "/add",
+    response_model=AddToCollectionResult,
+    summary="Add a scan result to the current user's collection",
 )
 async def add_to_collection(
-	payload: AddScanRequest,
-	repository: CollectionRepositoryDI,
-	current_user: AuthTokenPayload = Depends(get_current_user),
+        payload: AddScanRequest,
+        repository: CollectionRepositoryDI,
+        current_user: AuthTokenPayload = Depends(get_current_user),
 ) -> AddToCollectionResult:
-	return await add_scan_to_collection(
-		current_user.sub,
-		AddCollectionItemInput(
-			name=payload.name,
-			set=payload.set,
-			number=payload.number,
-			price=payload.price,
-			image=payload.image,
-			grade=payload.grade,
-			language=payload.language,
-		),
-		repository,
-	)
+    return await add_scan_to_collection(
+        current_user.sub,
+        AddCollectionItemInput(
+            name=payload.name,
+            set=payload.set,
+            number=payload.number,
+            price=payload.price,
+            image=payload.image,
+            grade=payload.grade,
+            language=payload.language,
+        ),
+        repository,
+    )
 
 
 @router.patch(
-	"/{item_id}/quantity",
-	response_model=CollectionSummary,
-	summary="Update a collection card quantity",
+    "/{item_id}/quantity",
+    response_model=CollectionSummary,
+    summary="Update a collection card quantity",
 )
 async def update_item_quantity(
-	item_id: str,
-	payload: UpdateQuantityRequest,
-	repository: CollectionRepositoryDI,
-	current_user: AuthTokenPayload = Depends(get_current_user),
+        item_id: str,
+        payload: UpdateQuantityRequest,
+        repository: CollectionRepositoryDI,
+        current_user: AuthTokenPayload = Depends(get_current_user),
 ) -> CollectionSummary:
-	try:
-		return await update_collection_quantity(
-			current_user.sub,
-			item_id,
-			payload.quantity,
-			repository,
-		)
-	except KeyError as caught_error:
-		raise HTTPException(status_code=404, detail="Collection item not found.") from caught_error
+    try:
+        return await update_collection_quantity(
+            current_user.sub,
+            item_id,
+            payload.quantity,
+            repository,
+        )
+    except KeyError as caught_error:
+        raise HTTPException(
+            status_code=404, detail="Collection item not found.") from caught_error
 
 
 @router.delete(
-	"/{item_id}",
-	response_model=CollectionSummary,
-	summary="Remove a collection card",
+    "/{item_id}",
+    response_model=CollectionSummary,
+    summary="Remove a collection card",
 )
 async def delete_collection_item(
-	item_id: str,
-	repository: CollectionRepositoryDI,
-	current_user: AuthTokenPayload = Depends(get_current_user),
+        item_id: str,
+        repository: CollectionRepositoryDI,
+        current_user: AuthTokenPayload = Depends(get_current_user),
 ) -> CollectionSummary:
-	try:
-		return await remove_collection_item(current_user.sub, item_id, repository)
-	except KeyError as caught_error:
-		raise HTTPException(status_code=404, detail="Collection item not found.") from caught_error
+    try:
+        return await remove_collection_item(current_user.sub, item_id, repository)
+    except KeyError as caught_error:
+        raise HTTPException(
+            status_code=404, detail="Collection item not found.") from caught_error
