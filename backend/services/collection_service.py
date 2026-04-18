@@ -12,6 +12,8 @@ The implementation will handle data validation, repository orchestration, and ev
 """
 from __future__ import annotations
 
+import re
+
 from pydantic import BaseModel
 
 from ..repositories.collection_repository import (
@@ -39,13 +41,13 @@ class CollectionSummary(BaseModel):
 
 
 class AddCollectionItemInput(BaseModel):
-	scan_id: str
 	name: str
 	set: str
 	number: str
 	price: float
 	image: str | None = None
 	grade: str | None = None
+	language: str | None = None
 
 
 class AddToCollectionResult(BaseModel):
@@ -59,6 +61,17 @@ def _derive_trend(item_id: str) -> tuple[str, float]:
 	trend = "up" if checksum % 2 == 0 else "down"
 	trend_pct = round(((checksum % 120) + 5) / 10, 1)
 	return trend, trend_pct
+
+
+def _slugify(value: str) -> str:
+	return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+
+
+def _build_item_id(payload: AddCollectionItemInput) -> str:
+	base_parts = [payload.name, payload.set, payload.number]
+	if payload.language:
+		base_parts.append(payload.language)
+	return "card-" + "-".join(_slugify(part or "unknown") for part in base_parts)
 
 
 def _to_card_model(item: CollectionItemRecord) -> CollectionCardModel:
@@ -100,9 +113,10 @@ async def add_scan_to_collection(
 ) -> AddToCollectionResult:
 	"""Add or merge a collection card based on a scan/search action."""
 
-	trend, trend_pct = _derive_trend(payload.scan_id)
+	item_id = _build_item_id(payload)
+	trend, trend_pct = _derive_trend(item_id)
 	item = CollectionItemRecord(
-		id=payload.scan_id,
+		id=item_id,
 		name=payload.name,
 		set=payload.set,
 		number=payload.number,

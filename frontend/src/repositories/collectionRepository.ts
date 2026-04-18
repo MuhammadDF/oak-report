@@ -2,13 +2,13 @@ import { API_BASE_URL } from "../constants/api";
 import { CollectionCard } from "../types/app";
 
 export type AddCollectionInput = {
-  scan_id: string;
   name: string;
   set: string;
   number: string;
   price: number;
   image?: string | null;
   grade?: string | null;
+  language?: string | null;
 };
 
 export type CollectionRepository = {

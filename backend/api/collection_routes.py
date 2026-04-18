@@ -32,13 +32,13 @@ router = APIRouter()
 
 
 class AddScanRequest(BaseModel):
-	scan_id: str
 	name: str
 	set: str
 	number: str
 	price: float = Field(ge=0.0)
 	image: str | None = None
 	grade: str | None = None
+	language: str | None = None
 
 
 class UpdateQuantityRequest(BaseModel):
@@ -70,13 +70,13 @@ async def add_to_collection(
 	return await add_scan_to_collection(
 		current_user.sub,
 		AddCollectionItemInput(
-			scan_id=payload.scan_id,
 			name=payload.name,
 			set=payload.set,
 			number=payload.number,
 			price=payload.price,
 			image=payload.image,
 			grade=payload.grade,
+			language=payload.language,
 		),
 		repository,
 	)

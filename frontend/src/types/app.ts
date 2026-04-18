@@ -10,7 +10,6 @@ export type PricePoint = {
 };
 
 export type ScanResult = {
-  scan_id: string;
   processed_at: string;
   card: {
     name: string;

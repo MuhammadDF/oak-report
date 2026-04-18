@@ -192,7 +192,6 @@ export function AppraiseScreen({
 // Pricing is limited to the single lowest listing available from the search payload.
 function createSearchAppraisal(card: CardSearchResult): ScanResult {
 	return {
-		scan_id: `search-${card.id}`,
 		processed_at: new Date().toISOString(),
 		card: {
 			name: card.name,
