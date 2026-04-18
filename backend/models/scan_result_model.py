@@ -1,11 +1,10 @@
 """Response models for scan and appraisal workflows."""
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel, Field, HttpUrl
 
-from pydantic import BaseModel, Field
-
-from .card_model import CardCondition, CardIdentity
+from .card_model import CardIdentity
 
 
 class PricePoint(BaseModel):
@@ -28,8 +27,8 @@ class PricingSnapshot(BaseModel):
 class ScanResultModel(BaseModel):
     """Complete appraisal payload for the scan workflow."""
 
-    scan_id: str
     processed_at: datetime
     card: CardIdentity
-    condition: CardCondition
     pricing: PricingSnapshot
+    image_url: Optional[HttpUrl] = HttpUrl("https://images.pokemontcg.io/sv03/203.png")
+    set_name: Optional[str] = None

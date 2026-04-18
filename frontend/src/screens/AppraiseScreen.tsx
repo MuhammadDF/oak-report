@@ -195,20 +195,12 @@ function createSearchAppraisal(card: CardSearchResult): ScanResult {
 		scan_id: `search-${card.id}`,
 		processed_at: new Date().toISOString(),
 		card: {
-			card_id: card.id,
 			name: card.name,
-			supertype: "Pokémon",
-			set_name: card.set,
 			card_number: null,
-			set_size: null,
-			rarity: card.rarity,
-			types: card.type ? [card.type] : [],
-			is_holo: null,
-			image_url: null,
+			language: null,
 		},
-		condition: {
-			condition_label: "Reference catalog result",
-		},
+		set_name: card.set,
+		image_url: null,
 		pricing: {
 			currency: "USD",
 			estimated_market_value: card.lowest_listing,

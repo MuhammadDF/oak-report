@@ -47,14 +47,19 @@ async def get_pricing_snapshot(card: CardIdentity) -> PricingSnapshot:
 
 def _base_price_for_card(card: CardIdentity) -> float:
     name_score = sum(ord(character) for character in card.name)
-    rarity_multiplier = {
-        "Common": 1.0,
-        "Uncommon": 1.4,
-        "Rare": 2.2,
-        "Ultra Rare": 4.8,
-    }.get(card.rarity or "", 1.3)
-    holo_bonus = 6.5 if card.is_holo else 0.0
-    return ((name_score % 22) + 4) * rarity_multiplier + holo_bonus
+    number_score = sum(ord(character)
+                       for character in (card.card_number or "")) % 7
+    language_multiplier = {
+        "english": 1.15,
+        "japanese": 1.35,
+        "korean": 1.2,
+        "german": 1.1,
+        "french": 1.1,
+        "spanish": 1.1,
+        "italian": 1.1,
+        "portuguese": 1.1,
+    }.get((card.language or "").lower(), 1.0)
+    return (((name_score % 22) + 4) + number_score) * language_multiplier
 
 
 def get_all_cards():
@@ -66,6 +71,7 @@ def get_all_cards():
     else:
         raise Exception(f"Failed to fetch card data: {response.status_code}")
 
+
 def get_card_image(ID):
     """Fetches card image and returns it as a DataFrame."""
     response = requests.get(
@@ -74,4 +80,3 @@ def get_card_image(ID):
         return response.json()
     else:
         raise Exception(f"Failed to fetch card data: {response.status_code}")
-    
