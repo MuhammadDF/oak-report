@@ -39,6 +39,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       POSTGRES_HOST: ${DB_HOST:?DB_HOST is required}
       POSTGRES_PORT: ${DB_PORT:?DB_PORT is required}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     ports:
       - "8000:8000"
     volumes:

@@ -33,13 +33,12 @@ export function ResultsColumn({
 
     try {
       await collectionRepository.addScanToCollection(authToken, {
-        scan_id: result.scan_id,
         name: result.card.name,
-        set: result.card.set_name ?? "Unknown Set",
+        set: result.set_name ?? "Unknown Set",
         number: result.card.card_number ?? "--",
         price: result.pricing.estimated_market_value,
-        image: result.card.image_url ?? reportPreviewUrl,
-        grade: result.condition.condition_label,
+        image: result.image_url ?? reportPreviewUrl,
+        language: result.card.language,
       });
 
       setCollectionStatus("success");

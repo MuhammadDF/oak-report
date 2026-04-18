@@ -8,7 +8,12 @@ from fastapi import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from ..repositories.collection_repository import CollectionRepository
-from ..repositories.factory import get_collection_repository, get_user_repository
+from ..repositories.factory import (
+    get_collection_repository,
+    get_pricing_catalog_repository,
+    get_user_repository,
+)
+from ..repositories.pricing_catalog_repository import PricingCatalogRepository
 from ..repositories.user_repository import UserRepository
 from .session import get_session
 
@@ -32,4 +37,16 @@ def get_user_repository_dependency(session: SessionDI) -> UserRepository:
 UserRepositoryDI: TypeAlias = Annotated[
     UserRepository,
     Depends(get_user_repository_dependency),
+]
+
+
+def get_pricing_catalog_repository_dependency(
+    session: SessionDI,
+) -> PricingCatalogRepository:
+    return get_pricing_catalog_repository(session)
+
+
+PricingCatalogRepositoryDI: TypeAlias = Annotated[
+    PricingCatalogRepository,
+    Depends(get_pricing_catalog_repository_dependency),
 ]
