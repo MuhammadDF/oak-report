@@ -69,16 +69,16 @@ The scan flow is intentionally mocked. It returns:
 - estimated market value
 - sample pricing sources
 
-This gives you a stable contract to build around before wiring in Vertex AI, Firestore, and live market providers.
+This gives you a stable contract to build around before wiring in Vertex AI, Postgres, and live market providers.
 
-## Data provider boundaries (Firestore-ready)
+## Data provider boundaries (Postgres-ready)
 
-Mock-backed data now sits behind repository adapters so Firestore can be introduced
+Mock-backed data now sits behind repository adapters so Postgres can be introduced
 without changing routes or screens:
 
 - Backend provider switch:
   - `DATA_PROVIDER=mock` (default)
-  - `DATA_PROVIDER=firestore` (placeholder, adapter not implemented yet)
+  - `DATA_PROVIDER=postgres` (placeholder, adapter not implemented yet)
 - Backend repository boundaries:
   - `backend/repositories/collection_repository.py`
   - `backend/repositories/search_repository.py`
@@ -91,5 +91,5 @@ without changing routes or screens:
   - `frontend/src/repositories/collectionRepository.ts`
   - `frontend/src/repositories/libraryRepository.ts`
 
-To migrate to Firestore later, add Firestore repository implementations and register
+To migrate to Postgres later, add Postgres repository implementations and register
 them in the provider factories while keeping existing service and UI call sites unchanged.

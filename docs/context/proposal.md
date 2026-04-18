@@ -51,7 +51,7 @@ These are the three "Happy Paths" that define the success of the MVP:
 | Frontend | React (Vite) + Tailwind CSS + Typescript |
 | Language | Python (Backend), Typescript (Frontend) |
 
-Database: Firestore  
+Database: Postgres  
 
 Agent Framework: Google ADK - https://github.com/google/adk-python  
 
@@ -59,7 +59,7 @@ AI Models: Gemini 2./3 Flash
 
 Compute: GCP Cloud Run Functions (Gen 2)  
 
-Memory: Vertex AI Memory Bank (Firestore)  
+Memory: Vertex AI Memory Bank (Postgres-backed)  
 
 Grounding: Google Search Tool  
 

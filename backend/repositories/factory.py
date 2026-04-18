@@ -30,10 +30,10 @@ def get_collection_repository() -> CollectionRepository:
         _collection_repo = InMemoryCollectionRepository()
         return _collection_repo
 
-    if provider == "firestore":
+    if provider == "postgres":
         raise NotImplementedError(
-            "Firestore collection repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_collection_repository()."
+            "Postgres collection repository not implemented yet. "
+            "Add a Postgres adapter and wire it in factory.get_collection_repository()."
         )
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
@@ -50,10 +50,10 @@ def get_search_repository() -> SearchRepository:
         _search_repo = MockSearchRepository()
         return _search_repo
 
-    if provider == "firestore":
+    if provider == "postgres":
         raise NotImplementedError(
-            "Firestore search repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_search_repository()."
+            "Postgres search repository not implemented yet. "
+            "Add a Postgres adapter and wire it in factory.get_search_repository()."
         )
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
@@ -70,10 +70,10 @@ def get_library_repository() -> LibraryRepository:
         _library_repo = MockLibraryRepository()
         return _library_repo
 
-    if provider == "firestore":
+    if provider == "postgres":
         raise NotImplementedError(
-            "Firestore library repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_library_repository()."
+            "Postgres library repository not implemented yet. "
+            "Add a Postgres adapter and wire it in factory.get_library_repository()."
         )
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
@@ -90,10 +90,10 @@ def get_scan_catalog_repository() -> ScanCatalogRepository:
         _scan_catalog_repo = MockScanCatalogRepository()
         return _scan_catalog_repo
 
-    if provider == "firestore":
+    if provider == "postgres":
         raise NotImplementedError(
-            "Firestore scan-catalog repository not implemented yet. "
-            "Add a Firestore adapter and wire it in factory.get_scan_catalog_repository()."
+            "Postgres scan-catalog repository not implemented yet. "
+            "Add a Postgres adapter and wire it in factory.get_scan_catalog_repository()."
         )
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")

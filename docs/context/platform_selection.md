@@ -47,7 +47,7 @@ Note: Most of these decisions were also made to prioritize seamless integration 
 
 ● AI/Inference: Gemini 2.0/3 Flash (Vertex AI). Leveraged for its "Visual Reasoning" capabilities and lightning-fast response times.  
 
-● Database: Firestore. Provides a real-time "Memory Bank" to track price trends and card scan history.  
+● Database: Postgres. Provides a relational "Memory Bank" to track price trends and card scan history.  
 
 ● Hosting: GCP Cloud Run. Offers a scalable, serverless environment that ensures the app remains operational after the project handoff without ongoing maintenance overhead.  
 
