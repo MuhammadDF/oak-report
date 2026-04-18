@@ -263,7 +263,7 @@ img {
 .report-copy,
 .report-context,
 .empty-panel p,
-.settings-card p,
+.profile-card p,
 .library-row p,
 .collection-card p {
   color: var(--text-muted);
@@ -273,6 +273,85 @@ img {
 .screen-header__copy {
   max-width: 64ch;
   margin: 12px 0 0;
+}
+
+.auth-screen {
+  max-width: 760px;
+  display: grid;
+  gap: 18px;
+  padding-top: 6px;
+}
+
+.auth-screen .screen-header {
+  margin-bottom: 4px;
+}
+
+.auth-screen .screen-header h1 {
+  max-width: 12ch;
+  font-size: clamp(2.3rem, 4.8vw, 4.05rem);
+}
+
+.auth-screen .screen-header__copy {
+  max-width: 56ch;
+  margin-top: 14px;
+}
+
+.auth-panel {
+  display: grid;
+  gap: 18px;
+  width: min(560px, 100%);
+  padding: 30px;
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at right top, rgba(245, 158, 11, 0.14), transparent 56%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    var(--bg-elevated);
+}
+
+.theme-light .auth-panel {
+  background:
+    radial-gradient(circle at right top, rgba(245, 158, 11, 0.18), transparent 60%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(250, 248, 242, 0.9));
+}
+
+.auth-panel__copy {
+  display: grid;
+  gap: 10px;
+}
+
+.auth-panel h2 {
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  line-height: 1.08;
+}
+
+.auth-panel .report-copy {
+  margin: 0;
+  max-width: 48ch;
+}
+
+.auth-button-row {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.google-button-slot {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.auth-status {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.auth-error {
+  margin: 0;
+  color: var(--danger);
 }
 
 .report-context {
@@ -302,6 +381,140 @@ img {
   background: var(--success);
 }
 
+.appraise-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.appraise-tab {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.appraise-tab:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.appraise-tab--active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.upload-panel--live-camera {
+  padding: 20px;
+}
+
+.live-camera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Wrapper that stacks the video, card-frame overlay, and hint text */
+.live-camera__viewfinder {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.live-camera__video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+/* Card alignment frame — absolutely covers the viewfinder.
+   The inner rectangle is transparent; box-shadow creates the dark surround. */
+.card-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The actual card-shaped cutout, sized to a Pokémon card's 5:7 aspect ratio.
+   box-shadow spreads outward to darken everything outside this rectangle.
+   Corners are children of this element so they always align perfectly. */
+.card-frame__cutout {
+  position: relative;
+  width: 80%;
+  aspect-ratio: 5/7;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  border-radius: 6px;
+}
+
+/* Shared corner bracket styles — positioned relative to the cutout */
+.card-frame__corner {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-color: var(--success);
+  border-style: solid;
+  border-width: 0;
+}
+
+.card-frame__corner--tl {
+  top: -2px;
+  left: -2px;
+  border-top-width: 3px;
+  border-left-width: 3px;
+  border-top-left-radius: 4px;
+}
+
+.card-frame__corner--tr {
+  top: -2px;
+  right: -2px;
+  border-top-width: 3px;
+  border-right-width: 3px;
+  border-top-right-radius: 4px;
+}
+
+.card-frame__corner--bl {
+  bottom: -2px;
+  left: -2px;
+  border-bottom-width: 3px;
+  border-left-width: 3px;
+  border-bottom-left-radius: 4px;
+}
+
+.card-frame__corner--br {
+  bottom: -2px;
+  right: -2px;
+  border-bottom-width: 3px;
+  border-right-width: 3px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Hint text overlaid at the bottom of the viewfinder */
+.live-camera__hint {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
 .appraise-layout {
   display: grid;
   grid-template-columns: minmax(320px, 760px);
@@ -329,7 +542,7 @@ img {
 .report-panel,
 .empty-panel,
 .library-panel,
-.settings-card,
+.profile-card,
 .stat-panel {
   padding: 18px;
 }
@@ -792,6 +1005,55 @@ img {
   transform: translateY(-1px);
 }
 
+.signout-button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.signout-button__icon {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  color: #ef4444;
+}
+
+.signout-button__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.signout-button:hover {
+  color: #ef4444;
+  border-color: rgba(248, 113, 113, 0.62);
+  background: rgba(248, 113, 113, 0.08);
+  transform: translateY(-1px);
+}
+
+.signout-button:focus-visible {
+  outline: 2px solid rgba(248, 113, 113, 0.6);
+  outline-offset: 2px;
+}
+
 .preview-card {
   margin-top: 18px;
   overflow: hidden;
@@ -904,7 +1166,7 @@ img {
 .report-panel__header,
 .collection-card__meta,
 .library-row,
-.settings-grid,
+.profile-grid,
 .empty-panel__stats {
   display: flex;
 }
@@ -1168,12 +1430,12 @@ img {
 }
 
 .empty-panel h2,
-.settings-card h2 {
+.profile-card h2 {
   margin-top: 0;
 }
 
 .empty-panel__stats,
-.settings-grid {
+.profile-grid {
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -1305,8 +1567,15 @@ img {
   color: var(--accent);
 }
 
-.settings-card {
+.profile-card {
   flex: 1 1 260px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.profile-card .report-copy {
+  margin: 0;
 }
 
 .mobile-nav {
@@ -1348,8 +1617,55 @@ img {
     display: none;
   }
 
-  .screen--appraise {
-    padding: 24px 18px 32px;
+  /* Make the appraise screen fill the viewport on mobile */
+  .content > .screen--appraise {
+    padding: 0;
+  }
+
+  /* Remove the panel border/background so the camera feels native */
+  .upload-panel--live-camera {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  .upload-panel--live-camera .live-camera {
+    align-items: stretch;
+  }
+
+  /* Use viewport height so the viewfinder gets a concrete size.
+     Subtract space for: capture button (~80px) + gap (16px) +
+     search bar (~56px) + gap (16px) + nav bar + content padding */
+  .live-camera__viewfinder {
+    max-width: none;
+    border-radius: 16px;
+    height: calc(100dvh - var(--mobile-nav-height) - 200px);
+  }
+
+  .live-camera .camera-button {
+    padding: 18px;
+    border-radius: 16px;
+    font-size: 1.1rem;
+  }
+
+  .live-camera {
+    gap: 8px;
+  }
+
+  .live-camera .card-search {
+    margin-top: 0;
+  }
+
+  .live-camera__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    object-fit: cover;
   }
 
   .content {
@@ -1365,6 +1681,30 @@ img {
     font-size: 2.2rem;
   }
 
+  .auth-screen {
+    gap: 14px;
+    padding-top: 0;
+  }
+
+  .auth-screen .screen-header h1 {
+    font-size: clamp(1.95rem, 10vw, 2.65rem);
+  }
+
+  .auth-screen .screen-header__copy {
+    margin-top: 10px;
+  }
+
+  .auth-panel {
+    width: 100%;
+    padding: 20px 18px;
+    gap: 14px;
+    border-radius: 24px;
+  }
+
+  .auth-panel h2 {
+    font-size: 1.55rem;
+  }
+
   .status-chip {
     display: none;
   }
@@ -1373,7 +1713,7 @@ img {
   .report-panel,
   .empty-panel,
   .library-panel,
-  .settings-card,
+  .profile-card,
   .stat-panel {
     padding: 16px;
     border-radius: 24px;

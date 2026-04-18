@@ -1,16 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScreenHeader } from "../components/common/ScreenHeader";
 import { LibrarySearch } from "../components/library/LibrarySearch";
 import { LibraryTable } from "../components/library/LibraryTable";
-import { LIBRARY_CARDS } from "../data/mockCards";
+import { getLibraryRepository } from "../repositories/libraryRepository";
+import { LibraryCard } from "../types/app";
+
+const libraryRepository = getLibraryRepository();
 
 export function LibraryScreen() {
   const [search, setSearch] = useState("");
+  const [cards, setCards] = useState<LibraryCard[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCards() {
+      const result = await libraryRepository.listCards();
+      if (!cancelled) {
+        setCards(result);
+      }
+    }
+
+    loadCards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const query = search.trim().toLowerCase();
   const filteredCards = !query
-    ? LIBRARY_CARDS
-    : LIBRARY_CARDS.filter((card) => {
+    ? cards
+    : cards.filter((card) => {
         return (
           card.name.toLowerCase().includes(query) ||
           card.set.toLowerCase().includes(query) ||

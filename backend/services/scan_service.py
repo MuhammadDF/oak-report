@@ -3,64 +3,17 @@
 from datetime import datetime, timezone
 import hashlib
 
-from pydantic import HttpUrl
-from ..models.card_model import CardCondition, CardIdentity
+from ..models.card_model import CardCondition
 from ..models.scan_result_model import ScanResultModel
+from ..repositories.factory import get_scan_catalog_repository
 from .pricing_service import get_pricing_snapshot
-
-_MOCK_CARD_CATALOG = [
-    CardIdentity(
-        card_id="sv03-203",
-        name="Charizard ex",
-        supertype="Pokémon",
-        set_name="Obsidian Flames",
-        card_number="203",
-        set_size=197,
-        rarity="Ultra Rare",
-        types=["Fire"],
-        is_holo=True,
-        promo=False,
-        image_url=HttpUrl(
-            "https://images.pokemontcg.io/sv03/203.png",
-        ),
-    ),
-    CardIdentity(
-        card_id="swsh12pt5gg-44",
-        name="Mewtwo VSTAR",
-        supertype="Pokémon",
-        set_name="Crown Zenith",
-        card_number="GG44",
-        set_size=70,
-        rarity="Ultra Rare",
-        types=["Psychic"],
-        is_holo=True,
-        promo=False,
-        image_url=HttpUrl(
-            "https://images.pokemontcg.io/swsh12pt5gg/GG44.png"
-		),
-    ),
-    CardIdentity(
-        card_id="base1-4",
-        name="Charizard",
-        supertype="Pokémon",
-        set_name="Base Set",
-        card_number="4",
-        set_size=102,
-        rarity="Rare",
-        types=["Fire"],
-        is_holo=True,
-        promo=False,
-        image_url=HttpUrl(
-            "https://images.pokemontcg.io/base1/4.png"
-        ),
-    ),
-]
 
 
 async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
-    """Analyze an uploaded image and return a mocked appraisal payload."""
+    """Analyze an uploaded image and return an appraisal payload."""
 
-    card = _select_card_identity(image_bytes)
+    catalog_repo = get_scan_catalog_repository()
+    card = await catalog_repo.select_card_identity(image_bytes)
     pricing = await get_pricing_snapshot(card)
 
     return ScanResultModel(
@@ -70,13 +23,6 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
         condition=CardCondition(condition_label="Near Mint"),
         pricing=pricing,
     )
-
-
-def _select_card_identity(image_bytes: bytes) -> CardIdentity:
-    if not image_bytes:
-        return _MOCK_CARD_CATALOG[0]
-    index = image_bytes[0] % len(_MOCK_CARD_CATALOG)
-    return _MOCK_CARD_CATALOG[index]
 
 
 def _build_scan_id(image_bytes: bytes) -> str:

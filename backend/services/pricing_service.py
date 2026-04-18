@@ -75,4 +75,3 @@ def get_card_image(ID):
     else:
         raise Exception(f"Failed to fetch card data: {response.status_code}")
     
-print(get_card_image(7569349))
