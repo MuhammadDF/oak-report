@@ -11,6 +11,7 @@
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "postCreateCommand": "uv sync && cd frontend && npm install",
+  "postStartCommand": "/workspaces/${localWorkspaceFolderBasename}/.devcontainer/post-start.sh",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -22,7 +23,8 @@
         "openai.chatgpt",
         "GitHub.copilot-chat",
         "Anthropic.claude-code",
-        "google.geminicodeassist"
+        "google.geminicodeassist",
+        "ms-ossdata.vscode-pgsql"
       ],
       "settings": {
         "python.defaultInterpreterPath": "${localWorkspaceFolder}/.venv/bin/python",
@@ -34,6 +36,13 @@
   "containerEnv": {
     "VITE_API_BASE_URL": "http://localhost:8000",
     "DOCKER_HOST": "unix:///var/run/docker.sock",
-    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+    "HOST_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+    "DATA_PROVIDER": "postgres",
+    "DATABASE_URL": "postgresql+asyncpg://postgres:password@postgres:5432/pokemon",
+    "POSTGRES_HOST": "postgres",
+    "POSTGRES_PORT": "5432",
+    "POSTGRES_DB": "pokemon",
+    "POSTGRES_USER": "postgres",
+    "POSTGRES_PASSWORD": "password"
   }
 }

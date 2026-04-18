@@ -5,6 +5,8 @@ description = "Pokemon TCG appraisal backend for the Oak Report project."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic==1.13.2",
+    "asyncpg==0.29.0",
     "email-validator==2.2.0",
     "fastapi==0.115.12",
     "google-auth==2.39.0",
@@ -14,6 +16,8 @@ dependencies = [
     "python-dotenv==1.0.1",
     "requests==2.32.3",
     "pandas==2.2.3",
+    "SQLAlchemy==2.0.40",
+    "sqlmodel==0.0.22",
     "uvicorn[standard]==0.34.0",
 ]
 
