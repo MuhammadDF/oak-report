@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from ..db.models import CollectionItemTable
+
 
 @dataclass
 class CollectionItemRecord:
@@ -109,3 +114,116 @@ class InMemoryCollectionRepository:
             raise KeyError(item_id)
 
         return record
+
+
+class PostgresCollectionRepository:
+    """Postgres-backed collection adapter."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def get_collection(self, owner_id: str) -> CollectionRecord:
+        statement = (
+            select(CollectionItemTable)
+            .where(CollectionItemTable.owner_id == owner_id)
+            .order_by(CollectionItemTable.name.asc())
+        )
+        rows = (await self._session.exec(statement)).all()
+        return CollectionRecord(
+            owner_id=owner_id,
+            items=[_to_item_record(row) for row in rows],
+        )
+
+    async def add_item(
+        self,
+        owner_id: str,
+        item: CollectionItemRecord,
+    ) -> CollectionRecord:
+        statement = select(CollectionItemTable).where(
+            CollectionItemTable.owner_id == owner_id,
+            CollectionItemTable.card_id == item.id,
+        )
+        existing = (await self._session.exec(statement)).first()
+
+        if existing:
+            existing.quantity += max(1, item.quantity)
+            existing.price = item.price
+            existing.grade = item.grade
+            existing.image = item.image
+            existing.name = item.name
+            existing.set = item.set
+            existing.number = item.number
+            existing.trend = item.trend
+            existing.trend_pct = item.trend_pct
+            await self._session.commit()
+            return await self.get_collection(owner_id)
+
+        row = CollectionItemTable(
+            owner_id=owner_id,
+            card_id=item.id,
+            name=item.name,
+            set=item.set,
+            number=item.number,
+            price=item.price,
+            trend=item.trend,
+            trend_pct=item.trend_pct,
+            image=item.image,
+            grade=item.grade,
+            quantity=max(1, item.quantity),
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return await self.get_collection(owner_id)
+
+    async def update_quantity(
+        self,
+        owner_id: str,
+        item_id: str,
+        quantity: int,
+    ) -> CollectionRecord:
+        statement = select(CollectionItemTable).where(
+            CollectionItemTable.owner_id == owner_id,
+            CollectionItemTable.card_id == item_id,
+        )
+        row = (await self._session.exec(statement)).first()
+
+        if row is None:
+            raise KeyError(item_id)
+
+        if quantity <= 0:
+            await self._session.delete(row)
+            await self._session.commit()
+            return await self.get_collection(owner_id)
+
+        row.quantity = quantity
+        await self._session.commit()
+        return await self.get_collection(owner_id)
+
+    async def remove_item(self, owner_id: str, item_id: str) -> CollectionRecord:
+        statement = select(CollectionItemTable).where(
+            CollectionItemTable.owner_id == owner_id,
+            CollectionItemTable.card_id == item_id,
+        )
+        row = (await self._session.exec(statement)).first()
+
+        if row is None:
+            raise KeyError(item_id)
+
+        await self._session.delete(row)
+        await self._session.commit()
+        return await self.get_collection(owner_id)
+
+
+def _to_item_record(row: CollectionItemTable) -> CollectionItemRecord:
+    return CollectionItemRecord(
+        id=row.card_id,
+        name=row.name,
+        set=row.set,
+        number=row.number,
+        price=row.price,
+        trend=row.trend,
+        trend_pct=row.trend_pct,
+        image=row.image,
+        grade=row.grade,
+        quantity=row.quantity,
+    )
