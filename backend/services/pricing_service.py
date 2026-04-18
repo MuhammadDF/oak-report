@@ -1,11 +1,9 @@
 """Mock pricing service for the first appraisal vertical slice."""
 
-from io import StringIO
 from statistics import mean
 import requests
 from dotenv import load_dotenv
 import os
-import pandas as pd
 
 from ..models.card_model import CardIdentity
 from ..models.scan_result_model import PricePoint, PricingSnapshot
@@ -65,7 +63,9 @@ def _base_price_for_card(card: CardIdentity) -> float:
 def get_all_cards():
     "Returns a csv of all cards from price charting."
     response = requests.get(
-        f"https://www.pricecharting.com/price-guide/download-custom?t={os.getenv('PRICE_CHARTING')}&category=pokemon-cards")
+        f"https://www.pricecharting.com/price-guide/download-custom?t={os.getenv('PRICE_CHARTING')}&category=pokemon-cards",
+        timeout=30,
+    )
     if response.status_code == 200:
         return response.text
     else:
@@ -75,7 +75,9 @@ def get_all_cards():
 def get_card_image(ID):
     """Fetches card image and returns it as a DataFrame."""
     response = requests.get(
-        f"https://www.pricecharting.com/api/offers?t={os.getenv('PRICE_CHARTING')}&ID={ID}&status=available")
+        f"https://www.pricecharting.com/api/offers?t={os.getenv('PRICE_CHARTING')}&ID={ID}&status=available",
+        timeout=30,
+    )
     if response.status_code == 200:
         return response.json()
     else:

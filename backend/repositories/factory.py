@@ -10,6 +10,10 @@ from .collection_repository import (
     PostgresCollectionRepository,
 )
 from .library_repository import LibraryRepository, MockLibraryRepository
+from .pricing_catalog_repository import (
+    PostgresPricingCatalogRepository,
+    PricingCatalogRepository,
+)
 from .search_repository import MockSearchRepository, SearchRepository
 from .scan_catalog_repository import MockScanCatalogRepository, ScanCatalogRepository
 from .user_repository import (
@@ -56,6 +60,22 @@ def get_search_repository() -> SearchRepository:
         return _search_repo
 
     raise ValueError(f"Unsupported DATA_PROVIDER '{provider}'.")
+
+
+def get_pricing_catalog_repository(
+    session: AsyncSession | None = None,
+) -> PricingCatalogRepository:
+    provider = _provider_name()
+
+    if provider != "postgres":
+        raise ValueError(
+            f"Unsupported DATA_PROVIDER '{provider}'. Pricing catalog data must come from Postgres."
+        )
+
+    if session is None:
+        raise ValueError("A database session is required for postgres pricing catalog repository.")
+
+    return PostgresPricingCatalogRepository(session)
 
 
 def get_library_repository() -> LibraryRepository:
