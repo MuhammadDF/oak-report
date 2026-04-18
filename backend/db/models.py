@@ -54,3 +54,16 @@ class CollectionItemTable(SQLModel, table=True):
     image: str
     grade: str | None = Field(default=None)
     quantity: int = Field(default=1)
+
+
+class PricingCatalogTable(SQLModel, table=True):
+    __tablename__ = "pricing_catalog"
+
+    id: str = Field(primary_key=True)
+    console_name: str = Field(index=True)
+    product_name: str = Field(index=True)
+    loose_price: float = Field(default=0.0)
+    refreshed_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
