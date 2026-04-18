@@ -35,7 +35,11 @@ def _build_default_database_url() -> str:
 
 def get_database_settings() -> DatabaseSettings:
     data_provider = os.getenv("DATA_PROVIDER", "postgres").strip().lower()
-    database_url = os.getenv("DATABASE_URL", _build_default_database_url()).strip()
+    database_url_raw = os.getenv("DATABASE_URL")
+    if database_url_raw is not None and database_url_raw.strip():
+        database_url = database_url_raw.strip()
+    else:
+        database_url = _build_default_database_url()
     db_echo = _as_bool(os.getenv("DB_ECHO"), default=False)
     return DatabaseSettings(
         data_provider=data_provider,
