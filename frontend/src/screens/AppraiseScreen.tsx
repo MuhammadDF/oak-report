@@ -200,17 +200,6 @@ function createSearchAppraisal(card: CardSearchResult): ScanResult {
 		},
 		set_name: card.set,
 		image_url: null,
-		pricing: {
-			currency: "USD",
-			estimated_market_value: card.lowest_listing,
-			price_points: [
-				{
-					source: "Marketplace",
-					label: "Lowest listing",
-					price: card.lowest_listing,
-					url: `https://www.google.com/search?q=${encodeURIComponent(`${card.name} ${card.set}`)}`,
-				},
-			],
-		},
+		pricing: card.lowest_listing,
 	};
 }

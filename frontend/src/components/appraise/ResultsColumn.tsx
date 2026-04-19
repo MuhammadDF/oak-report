@@ -3,7 +3,6 @@ import { getCollectionRepository } from "../../repositories/collectionRepository
 import { ScanResult } from "../../types/app";
 import { EmptyReport } from "./EmptyReport";
 import { IdentityReport } from "./IdentityReport";
-import { PricingReport } from "./PricingReport";
 
 type ResultsColumnProps = {
   authToken: string | null;
@@ -36,7 +35,7 @@ export function ResultsColumn({
         name: result.card.name,
         set: result.set_name ?? "Unknown Set",
         number: result.card.card_number ?? "--",
-        price: result.pricing.estimated_market_value,
+        price: result.pricing,
         image: result.image_url ?? reportPreviewUrl,
         language: result.card.language,
       });
@@ -54,7 +53,6 @@ export function ResultsColumn({
       {result ? (
         <>
           <IdentityReport previewUrl={reportPreviewUrl} result={result} />
-          <PricingReport result={result} />
           <div className="report-actions">
             <button
               className="primary-button"
