@@ -63,6 +63,8 @@ class PricingCatalogTable(SQLModel, table=True):
     console_name: str = Field(index=True)
     product_name: str = Field(index=True)
     loose_price: float = Field(default=0.0)
+    tcg_id: str | None = Field(default=None)
+    image_url: str = Field(default="")
     refreshed_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False),

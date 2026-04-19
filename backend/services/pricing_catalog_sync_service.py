@@ -22,6 +22,8 @@ CSV_ID_FIELD: Final[str] = "id"
 CSV_CONSOLE_FIELD: Final[str] = "console-name"
 CSV_PRODUCT_FIELD: Final[str] = "product-name"
 CSV_LOOSE_PRICE_FIELD: Final[str] = "loose-price"
+CSV_TCG_ID_FIELD: Final[str] = "tcg-id"
+TCG_IMAGE_URL_TEMPLATE: Final[str] = "https://tcgplayer-cdn.tcgplayer.com/product/{tcg_id}_in_1000x1000.jpg"
 
 
 @dataclass(frozen=True)
@@ -79,11 +81,16 @@ def _parse_catalog_csv(csv_payload: str) -> list[PricingCatalogRecord]:
         if not card_id:
             continue
 
+        tcg_id = (row.get(CSV_TCG_ID_FIELD) or "").strip() or None
+        image_url = TCG_IMAGE_URL_TEMPLATE.format(tcg_id=tcg_id) if tcg_id else ""
+
         deduped[card_id] = PricingCatalogRecord(
             id=card_id,
             console_name=(row.get(CSV_CONSOLE_FIELD) or "").strip(),
             product_name=(row.get(CSV_PRODUCT_FIELD) or "").strip(),
             loose_price=_parse_loose_price(row.get(CSV_LOOSE_PRICE_FIELD)),
+            tcg_id=tcg_id,
+            image_url=image_url,
         )
 
     return list(deduped.values())
