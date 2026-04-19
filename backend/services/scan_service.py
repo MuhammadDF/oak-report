@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from ..models.card_model import CardIdentity
 from ..models.scan_result_model import ScanResultModel
-from .pricing_service import get_pricing_snapshot
+from .pricing_service import get_pricing_value
 
 
 async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
@@ -40,7 +40,7 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
         card_number=data.get("card_number") or data.get("card number"),
         language=data.get("language"),
     )
-    pricing = await get_pricing_snapshot(card)
+    pricing = await get_pricing_value(card)
 
     return ScanResultModel(
         processed_at=datetime.now(timezone.utc),
