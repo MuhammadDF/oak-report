@@ -1,4 +1,5 @@
 import { ScanResult } from "../../types/app";
+import { formatCurrency } from "../../utils/format";
 
 type IdentityReportProps = {
   previewUrl: string | null;
@@ -42,6 +43,10 @@ export function IdentityReport({
           <div>
             <dt>Language</dt>
             <dd>{result.card.language ?? "Pending"}</dd>
+          </div>
+          <div>
+            <dt>Price</dt>
+            <dd>{formatCurrency("USD", result.pricing)}</dd>
           </div>
         </dl>
       </div>

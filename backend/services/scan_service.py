@@ -1,5 +1,6 @@
 """Scan orchestration for the first appraisal vertical slice."""
 
+import base64
 from datetime import datetime, timezone
 import os
 from google import genai
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 
 from ..models.card_model import CardIdentity
 from ..models.scan_result_model import ScanResultModel
-from .pricing_service import get_pricing_snapshot
+from .pricing_service import get_card_info
 
 
 async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
@@ -25,10 +26,11 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
                 data=image_bytes,
                 mime_type="image/jpeg"
             ),
-            "Identify the card in this image and return a json object with the following fields: name translated into English, card number, and full language"],
+            "Identify the card in this image and return a json object with the following fields: name translated into English, card number, and language fully spelled out (ex: English, Japanese, etc). The json object should be the only content in your response."],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=CardIdentity,
+            temperature=0.0
         )
     )
 
@@ -40,11 +42,16 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
         card_number=data.get("card_number") or data.get("card number"),
         language=data.get("language"),
     )
-    pricing = await get_pricing_snapshot(card)
+    pricing, console_name = await get_card_info(card)
+    image_data_url = (
+        "data:image/jpeg;base64,"
+        + base64.b64encode(image_bytes).decode("ascii")
+    )
 
     return ScanResultModel(
         processed_at=datetime.now(timezone.utc),
         card=card,
         pricing=pricing,
-        set_name=data.get("set") or data.get("set_name")
+        image_url=image_data_url,
+        set_name=console_name or data.get("set") or data.get("set_name")
     )

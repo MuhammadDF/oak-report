@@ -2,13 +2,6 @@ export type Screen = "appraise" | "collection" | "profile" | "signin";
 
 export type ThemeMode = "dark" | "light";
 
-export type PricePoint = {
-  source: string;
-  label: string;
-  price: number;
-  url: string;
-};
-
 export type ScanResult = {
   processed_at: string;
   card: {
@@ -18,11 +11,7 @@ export type ScanResult = {
   };
   image_url?: string | null;
   set_name?: string | null;
-  pricing: {
-    currency: string;
-    estimated_market_value: number;
-    price_points: PricePoint[];
-  };
+  pricing: number;
 };
 
 export type CollectionCard = {
