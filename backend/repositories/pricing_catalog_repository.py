@@ -19,6 +19,8 @@ class PricingCatalogRecord:
     console_name: str
     product_name: str
     loose_price: float
+    tcg_id: str | None
+    image_url: str
 
 
 class PricingCatalogRepository(Protocol):
@@ -51,6 +53,8 @@ class PostgresPricingCatalogRepository:
                         console_name=record.console_name,
                         product_name=record.product_name,
                         loose_price=record.loose_price,
+                        tcg_id=record.tcg_id,
+                        image_url=record.image_url,
                         refreshed_at=refreshed_at,
                     )
                     for record in records

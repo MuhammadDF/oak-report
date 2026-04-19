@@ -12,7 +12,7 @@ from ..models.card_model import CardIdentity
 load_dotenv()
 
 
-async def get_card_info(card: CardIdentity) -> tuple[float, str | None]:
+async def get_card_info(card: CardIdentity) -> tuple[float, str | None, str]:
     """Return a mock single market value that can later be replaced."""
 
     card_num = card.card_number.split("/")[0] if card.card_number else "0"
@@ -35,10 +35,9 @@ async def get_card_info(card: CardIdentity) -> tuple[float, str | None]:
     for match in matches:
         price = match.loose_price
         if price is not None and float(price) > 0:
-            return float(price), match.console_name
+            return float(price), match.console_name, match.image_url
                 
-
-    return 1.0, "Unknown Set"
+    return 1.0, "Unknown Set", ""
 
 
 def get_all_cards():

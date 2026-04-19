@@ -1,6 +1,5 @@
 """Scan orchestration for the first appraisal vertical slice."""
 
-import base64
 from datetime import datetime, timezone
 import os
 from google import genai
@@ -42,16 +41,12 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
         card_number=data.get("card_number") or data.get("card number"),
         language=data.get("language"),
     )
-    pricing, console_name = await get_card_info(card)
-    image_data_url = (
-        "data:image/jpeg;base64,"
-        + base64.b64encode(image_bytes).decode("ascii")
-    )
+    pricing, console_name, image_url = await get_card_info(card)
 
     return ScanResultModel(
         processed_at=datetime.now(timezone.utc),
         card=card,
         pricing=pricing,
-        image_url=image_data_url,
+        image_url=image_url,
         set_name=console_name or data.get("set") or data.get("set_name")
     )
