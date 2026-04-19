@@ -12,24 +12,33 @@ from ..models.card_model import CardIdentity
 load_dotenv()
 
 
-async def get_pricing_value(card: CardIdentity) -> float:
+async def get_card_info(card: CardIdentity) -> tuple[float, str | None]:
     """Return a mock single market value that can later be replaced."""
 
     card_num = card.card_number.split("/")[0] if card.card_number else "0"
     search_key = f"{card.name} #{card_num}"
+    normalized_language = (card.language or "").strip()
+    is_non_english = bool(
+        normalized_language) and normalized_language.lower() != "english"
 
-    statement = (
-        select(PricingCatalogTable)
-        .where(PricingCatalogTable.product_name.ilike(f"%{search_key}%"))
-        .limit(1)
+    statement = select(PricingCatalogTable).where(
+        PricingCatalogTable.product_name.ilike(f"%{search_key}%")
     )
+    if is_non_english:
+        statement = statement.where(
+            PricingCatalogTable.console_name.ilike(f"%{normalized_language}%")
+        )
+
     async with SessionLocal() as session:
-        match = (await session.exec(statement)).first()
+        matches = (await session.exec(statement)).all()
 
-    if match is None:
-        return 1.0
+    for match in matches:
+        price = match.loose_price
+        if price is not None and float(price) > 0:
+            return float(price), match.console_name
+                
 
-    return float(match.loose_price)
+    return 1.0, "Unknown Set"
 
 
 def get_all_cards():
