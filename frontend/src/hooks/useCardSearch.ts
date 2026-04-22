@@ -8,6 +8,7 @@ import { CardSearchResult } from "../types/app";
  * the same search logic in each component.
  */
 export function useCardSearch(
+  authToken: string | null,
   onSearchResults: (query: string, results: CardSearchResult[]) => void,
 ) {
   const [query, setQuery] = useState("");
@@ -25,8 +26,17 @@ export function useCardSearch(
     setError(null);
 
     try {
+      if (!authToken) {
+        throw new Error("Authentication required for search.");
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/api/search/cards?query=${encodeURIComponent(trimmed)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        },
       );
 
       if (!response.ok) {

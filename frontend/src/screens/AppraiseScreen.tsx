@@ -25,7 +25,7 @@ export function AppraiseScreen({
 		reportPreviewUrl,
 		resetAppraisal,
 		result,
-	} = useAppraisal();
+	} = useAppraisal(authToken);
 
 	const isMobile = useIsMobile();
 
@@ -110,6 +110,7 @@ export function AppraiseScreen({
 				{isMobile ? (
 					// Mobile: live camera only, no toggle
 					<LiveCameraPanel
+						authToken={authToken}
 						error={error}
 						loading={loading}
 						onFileCaptured={handleFileDirect}
@@ -118,6 +119,7 @@ export function AppraiseScreen({
 				) : (
 					// Desktop: upload only, no camera
 					<UploadPanel
+						authToken={authToken}
 						error={error}
 						isMobile={false}
 						loading={loading}

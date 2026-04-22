@@ -4,6 +4,7 @@ import { useCardSearch } from "../../hooks/useCardSearch";
 import { CardSearchResult } from "../../types/app";
 
 type LiveCameraPanelProps = {
+  authToken: string | null;
   // Scan-level error from the parent (e.g. API failure after capture).
   error: string | null;
   // True while the scan API call is in-flight. Disables the Capture button.
@@ -14,7 +15,7 @@ type LiveCameraPanelProps = {
   onSearchResults: (query: string, results: CardSearchResult[]) => void;
 };
 
-export function LiveCameraPanel({ error, loading, onFileCaptured, onSearchResults }: LiveCameraPanelProps) {
+export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onSearchResults }: LiveCameraPanelProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Keep a ref to the active MediaStream so we can stop all tracks on unmount,
   // which releases the camera indicator light on the device.
@@ -25,7 +26,7 @@ export function LiveCameraPanel({ error, loading, onFileCaptured, onSearchResult
   // flowing and a capture will produce a valid image.
   const [ready, setReady] = useState(false);
 
-  const search = useCardSearch(onSearchResults);
+  const search = useCardSearch(authToken, onSearchResults);
 
   // Start the camera stream as soon as this component mounts.
   // The cleanup function stops all tracks when the user switches tabs or

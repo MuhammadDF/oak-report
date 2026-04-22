@@ -5,7 +5,7 @@ import { ScanResult } from "../types/app";
 // Central hook for all card-scan state. Both the UploadPanel (file input) and
 // LiveCameraPanel (WebRTC capture) funnel their images through here so that
 // loading, error, and result state is shared in one place.
-export function useAppraisal() {
+export function useAppraisal(authToken: string | null) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   // `reportPreviewUrl` is kept alive after a successful scan so the result
   // modal can display the image. `previewUrl` is the in-flight preview shown
@@ -89,8 +89,15 @@ export function useAppraisal() {
     setError(null);
 
     try {
+      if (!authToken) {
+        throw new Error("Authentication required for appraisal.");
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/scan/scan`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
         body: formData,
       });
 

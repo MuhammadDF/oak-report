@@ -7,17 +7,32 @@ import { LibraryCard } from "../types/app";
 
 const libraryRepository = getLibraryRepository();
 
-export function LibraryScreen() {
+type LibraryScreenProps = {
+  authToken: string | null;
+};
+
+export function LibraryScreen({ authToken }: LibraryScreenProps) {
   const [search, setSearch] = useState("");
   const [cards, setCards] = useState<LibraryCard[]>([]);
 
   useEffect(() => {
+    if (!authToken) {
+      setCards([]);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadCards() {
-      const result = await libraryRepository.listCards();
-      if (!cancelled) {
-        setCards(result);
+      try {
+        const result = await libraryRepository.listCards(authToken);
+        if (!cancelled) {
+          setCards(result);
+        }
+      } catch {
+        if (!cancelled) {
+          setCards([]);
+        }
       }
     }
 
@@ -26,7 +41,7 @@ export function LibraryScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authToken]);
 
   const query = search.trim().toLowerCase();
   const filteredCards = !query
