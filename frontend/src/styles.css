@@ -1243,6 +1243,22 @@ img {
   background: var(--bg-soft);
 }
 
+.search-page-sort-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.search-page-sort-button:hover {
+  color: var(--text);
+}
+
 .admin-pagination {
   display: flex;
   align-items: center;

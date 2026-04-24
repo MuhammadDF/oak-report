@@ -47,6 +47,8 @@ export function AppraiseScreen({
 	const [searchPageError, setSearchPageError] = useState<string | null>(null);
 	const [searchPageResults, setSearchPageResults] = useState<CardPricingMatch[]>([]);
 	const [searchPageInput, setSearchPageInput] = useState("");
+	const [searchPageSetFilter, setSearchPageSetFilter] = useState("");
+	const [searchPagePriceSort, setSearchPagePriceSort] = useState<"none" | "asc" | "desc">("none");
 	const [searchPagePage, setSearchPagePage] = useState(1);
 
 	// Set when the user submits a text search. Holds the query string and the
@@ -128,6 +130,8 @@ export function AppraiseScreen({
 	function handleSearchPageOpen() {
 		const currentCard = (result ?? searchAppraisal)?.card;
 		setSearchPageInput("");
+		setSearchPageSetFilter("");
+		setSearchPagePriceSort("none");
 		setSearchPagePage(1);
 		setIsReportOpen(false);
 		setIsSearchPageOpen(true);
@@ -184,11 +188,7 @@ export function AppraiseScreen({
 
 	const filteredSearchPageResults = useMemo(() => {
 		const query = searchPageInput.trim().toLowerCase();
-		if (!query) {
-			return searchPageResults;
-		}
-
-		return searchPageResults.filter((item) => {
+		const filtered = searchPageResults.filter((item) => {
 			const haystack = [
 				item.product_name,
 				item.console_name,
@@ -197,9 +197,45 @@ export function AppraiseScreen({
 			]
 				.join(" ")
 				.toLowerCase();
-			return haystack.includes(query);
+
+			if (query && !haystack.includes(query)) {
+				return false;
+			}
+
+			if (searchPageSetFilter && item.console_name !== searchPageSetFilter) {
+				return false;
+			}
+
+			return true;
 		});
-	}, [searchPageInput, searchPageResults]);
+
+		if (searchPagePriceSort === "none") {
+			return filtered;
+		}
+
+		return filtered.sort((left, right) => {
+			if (searchPagePriceSort === "asc") {
+				return left.loose_price - right.loose_price;
+			}
+			return right.loose_price - left.loose_price;
+		});
+	}, [searchPageInput, searchPagePriceSort, searchPageResults, searchPageSetFilter]);
+
+	const searchPageSetOptions = useMemo(() => {
+		return Array.from(new Set(searchPageResults.map((item) => item.console_name))).sort(
+			(left, right) => left.localeCompare(right),
+		);
+	}, [searchPageResults]);
+
+	function handlePriceSortToggle() {
+		setSearchPagePriceSort((current) => {
+			if (current === "none") {
+				return "asc";
+			}
+			return current === "asc" ? "desc" : "asc";
+		});
+		setSearchPagePage(1);
+	}
 
 	const searchPageTotalPages = Math.max(
 		1,
@@ -339,6 +375,21 @@ export function AppraiseScreen({
 									type="search"
 									value={searchPageInput}
 								/>
+								<select
+									className="admin-select"
+									onChange={(event) => {
+										setSearchPageSetFilter(event.target.value);
+										setSearchPagePage(1);
+									}}
+									value={searchPageSetFilter}
+								>
+									<option value="">All sets</option>
+									{searchPageSetOptions.map((setName) => (
+										<option key={setName} value={setName}>
+											{setName}
+										</option>
+									))}
+								</select>
 							</div>
 
 							{searchPageError ? <p className="error-banner">{searchPageError}</p> : null}
@@ -350,7 +401,15 @@ export function AppraiseScreen({
 											<th>Image</th>
 											<th>Product</th>
 											<th>Set</th>
-											<th>Price</th>
+											<th>
+												<button
+													className="search-page-sort-button"
+													onClick={handlePriceSortToggle}
+													type="button"
+												>
+													Price {searchPagePriceSort === "none" ? "↕" : searchPagePriceSort === "asc" ? "↑" : "↓"}
+												</button>
+											</th>
 										</tr>
 									</thead>
 									<tbody>
