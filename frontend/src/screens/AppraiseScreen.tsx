@@ -1,4 +1,4 @@
-import { FormEvent, MouseEvent, useEffect, useMemo, useState } from "react";
+import { MouseEvent, useEffect, useMemo, useState } from "react";
 import { API_BASE_URL } from "../constants/api";
 import { ResultsColumn } from "../components/appraise/ResultsColumn";
 import { UploadPanel } from "../components/appraise/UploadPanel";
@@ -47,7 +47,6 @@ export function AppraiseScreen({
 	const [searchPageError, setSearchPageError] = useState<string | null>(null);
 	const [searchPageResults, setSearchPageResults] = useState<CardPricingMatch[]>([]);
 	const [searchPageInput, setSearchPageInput] = useState("");
-	const [searchPageQuery, setSearchPageQuery] = useState("");
 	const [searchPagePage, setSearchPagePage] = useState(1);
 
 	// Set when the user submits a text search. Holds the query string and the
@@ -129,7 +128,6 @@ export function AppraiseScreen({
 	function handleSearchPageOpen() {
 		const currentCard = (result ?? searchAppraisal)?.card;
 		setSearchPageInput("");
-		setSearchPageQuery("");
 		setSearchPagePage(1);
 		setIsReportOpen(false);
 		setIsSearchPageOpen(true);
@@ -145,12 +143,6 @@ export function AppraiseScreen({
 
 	function handleSearchPageClose() {
 		setIsSearchPageOpen(false);
-	}
-
-	function handleSearchPageSubmit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		setSearchPagePage(1);
-		setSearchPageQuery(searchPageInput.trim());
 	}
 
 	// Closes the modal when the user clicks the semi-transparent backdrop
@@ -191,7 +183,7 @@ export function AppraiseScreen({
 	const derivedResult = result ?? searchAppraisal;
 
 	const filteredSearchPageResults = useMemo(() => {
-		const query = searchPageQuery.trim().toLowerCase();
+		const query = searchPageInput.trim().toLowerCase();
 		if (!query) {
 			return searchPageResults;
 		}
@@ -207,7 +199,7 @@ export function AppraiseScreen({
 				.toLowerCase();
 			return haystack.includes(query);
 		});
-	}, [searchPageQuery, searchPageResults]);
+	}, [searchPageInput, searchPageResults]);
 
 	const searchPageTotalPages = Math.max(
 		1,
@@ -336,18 +328,18 @@ export function AppraiseScreen({
 						</div>
 
 						<article className="panel admin-panel search-page-panel">
-							<form className="admin-controls" onSubmit={handleSearchPageSubmit}>
+							<div className="admin-controls">
 								<input
 									className="admin-input"
-									onChange={(event) => setSearchPageInput(event.target.value)}
+									onChange={(event) => {
+										setSearchPageInput(event.target.value);
+										setSearchPagePage(1);
+									}}
 									placeholder="Search current matches"
 									type="search"
 									value={searchPageInput}
 								/>
-								<button className="primary-button" type="submit">
-									Search
-								</button>
-							</form>
+							</div>
 
 							{searchPageError ? <p className="error-banner">{searchPageError}</p> : null}
 
