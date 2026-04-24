@@ -48,8 +48,10 @@ export function AppraiseScreen({
 	const [searchPageResults, setSearchPageResults] = useState<CardPricingMatch[]>([]);
 	const [searchPageInput, setSearchPageInput] = useState("");
 	const [searchPageSetFilter, setSearchPageSetFilter] = useState("");
+	const [searchPageOnlyWithImages, setSearchPageOnlyWithImages] = useState(false);
 	const [searchPagePriceSort, setSearchPagePriceSort] = useState<"none" | "asc" | "desc">("none");
 	const [searchPagePage, setSearchPagePage] = useState(1);
+	const [searchPageSelectedResult, setSearchPageSelectedResult] = useState<ScanResult | null>(null);
 
 	// Set when the user submits a text search. Holds the query string and the
 	// list of matched cards so SearchResultsPanel can render them.
@@ -81,6 +83,7 @@ export function AppraiseScreen({
 		setIsReportOpen(false);
 		setIsSearchPageOpen(false);
 		setSearchPageError(null);
+		setSearchPageSelectedResult(null);
 		resetAppraisal();
 		setSearchSummary(null);
 		setSearchAppraisal(null);
@@ -131,7 +134,9 @@ export function AppraiseScreen({
 		const currentCard = (result ?? searchAppraisal)?.card;
 		setSearchPageInput("");
 		setSearchPageSetFilter("");
+		setSearchPageOnlyWithImages(false);
 		setSearchPagePriceSort("none");
+		setSearchPageSelectedResult(null);
 		setSearchPagePage(1);
 		setIsReportOpen(false);
 		setIsSearchPageOpen(true);
@@ -147,6 +152,14 @@ export function AppraiseScreen({
 
 	function handleSearchPageClose() {
 		setIsSearchPageOpen(false);
+	}
+
+	function handleSearchPageRowSelect(match: CardPricingMatch) {
+		setSearchPageSelectedResult(createSearchPageAppraisal(match));
+		setSearchSummary(null);
+		setSearchAppraisal(null);
+		setIsSearchPageOpen(false);
+		setIsReportOpen(true);
 	}
 
 	// Closes the modal when the user clicks the semi-transparent backdrop
@@ -184,7 +197,7 @@ export function AppraiseScreen({
 
 	// The result shown in ResultsColumn: prefer a real scan result; fall back
 	// to the synthetic appraisal built from a search selection.
-	const derivedResult = result ?? searchAppraisal;
+	const derivedResult = searchPageSelectedResult ?? result ?? searchAppraisal;
 
 	const filteredSearchPageResults = useMemo(() => {
 		const query = searchPageInput.trim().toLowerCase();
@@ -206,6 +219,10 @@ export function AppraiseScreen({
 				return false;
 			}
 
+			if (searchPageOnlyWithImages && !item.image_url?.trim()) {
+				return false;
+			}
+
 			return true;
 		});
 
@@ -219,7 +236,13 @@ export function AppraiseScreen({
 			}
 			return right.loose_price - left.loose_price;
 		});
-	}, [searchPageInput, searchPagePriceSort, searchPageResults, searchPageSetFilter]);
+	}, [
+		searchPageInput,
+		searchPageOnlyWithImages,
+		searchPagePriceSort,
+		searchPageResults,
+		searchPageSetFilter,
+	]);
 
 	const searchPageSetOptions = useMemo(() => {
 		return Array.from(new Set(searchPageResults.map((item) => item.console_name))).sort(
@@ -390,6 +413,17 @@ export function AppraiseScreen({
 										</option>
 									))}
 								</select>
+								<label className="search-page-checkbox">
+									<input
+										type="checkbox"
+										checked={searchPageOnlyWithImages}
+										onChange={(event) => {
+											setSearchPageOnlyWithImages(event.target.checked);
+											setSearchPagePage(1);
+										}}
+									/>
+									<span>Only show cards with images</span>
+								</label>
 							</div>
 
 							{searchPageError ? <p className="error-banner">{searchPageError}</p> : null}
@@ -425,7 +459,11 @@ export function AppraiseScreen({
 										) : null}
 										{!searchPageLoading
 											? pagedSearchPageResults.map((item) => (
-												<tr key={item.id}>
+												<tr
+													className="search-page-row"
+													key={item.id}
+													onClick={() => handleSearchPageRowSelect(item)}
+												>
 													<td className="search-page-thumb-cell">
 														<img
 															alt={item.product_name}
@@ -493,4 +531,43 @@ function createSearchAppraisal(card: CardSearchResult): ScanResult {
 		image_url: null,
 		pricing: card.lowest_listing,
 	};
+}
+
+function createSearchPageAppraisal(match: CardPricingMatch): ScanResult {
+	const numberMatch = match.product_name.match(/#\s*([A-Za-z0-9-]+)/);
+	const cleanedName = match.product_name.split("#")[0].trim();
+	const language = detectLanguageFromConsoleName(match.console_name);
+	return {
+		processed_at: new Date().toISOString(),
+		card: {
+			name: cleanedName || match.product_name,
+			card_number: numberMatch?.[1] ?? null,
+			language,
+		},
+		set_name: match.console_name,
+		image_url: match.image_url?.trim() ? match.image_url : FALLBACK_CARD_IMAGE_URL,
+		pricing: match.loose_price,
+	};
+}
+
+function detectLanguageFromConsoleName(consoleName: string): string {
+	const normalized = consoleName.toLowerCase();
+	const knownLanguages = [
+		"japanese",
+		"chinese",
+		"german",
+		"korean",
+		"french",
+		"italian",
+		"portuguese",
+		"spanish",
+		"polish",
+	] as const;
+
+	const matched = knownLanguages.find((language) => normalized.includes(language));
+	if (!matched) {
+		return "English";
+	}
+
+	return matched.charAt(0).toUpperCase() + matched.slice(1);
 }

@@ -39,10 +39,12 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
 
     print("RESPONSE" + response.text)
     data = json.loads(response.text)
+    raw_card_number = data.get("card_number") or data.get("card number")
+    parsed_card_number = raw_card_number.split("/")[0].strip() if raw_card_number else None
 
     card = CardIdentity(
         name=data.get("name", "Unknown Card"),
-        card_number=data.get("card_number") or data.get("card number"),
+        card_number=parsed_card_number,
         language=data.get("language"),
     )
     pricing, console_name, image_url = await get_card_info(card)

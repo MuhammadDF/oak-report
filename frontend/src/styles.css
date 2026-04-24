@@ -1259,6 +1259,27 @@ img {
   color: var(--text);
 }
 
+.search-page-row {
+  cursor: pointer;
+}
+
+.search-page-row:hover td {
+  background: var(--bg-soft);
+}
+
+.search-page-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--text-muted);
+}
+
+.search-page-checkbox input {
+  width: 16px;
+  height: 16px;
+}
+
 .admin-pagination {
   display: flex;
   align-items: center;
