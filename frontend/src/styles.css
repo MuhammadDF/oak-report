@@ -1230,6 +1230,19 @@ img {
   text-transform: uppercase;
 }
 
+.search-page-thumb-cell {
+  width: 136px;
+}
+
+.search-page-thumb {
+  width: 104px;
+  height: 144px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+  background: var(--bg-soft);
+}
+
 .admin-pagination {
   display: flex;
   align-items: center;

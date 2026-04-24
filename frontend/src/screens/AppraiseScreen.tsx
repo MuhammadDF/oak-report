@@ -15,6 +15,7 @@ import {
 import { formatCurrency } from "../utils/format";
 
 const SEARCH_PAGE_SIZE = 10;
+const FALLBACK_CARD_IMAGE_URL = "https://images.pokemontcg.io/sv03/203.png";
 
 type AppraiseScreenProps = {
 	authToken: string | null;
@@ -354,32 +355,36 @@ export function AppraiseScreen({
 								<table className="admin-table">
 									<thead>
 										<tr>
+											<th>Image</th>
 											<th>Product</th>
 											<th>Set</th>
 											<th>Price</th>
-											<th>TCG ID</th>
-											<th>Refreshed</th>
 										</tr>
 									</thead>
 									<tbody>
 										{searchPageLoading ? (
 											<tr>
-												<td colSpan={5}>Loading matches...</td>
+												<td colSpan={4}>Loading matches...</td>
 											</tr>
 										) : null}
 										{!searchPageLoading && pagedSearchPageResults.length === 0 ? (
 											<tr>
-												<td colSpan={5}>No matching cards found.</td>
+												<td colSpan={4}>No matching cards found.</td>
 											</tr>
 										) : null}
 										{!searchPageLoading
 											? pagedSearchPageResults.map((item) => (
 												<tr key={item.id}>
+													<td className="search-page-thumb-cell">
+														<img
+															alt={item.product_name}
+															className="search-page-thumb"
+															src={item.image_url?.trim() ? item.image_url : FALLBACK_CARD_IMAGE_URL}
+														/>
+													</td>
 													<td>{item.product_name}</td>
 													<td>{item.console_name}</td>
 													<td>{formatCurrency("USD", item.loose_price)}</td>
-													<td>{item.tcg_id ?? "--"}</td>
-													<td>{new Date(item.refreshed_at).toLocaleDateString()}</td>
 												</tr>
 											))
 											: null}
