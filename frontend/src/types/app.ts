@@ -55,6 +55,20 @@ export type CardSearchResult = {
   lowest_listing: number;
 };
 
+export type CardPricingMatch = {
+  id: string;
+  console_name: string;
+  product_name: string;
+  loose_price: number;
+  tcg_id?: string | null;
+  image_url: string;
+  refreshed_at: string;
+};
+
+export type CardPricingMatchResponse = {
+  results: CardPricingMatch[];
+};
+
 export type AuthUser = {
   id: string;
   email: string;
