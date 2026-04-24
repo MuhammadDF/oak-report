@@ -52,7 +52,6 @@ export function SignInScreen({
       <ScreenHeader
         eyebrow="Authentication"
         title="Sign in to unlock your collection"
-        description="Use your Google account to sync with Oak Report services and securely connect your collection data."
       />
 
       <article className="panel auth-panel">
