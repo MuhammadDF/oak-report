@@ -86,8 +86,37 @@ export function useAuthSession({
   }, [authToken, setStoredToken]);
 
   useEffect(() => {
-    if (!isAuthLoading && screen === "profile" && !authUser) {
+    if (isAuthLoading) {
+      return;
+    }
+
+    if (!authUser && screen !== "signin") {
       setScreen("signin");
+      return;
+    }
+
+    if (authUser && screen === "signin") {
+      setScreen("profile");
+      return;
+    }
+
+    if (authUser && authUser.role !== "admin" && screen === "admin") {
+      setScreen("profile");
+      return;
+    }
+
+    if (authUser && authUser.role === "na" && (screen === "appraise" || screen === "collection")) {
+      setScreen("access_required");
+      return;
+    }
+
+    if (authUser && screen === "library") {
+      setScreen(authUser.role === "na" ? "access_required" : "profile");
+      return;
+    }
+
+    if (authUser && authUser.role !== "na" && screen === "access_required") {
+      setScreen("profile");
     }
   }, [authUser, isAuthLoading, screen, setScreen]);
 
@@ -111,7 +140,7 @@ export function useAuthSession({
         const payload: AuthTokenResponse = await response.json();
         setStoredToken(payload.access_token);
         setAuthUser(payload.user);
-        setScreen("profile");
+        setScreen(payload.user.role === "na" ? "access_required" : "profile");
       } catch {
         setAuthError("Sign-in failed. Confirm backend auth configuration and retry.");
       } finally {
@@ -129,12 +158,30 @@ export function useAuthSession({
 
   const handleScreenChange = useCallback(
     (nextScreen: Screen) => {
-      if ((nextScreen === "collection" || nextScreen === "profile") && !authUser) {
+      if (nextScreen !== "signin" && !authUser) {
         setScreen("signin");
         return;
       }
 
       if (nextScreen === "signin" && authUser) {
+        setScreen("profile");
+        return;
+      }
+
+      if (nextScreen === "admin" && authUser?.role !== "admin") {
+        setScreen("profile");
+        return;
+      }
+
+      if (
+        authUser?.role === "na" &&
+        (nextScreen === "appraise" || nextScreen === "collection" || nextScreen === "library")
+      ) {
+        setScreen("access_required");
+        return;
+      }
+
+      if (nextScreen === "library") {
         setScreen("profile");
         return;
       }

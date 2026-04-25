@@ -1,5 +1,7 @@
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
+from ..auth.dependencies import require_roles
+from ..auth.jwt_service import AuthTokenPayload
 from ..models.scan_result_model import ScanResultModel
 from ..services.scan_service import identify_card_from_image
 
@@ -12,7 +14,11 @@ router = APIRouter()
 	summary="Scan a card image and return a mocked appraisal",
 	response_description="Normalized card identity details and pricing snapshot.",
 )
-async def scan_card(image: UploadFile = File(...)) -> ScanResultModel:
+async def scan_card(
+	image: UploadFile = File(...),
+	current_user: AuthTokenPayload = Depends(require_roles("collector", "admin")),
+) -> ScanResultModel:
+	_ = current_user
 	allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 	if image.content_type not in allowed_types:
 		raise HTTPException(

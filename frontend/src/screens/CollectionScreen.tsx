@@ -56,7 +56,7 @@ export function CollectionScreen({
   return (
     <section className="screen">
       <ScreenHeader
-        title="Your collection."
+        title="Your Collection"
       />
 
       <CollectionSearch onChange={setSearch} value={search} />

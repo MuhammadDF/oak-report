@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "./components/layout/AppShell";
+import { AccessRequiredScreen } from "./screens/AccessRequiredScreen";
+import { AdminScreen } from "./screens/AdminScreen";
 import { AppraiseScreen } from "./screens/AppraiseScreen";
 import { CollectionScreen } from "./screens/CollectionScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
@@ -11,7 +13,7 @@ import { CollectionCard, Screen, ThemeMode } from "./types/app";
 const collectionRepository = getCollectionRepository();
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("appraise");
+  const [screen, setScreen] = useState<Screen>("signin");
   const [theme, setTheme] = useState<ThemeMode>("dark");
   const [collectionCards, setCollectionCards] = useState<CollectionCard[]>([]);
 
@@ -94,7 +96,7 @@ export default function App() {
   }
 
   function handleCollectionChanged() {
-    if (!authToken) {
+    if (!authToken || authUser?.role === "na") {
       return;
     }
 
@@ -110,6 +112,7 @@ export default function App() {
 
   return (
     <AppShell
+      authRole={authUser?.role ?? null}
       isDark={isDark}
       screen={screen}
       setScreen={handleScreenChange}
@@ -130,18 +133,24 @@ export default function App() {
           onCredentialReceived={handleCredentialReceived}
         />
       ) : null}
-      {screen === "appraise" ? (
+      {screen === "access_required" && authUser?.role === "na" ? (
+        <AccessRequiredScreen />
+      ) : null}
+      {screen === "appraise" && authUser && authUser.role !== "na" ? (
         <AppraiseScreen
           authToken={authToken}
           onCollectionAdded={handleCollectionChanged}
         />
       ) : null}
-      {screen === "collection" && authUser ? (
+      {screen === "collection" && authUser && authUser.role !== "na" ? (
         <CollectionScreen
           cards={collectionCards}
           onCardQuantityChange={handleUpdateCollectionQuantity}
           onRemoveCard={handleRemoveCollectionCard}
         />
+      ) : null}
+      {screen === "admin" && authUser?.role === "admin" ? (
+        <AdminScreen authToken={authToken} authUser={authUser} />
       ) : null}
       {screen === "profile" && authUser ? (
         <ProfileScreen user={authUser} onSignOut={handleSignOut} />

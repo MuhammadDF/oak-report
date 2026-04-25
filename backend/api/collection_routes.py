@@ -15,7 +15,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from pydantic import Field
 
-from ..auth.dependencies import get_current_user
+from ..auth.dependencies import require_roles
 from ..db.dependencies import CollectionRepositoryDI
 from ..auth.jwt_service import AuthTokenPayload
 from ..services.collection_service import (
@@ -52,7 +52,7 @@ class UpdateQuantityRequest(BaseModel):
 )
 async def get_collection(
         repository: CollectionRepositoryDI,
-        current_user: AuthTokenPayload = Depends(get_current_user),
+    current_user: AuthTokenPayload = Depends(require_roles("collector", "admin")),
 ) -> CollectionSummary:
     return await get_collection_for_user(current_user.sub, repository)
 
@@ -65,7 +65,7 @@ async def get_collection(
 async def add_to_collection(
         payload: AddScanRequest,
         repository: CollectionRepositoryDI,
-        current_user: AuthTokenPayload = Depends(get_current_user),
+    current_user: AuthTokenPayload = Depends(require_roles("collector", "admin")),
 ) -> AddToCollectionResult:
     return await add_scan_to_collection(
         current_user.sub,
@@ -91,7 +91,7 @@ async def update_item_quantity(
         item_id: str,
         payload: UpdateQuantityRequest,
         repository: CollectionRepositoryDI,
-        current_user: AuthTokenPayload = Depends(get_current_user),
+    current_user: AuthTokenPayload = Depends(require_roles("collector", "admin")),
 ) -> CollectionSummary:
     try:
         return await update_collection_quantity(
@@ -113,7 +113,7 @@ async def update_item_quantity(
 async def delete_collection_item(
         item_id: str,
         repository: CollectionRepositoryDI,
-        current_user: AuthTokenPayload = Depends(get_current_user),
+    current_user: AuthTokenPayload = Depends(require_roles("collector", "admin")),
 ) -> CollectionSummary:
     try:
         return await remove_collection_item(current_user.sub, item_id, repository)

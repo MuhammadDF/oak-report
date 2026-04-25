@@ -24,7 +24,7 @@ export function ResultsColumn({
   >("idle");
 
   async function handleAddToCollection() {
-    if (!result || collectionStatus === "loading") {
+    if (!result || !authToken || collectionStatus === "loading") {
       return;
     }
 
@@ -56,7 +56,7 @@ export function ResultsColumn({
           <div className="report-actions">
             <button
               className="primary-button"
-              disabled={collectionStatus === "loading"}
+              disabled={collectionStatus === "loading" || !authToken}
               onClick={handleAddToCollection}
               type="button"
             >

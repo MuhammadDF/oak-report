@@ -1,4 +1,13 @@
-export type Screen = "appraise" | "collection" | "profile" | "signin";
+export type AppRole = "na" | "collector" | "admin";
+
+export type Screen =
+  | "appraise"
+  | "collection"
+  | "library"
+  | "profile"
+  | "admin"
+  | "access_required"
+  | "signin";
 
 export type ThemeMode = "dark" | "light";
 
@@ -50,11 +59,25 @@ export type AuthUser = {
   id: string;
   email: string;
   display_name: string;
-  role: string;
+  role: AppRole;
 };
 
 export type AuthTokenResponse = {
   access_token: string;
   token_type: string;
   user: AuthUser;
+};
+
+export type AdminUserRecord = {
+  id: string;
+  display_name: string;
+  email: string;
+  role: AppRole;
+};
+
+export type AdminUserPage = {
+  items: AdminUserRecord[];
+  page: number;
+  page_size: number;
+  total: number;
 };

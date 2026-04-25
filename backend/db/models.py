@@ -15,7 +15,7 @@ class UserTable(SQLModel, table=True):
     id: str = Field(primary_key=True)
     email: str = Field(index=True)
     display_name: str
-    role: str = Field(default="collector")
+    role: str = Field(default="na")
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False),

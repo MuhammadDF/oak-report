@@ -10,6 +10,7 @@ from pydantic import BaseModel, EmailStr, Field
 class UserRole(str, Enum):
 	"""Supported role identifiers."""
 
+	NA = "na"
 	COLLECTOR = "collector"
 	ADMIN = "admin"
 
@@ -33,7 +34,7 @@ class UserProfile(BaseModel):
 	id: str  # Stable identifier from the auth provider
 	email: EmailStr
 	display_name: str
-	role: UserRole = UserRole.COLLECTOR
+	role: UserRole = UserRole.NA
 	created_at: datetime
 	hashed_password: str  # Password hash (e.g., bcrypt) stored in the auth DB
 	last_login_at: Optional[datetime] = None

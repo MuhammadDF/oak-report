@@ -12,7 +12,7 @@ export function ProfileScreen({ user, onSignOut }: ProfileScreenProps) {
       <ScreenHeader
         eyebrow="Profile"
         title="Your account."
-        description="Review the currently signed-in user and sign out when needed."
+        description="Review your information and sign out when needed."
       />
 
       <div className="profile-grid">
@@ -20,7 +20,7 @@ export function ProfileScreen({ user, onSignOut }: ProfileScreenProps) {
           <p className="panel__eyebrow">Signed in user</p>
           <h2>{user.display_name}</h2>
           <p className="report-copy">{user.email}</p>
-          <p className="report-copy">Role: {user.role}</p>
+          <p className="report-copy">Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
           <button className="signout-button" onClick={onSignOut} type="button">
             <span className="signout-button__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">

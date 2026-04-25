@@ -1,5 +1,7 @@
 """FastAPI auth dependencies for bearer token validation."""
 
+from collections.abc import Iterable
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import ExpiredSignatureError, InvalidTokenError
@@ -26,3 +28,34 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token.",
         ) from error
+
+
+def require_roles(*allowed_roles: str):
+    """Return a dependency that enforces any of the provided role values."""
+
+    allowed = {role.strip().lower() for role in allowed_roles if role.strip()}
+    if not allowed:
+        raise ValueError("At least one allowed role must be provided.")
+
+    def _dependency(current_user: AuthTokenPayload = Depends(get_current_user)) -> AuthTokenPayload:
+        user_role = current_user.role.strip().lower()
+        if user_role not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient role for this action.",
+            )
+        return current_user
+
+    return _dependency
+
+
+def require_any_role(roles: Iterable[str]):
+    """Helper for call sites that already maintain role lists."""
+
+    return require_roles(*list(roles))
+
+
+def require_admin():
+    """Return a dependency that only allows admin users."""
+
+    return require_roles("admin")

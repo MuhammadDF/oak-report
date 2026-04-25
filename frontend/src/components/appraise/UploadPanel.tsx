@@ -5,6 +5,7 @@ import { useCardSearch } from "../../hooks/useCardSearch";
 import { CardSearchResult } from "../../types/app";
 
 type UploadPanelProps = {
+  authToken: string | null;
   error: string | null;
   isMobile: boolean;
   loading: boolean;
@@ -14,6 +15,7 @@ type UploadPanelProps = {
 };
 
 export function UploadPanel({
+  authToken,
   error,
   isMobile,
   loading,
@@ -23,7 +25,7 @@ export function UploadPanel({
 }: UploadPanelProps) {
   const uploadInputId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const search = useCardSearch(onSearchResults);
+  const search = useCardSearch(authToken, onSearchResults);
   const acceptTypes = isMobile
     ? "image/*"
     : "image/png,image/jpeg,image/webp,image/heic";
@@ -96,7 +98,7 @@ function DesktopDropzone({ inputId, loading }: DesktopDropzoneProps) {
     <div className={`desktop-dropzone ${loading ? "desktop-dropzone--loading" : ""}`}>
       <h2>Card Appraisal</h2>
       <p className="desktop-dropzone__copy">
-        Upload or drag a card image to authenticate and value.
+        Upload or drag a card image to identify and value.
       </p>
       <label className="desktop-dropzone__field" htmlFor={inputId}>
         {loading ? (

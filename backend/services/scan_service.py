@@ -25,7 +25,7 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
                 data=image_bytes,
                 mime_type="image/jpeg"
             ),
-            "Identify the card in this image and return a json object with the following fields: name of the cardtranslated into English, card number, and language fully spelled out (ex: English, Japanese, etc). The json object should be the only content in your response."],
+            "Identify the card in this image and return a json object with the following fields: name of the cardtranslated into English, card number, and language fully spelled out (ex: English, Japanese, etc). The name should not have a hyphen unless it is a ho-oh. The json object should be the only content in your response."],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=CardIdentity,
