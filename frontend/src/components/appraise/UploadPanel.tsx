@@ -2,7 +2,7 @@ import { ChangeEventHandler, useEffect, useId, useRef } from "react";
 import { CameraCard } from "./CameraCard";
 import { CardSearchBar } from "./CardSearchBar";
 import { useCardSearch } from "../../hooks/useCardSearch";
-import { CardSearchResult } from "../../types/app";
+import { CardPricingMatch } from "../../types/app";
 
 type UploadPanelProps = {
   authToken: string | null;
@@ -10,7 +10,7 @@ type UploadPanelProps = {
   isMobile: boolean;
   loading: boolean;
   onFileChange: ChangeEventHandler<HTMLInputElement>;
-  onSearchResults: (query: string, results: CardSearchResult[]) => void;
+  onSearchResults: (query: string, results: CardPricingMatch[]) => void;
   previewUrl: string | null;
 };
 

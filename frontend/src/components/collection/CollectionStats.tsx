@@ -22,10 +22,6 @@ export function CollectionStats({ cards }: CollectionStatsProps) {
         <span>Total value</span>
         <strong>{formatCurrency("USD", totalValue)}</strong>
       </article>
-      <article className="panel stat-panel">
-        <span>90-day trend</span>
-        <strong className="trend-up">+8.4%</strong>
-      </article>
     </div>
   );
 }

@@ -4,28 +4,28 @@ To identify the most effective architecture, the following technologies were eva
 
 ## 1. Hosting & Infrastructure (PaaS)
 
-| Alternative | Pros | Cons |
-| --- | --- | --- |
-| Heroku | Rapid deployment; excellent for standard CRUD apps. | Limited native AI orchestration; higher cost for performance tiers. |
-| AWS (Amazon Web Services) | Deepest feature set; Lambda is highly mature for serverless. | High configuration overhead; pricing can be unpredictable for startups. |
-| Microsoft Azure | Strong enterprise support; seamless integration with OpenAI. | Complex UI/UX for resource management; higher latency for non-OpenAI models. |
-| Google Cloud Platform (GCP) | Selected. Best-in-class AI tools; superior serverless integration for Gemini and Vertex AI. | Requires specific expertise in IAM and project billing structures. |
+| Alternative                 | Pros                                                                                        | Cons                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Heroku                      | Rapid deployment; excellent for standard CRUD apps.                                         | Limited native AI orchestration; higher cost for performance tiers.          |
+| AWS (Amazon Web Services)   | Deepest feature set; Lambda is highly mature for serverless.                                | High configuration overhead; pricing can be unpredictable for startups.      |
+| Microsoft Azure             | Strong enterprise support; seamless integration with OpenAI.                                | Complex UI/UX for resource management; higher latency for non-OpenAI models. |
+| Google Cloud Platform (GCP) | Selected. Best-in-class AI tools; superior serverless integration for Gemini and Vertex AI. | Requires specific expertise in IAM and project billing structures.           |
 
 ## 2. Frontend Frameworks
 
-| Alternative | Pros | Cons |
-| --- | --- | --- |
-| Vue.js | Low barrier to entry; highly performant for simple UIs. | Fewer libraries for complex mobile-web camera integrations. |
-| Angular | Opinionated and robust; ideal for large enterprise scale. | Significant boilerplate; overkill for an MVP-focused app. |
-| React (Vite) | Selected. Industry-standard ecosystem; excellent responsiveness and fast refresh via Vite. | Frequent library updates can cause dependency friction. |
+| Alternative  | Pros                                                                                       | Cons                                                        |
+| ------------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Vue.js       | Low barrier to entry; highly performant for simple UIs.                                    | Fewer libraries for complex mobile-web camera integrations. |
+| Angular      | Opinionated and robust; ideal for large enterprise scale.                                  | Significant boilerplate; overkill for an MVP-focused app.   |
+| React (Vite) | Selected. Industry-standard ecosystem; excellent responsiveness and fast refresh via Vite. | Frequent library updates can cause dependency friction.     |
 
 ## 3. Backend & Language
 
-| Alternative | Pros | Cons |
-| --- | --- | --- |
-| Node.js (Typescript) | High concurrency; single-language stack (JS/TS). | Less mature than Python for high-level AI/ML library support. |
-| Go (Golang) | Superior performance; compiled for high-speed execution. | Smaller ecosystem for LLM orchestration and Pydantic-style data validation. |
-| Python | Selected. Native support for AI frameworks; required for Google ADK and agentic logic. | Slower execution for standard web logic compared to Go or Node. |
+| Alternative          | Pros                                                                                   | Cons                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Node.js (Typescript) | High concurrency; single-language stack (JS/TS).                                       | Less mature than Python for high-level AI/ML library support.               |
+| Go (Golang)          | Superior performance; compiled for high-speed execution.                               | Smaller ecosystem for LLM orchestration and Pydantic-style data validation. |
+| Python               | Selected. Native support for AI frameworks; required for Google ADK and agentic logic. | Slower execution for standard web logic compared to Go or Node.             |
 
 # Phase 2: Final Platform Selection & Justification
 
@@ -41,22 +41,22 @@ Note: Most of these decisions were also made to prioritize seamless integration 
 
 ## Final Stack Components
 
-● Frontend: React (Vite) + Tailwind CSS. Chosen for the speed and responsiveness required for mobile camera usage.  
+● Frontend: React (Vite) + Tailwind CSS. Chosen for the speed and responsiveness required for mobile camera usage.
 
-● Backend: Python. Selected for its ability to handle complex agentic reasoning and Pydantic data schemas.  
+● Backend: Python. Selected for its ability to handle complex agentic reasoning and Pydantic data schemas.
 
-● AI/Inference: Gemini 2.0/3 Flash (Vertex AI). Leveraged for its "Visual Reasoning" capabilities and lightning-fast response times.  
+● AI/Inference: Gemini 2.0/3 Flash (Vertex AI). Leveraged for its "Visual Reasoning" capabilities and lightning-fast response times.
 
-● Database: Postgres. Provides a relational "Memory Bank" to track price trends and card scan history.  
+● Database: Postgres. Provides a relational "Memory Bank" to track card scan history.
 
-● Hosting: GCP Cloud Run. Offers a scalable, serverless environment that ensures the app remains operational after the project handoff without ongoing maintenance overhead.  
+● Hosting: GCP Cloud Run. Offers a scalable, serverless environment that ensures the app remains operational after the project handoff without ongoing maintenance overhead.
 
 ## Documentation & References
 
-● Google ADK Documentation: Guidelines for building agentic workflows.  
+● Google ADK Documentation: Guidelines for building agentic workflows.
 
-● Vertex AI Search Grounding: Documentation for live web-grounded market data.  
+● Vertex AI Search Grounding: Documentation for live web-grounded market data.
 
-● TCG Analytics Reference: Case studies on visual detection of counterfeit collectibles.  
+● TCG Analytics Reference: Case studies on visual detection of counterfeit collectibles.
 
 This platform configuration ensures that the Oak Report is not only a functional MVP but a cost-efficient, production-ready tool that maximizes the technological advantages provided by the project's stakeholders.

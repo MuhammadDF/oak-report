@@ -46,8 +46,6 @@ def upgrade() -> None:
         sa.Column("set", sa.String(), nullable=False),
         sa.Column("number", sa.String(), nullable=False),
         sa.Column("price", sa.Float(), nullable=False),
-        sa.Column("trend", sa.String(), nullable=False),
-        sa.Column("trend_pct", sa.Float(), nullable=False),
         sa.Column("image", sa.String(), nullable=False),
         sa.Column("grade", sa.String(), nullable=True),
         sa.Column("quantity", sa.Integer(), nullable=False),
