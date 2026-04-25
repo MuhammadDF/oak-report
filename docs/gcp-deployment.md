@@ -329,7 +329,7 @@ gcloud run deploy pokemon-backend \
 
 **What each flag does:**
 
-- `--allow-unauthenticated` — public service (anyone can hit the URL; your app handles auth).
+- `--allow-unauthenticated` — public service (anyone can hit the URL; your app handles auth). If your org enforces Domain Restricted Sharing, this flag silently fails and the service stays IAM-locked — you'll need an org admin to override the policy for this project before public access works.
 - `--port=8000` — tells Cloud Run which port the container listens on.
 - `--add-cloudsql-instances` — mounts a Unix socket at `/cloudsql/INSTANCE_CONNECTION_NAME` inside the container.
 - `--set-env-vars` — plaintext env vars. The `DATABASE_URL` uses the socket host.

@@ -143,18 +143,13 @@ Repo Settings → **Secrets and variables** → **Actions**.
 |---|---|
 | `VITE_GOOGLE_CLIENT_ID` | The Google OAuth Client ID used at build time |
 
-> Why is `VITE_GOOGLE_CLIENT_ID` a *secret* but `VITE_API_BASE_URL` a *variable*? Both end up baked into the public JS bundle, so neither is truly secret in production. We store the client ID as a GitHub secret only to keep it out of action logs as a defense-in-depth measure — the value itself is visible to anyone who opens the deployed app's source.
+> Both values end up in the public JS bundle, so neither is truly secret. `VITE_GOOGLE_CLIENT_ID` is stored as a GitHub secret only to keep it out of Action logs.
 
 ---
 
 ## First run
 
-The pipeline only triggers on changes to watched paths. To trigger a deploy without an actual code change:
-
-- **GitHub UI:** Actions tab → pick the workflow → "Run workflow" → branch `main`. (Both workflows have `workflow_dispatch` enabled.)
-- **Or:** make a trivial change in a watched path (e.g. add a blank line in `backend/main.py`) and push to `main`.
-
-Watch the run in the Actions tab. The "Deploy to Cloud Run" step prints the new revision URL on success.
+Path filters mean a docs-only merge won't trigger anything. Manually dispatch each workflow once: **Actions** tab → pick the workflow → "Run workflow" → branch `main`. The "Deploy to Cloud Run" step prints the new revision URL on success.
 
 ---
 
