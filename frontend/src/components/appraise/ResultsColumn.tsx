@@ -7,6 +7,7 @@ import { IdentityReport } from "./IdentityReport";
 type ResultsColumnProps = {
   authToken: string | null;
   onCollectionAdded?: () => void;
+  onSearchPageClick?: () => void;
   reportPreviewUrl: string | null;
   result: ScanResult | null;
 };
@@ -16,6 +17,7 @@ const collectionRepository = getCollectionRepository();
 export function ResultsColumn({
   authToken,
   onCollectionAdded,
+  onSearchPageClick,
   reportPreviewUrl,
   result,
 }: ResultsColumnProps) {
@@ -63,6 +65,13 @@ export function ResultsColumn({
               {collectionStatus === "loading"
                 ? "Adding..."
                 : "Add to collection"}
+            </button>
+            <button
+              className="secondary-button"
+              onClick={onSearchPageClick}
+              type="button"
+            >
+              Search page
             </button>
             {collectionStatus === "success" ? (
               <span className="report-actions__status report-actions__status--success">

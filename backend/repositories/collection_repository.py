@@ -18,8 +18,6 @@ class CollectionItemRecord:
     set: str
     number: str
     price: float
-    trend: str
-    trend_pct: float
     image: str
     grade: str | None
     quantity: int
@@ -81,8 +79,6 @@ class InMemoryCollectionRepository:
             existing.name = item.name
             existing.set = item.set
             existing.number = item.number
-            existing.trend = item.trend
-            existing.trend_pct = item.trend_pct
             return record
 
         record.items.append(item)
@@ -153,8 +149,6 @@ class PostgresCollectionRepository:
             existing.name = item.name
             existing.set = item.set
             existing.number = item.number
-            existing.trend = item.trend
-            existing.trend_pct = item.trend_pct
             await self._session.commit()
             return await self.get_collection(owner_id)
 
@@ -165,8 +159,6 @@ class PostgresCollectionRepository:
             set=item.set,
             number=item.number,
             price=item.price,
-            trend=item.trend,
-            trend_pct=item.trend_pct,
             image=item.image,
             grade=item.grade,
             quantity=max(1, item.quantity),
@@ -221,8 +213,6 @@ def _to_item_record(row: CollectionItemTable) -> CollectionItemRecord:
         set=row.set,
         number=row.number,
         price=row.price,
-        trend=row.trend,
-        trend_pct=row.trend_pct,
         image=row.image,
         grade=row.grade,
         quantity=row.quantity,

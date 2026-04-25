@@ -29,8 +29,6 @@ export type CollectionCard = {
   set: string;
   number: string;
   price: number;
-  trend: "up" | "down";
-  trendPct: number;
   image: string;
   grade?: string;
   quantity: number;
@@ -53,6 +51,20 @@ export type CardSearchResult = {
   rarity: string;
   type: string;
   lowest_listing: number;
+};
+
+export type CardPricingMatch = {
+  id: string;
+  console_name: string;
+  product_name: string;
+  loose_price: number;
+  tcg_id?: string | null;
+  image_url: string;
+  refreshed_at: string;
+};
+
+export type CardPricingMatchResponse = {
+  results: CardPricingMatch[];
 };
 
 export type AuthUser = {

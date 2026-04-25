@@ -14,7 +14,6 @@ type AdminScreenProps = {
 export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
-  const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<AppRole | "">("");
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -39,7 +38,7 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
         const payload = await adminRepository.listUsers(authToken, {
           page,
           pageSize: PAGE_SIZE,
-          search: query,
+          search: searchInput,
           role: roleFilter,
         });
         if (!cancelled) {
@@ -64,7 +63,7 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
     return () => {
       cancelled = true;
     };
-  }, [authToken, page, query, roleFilter]);
+  }, [authToken, page, roleFilter, searchInput]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -100,12 +99,6 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
       return 0;
     });
   }, [authUser?.id, users]);
-
-  function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPage(1);
-    setQuery(searchInput.trim());
-  }
 
   function handleRoleFilterChange(nextRole: AppRole | "") {
     setRoleFilter(nextRole);
@@ -163,10 +156,13 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
       />
 
       <article className="panel admin-panel">
-        <form className="admin-controls" onSubmit={handleSearchSubmit}>
+        <div className="admin-controls">
           <input
             className="admin-input"
-            onChange={(event) => setSearchInput(event.target.value)}
+            onChange={(event) => {
+              setSearchInput(event.target.value);
+              setPage(1);
+            }}
             placeholder="Search by name or email"
             type="search"
             value={searchInput}
@@ -181,10 +177,7 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
             <option value="collector">Collector</option>
             <option value="admin">Admin</option>
           </select>
-          <button className="primary-button" type="submit">
-            Search
-          </button>
-        </form>
+        </div>
 
         {error ? <p className="error-banner">{error}</p> : null}
 

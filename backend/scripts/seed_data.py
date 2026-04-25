@@ -72,8 +72,6 @@ async def seed_dev_data(session: AsyncSession) -> None:
                     set=row.get("console-name") or "Unknown Set",
                     number=str(index + 1),
                     price=_parse_price(row.get("new-price")),
-                    trend="up" if index % 2 == 0 else "down",
-                    trend_pct=round((index + 1) * 0.7, 1),
                     image="https://placehold.co/600x840?text=Pokemon+Card",
                     quantity=1,
                 )
