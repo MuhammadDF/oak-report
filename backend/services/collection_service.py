@@ -4,7 +4,6 @@ Domain service placeholder for collection management, library search, and Memory
 Scope:
 - FR-3 Personal Collection CRUD with condition metadata
 - FR-4 Searchable Library queries for unscanned cards
-- FR-7 Memory Bank historical trend storage
 - I-1 Dashboard + Library data feeds for mobile GUI
 - Reliability requirement NFR-3 (cloud-backed storage)
 
@@ -28,8 +27,6 @@ class CollectionCardModel(BaseModel):
     set: str
     number: str
     price: float
-    trend: str
-    trendPct: float
     image: str
     grade: str | None = None
     quantity: int
@@ -56,13 +53,6 @@ class AddToCollectionResult(BaseModel):
     total_items: int
 
 
-def _derive_trend(item_id: str) -> tuple[str, float]:
-    checksum = sum(ord(char) for char in item_id)
-    trend = "up" if checksum % 2 == 0 else "down"
-    trend_pct = round(((checksum % 120) + 5) / 10, 1)
-    return trend, trend_pct
-
-
 def _slugify(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
 
@@ -81,8 +71,6 @@ def _to_card_model(item: CollectionItemRecord) -> CollectionCardModel:
         set=item.set,
         number=item.number,
         price=item.price,
-        trend=item.trend,
-        trendPct=item.trend_pct,
         image=item.image,
         grade=item.grade,
         quantity=item.quantity,
@@ -114,15 +102,12 @@ async def add_scan_to_collection(
     """Add or merge a collection card based on a scan/search action."""
 
     item_id = _build_item_id(payload)
-    trend, trend_pct = _derive_trend(item_id)
     item = CollectionItemRecord(
         id=item_id,
         name=payload.name,
         set=payload.set,
         number=payload.number,
         price=max(0.0, payload.price),
-        trend=trend,
-        trend_pct=trend_pct,
         image=payload.image or "https://placehold.co/600x840?text=Pokemon+Card",
         grade=payload.grade,
         quantity=1,

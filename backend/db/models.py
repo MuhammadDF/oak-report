@@ -49,8 +49,6 @@ class CollectionItemTable(SQLModel, table=True):
     set: str
     number: str
     price: float
-    trend: str
-    trend_pct: float
     image: str
     grade: str | None = Field(default=None)
     quantity: int = Field(default=1)

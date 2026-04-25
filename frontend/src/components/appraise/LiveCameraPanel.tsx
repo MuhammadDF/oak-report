@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CardSearchBar } from "./CardSearchBar";
 import { useCardSearch } from "../../hooks/useCardSearch";
-import { CardSearchResult } from "../../types/app";
+import { CardPricingMatch } from "../../types/app";
 
 type LiveCameraPanelProps = {
   authToken: string | null;
@@ -12,7 +12,7 @@ type LiveCameraPanelProps = {
   // Called with the captured JPEG File once the user clicks "Capture".
   onFileCaptured: (file: File) => void;
   // Passes search query + results up to AppraiseScreen to open the result modal.
-  onSearchResults: (query: string, results: CardSearchResult[]) => void;
+  onSearchResults: (query: string, results: CardPricingMatch[]) => void;
 };
 
 export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onSearchResults }: LiveCameraPanelProps) {
