@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { API_BASE_URL } from "../constants/api";
-import { CardSearchResult } from "../types/app";
+import { CardPricingMatch } from "../types/app";
 
 /**
  * Encapsulates card search state and the fetch handler.
@@ -9,7 +9,7 @@ import { CardSearchResult } from "../types/app";
  */
 export function useCardSearch(
   authToken: string | null,
-  onSearchResults: (query: string, results: CardSearchResult[]) => void,
+  onSearchResults: (query: string, results: CardPricingMatch[]) => void,
 ) {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,8 +44,7 @@ export function useCardSearch(
       }
 
       const payload = (await response.json()) as {
-        query: string;
-        results: CardSearchResult[];
+        results: CardPricingMatch[];
       };
 
       onSearchResults(trimmed, payload.results);

@@ -172,20 +172,22 @@ export function AppraiseScreen({
 	}
 
 	// Called by UploadPanel when a card text search returns results.
-	// Clears any real scan result, stores the search summary, and opens the
-	// modal pre-populated with the first match.
-	function handleSearchResults(query: string, results: CardSearchResult[]) {
-		resetAppraisal();
-		setSearchSummary({ query, results });
-		const firstMatch = results[0] ?? null;
-		if (firstMatch) {
-			setSearchAppraisal(createSearchAppraisal(firstMatch));
-			setActiveSearchResultId(firstMatch.id);
-		} else {
-			setSearchAppraisal(null);
-			setActiveSearchResultId(null);
-		}
-		setIsReportOpen(true);
+	// Populates the search page with pricing-catalog rows returned from the
+	// free-form search bar, then opens the search-page modal.
+	function handleSearchResults(query: string, results: CardPricingMatch[]) {
+		setIsReportOpen(false);
+		setSearchSummary(null);
+		setSearchAppraisal(null);
+		setActiveSearchResultId(null);
+		setSearchPageInput("");
+		setSearchPageSetFilter("");
+		setSearchPageOnlyWithImages(false);
+		setSearchPagePriceSort("none");
+		setSearchPagePage(1);
+		setSearchPageSelectedResult(null);
+		setSearchPageResults(results);
+		setSearchPageError(null);
+		setIsSearchPageOpen(true);
 	}
 
 	// Called when the user taps a different row in SearchResultsPanel.

@@ -128,8 +128,10 @@ def get_card_image(id):
 async def get_all_card_info(card: CardIdentity) -> list[PricingCatalogTable]:
     """Return all matching catalog rows for a card query."""
 
-    card_num = card.card_number.split("/")[0] if card.card_number else "0"
-    card_num = str(card_num).lstrip("0") or "0"
+    card_num = None
+    if card.card_number:
+        card_num = card.card_number.split("/")[0]
+        card_num = str(card_num).lstrip("0") or "0"
     search_key = card.name
     normalized_language = (card.language or "").strip()
     known_languages = (
@@ -161,7 +163,7 @@ async def get_all_card_info(card: CardIdentity) -> list[PricingCatalogTable]:
         has_updates = False
 
         for match in matches:
-            if not _product_matches_card_number(match.product_name, card_num):
+            if card_num and not _product_matches_card_number(match.product_name, card_num):
                 continue
 
             console_name = match.console_name or ""

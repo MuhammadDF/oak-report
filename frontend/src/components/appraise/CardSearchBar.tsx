@@ -49,7 +49,7 @@ export function CardSearchBar({
         </p>
       ) : lastSearchTerm && !error ? (
         <p className="card-search__status card-search__status--success">
-          Appraisal window refreshed with matches for "{lastSearchTerm}".
+          Search page refreshed with matches for "{lastSearchTerm}".
         </p>
       ) : null}
 
