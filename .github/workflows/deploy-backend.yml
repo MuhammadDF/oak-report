@@ -2,7 +2,7 @@ name: Deploy backend
 
 on:
   push:
-    branches: [main]
+    branches: [main, cicd/cloudrun]
     paths:
       - "backend/**"
       - "alembic/**"
