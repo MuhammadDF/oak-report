@@ -10,6 +10,7 @@ from .pricing_service import get_all_card_info
 
 
 KNOWN_LANGUAGES = (
+    "english",
     "japanese",
     "chinese",
     "german",
