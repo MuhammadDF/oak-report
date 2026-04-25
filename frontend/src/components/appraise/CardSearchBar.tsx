@@ -11,7 +11,7 @@ type CardSearchBarProps = {
   onQueryChange: (value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   query: string;
-};
+}; 
 
 export function CardSearchBar({
   error,
