@@ -1,0 +1,57 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "frontend.prod.Dockerfile"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-frontend-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.ARTIFACT_REPO }}/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure docker auth
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            -f frontend.prod.Dockerfile \
+            --build-arg VITE_API_BASE_URL="${{ vars.VITE_API_BASE_URL }}" \
+            --build-arg VITE_GOOGLE_CLIENT_ID="${{ secrets.VITE_GOOGLE_CLIENT_ID }}" \
+            -t "$IMAGE:sha-$GITHUB_SHA" \
+            -t "$IMAGE:latest" \
+            .
+
+      - name: Push image
+        run: docker push "$IMAGE" --all-tags
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ vars.FRONTEND_SERVICE }}" \
+            --image="$IMAGE:sha-$GITHUB_SHA" \
+            --region="${{ vars.GCP_REGION }}"
