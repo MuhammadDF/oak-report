@@ -889,9 +889,22 @@ img {
 }
 
 .card-search__status {
+  display: grid;
+  gap: 4px;
   color: var(--text-muted);
   font-size: 0.84rem;
+  line-height: 1.45;
 }
+
+.card-search__status strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.card-search__status span {
+  color: var(--text-muted);
+}
+
 .card-search__status--success {
   color: var(--accent);
 }

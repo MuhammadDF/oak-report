@@ -45,7 +45,11 @@ export function CardSearchBar({
 
       {loading ? (
         <p className="card-search__status">
-          Looking for "{query.trim() || lastSearchTerm || "your card"}"...
+          <strong>Looking for "{query.trim() || lastSearchTerm || "your card"}"...</strong>
+          <span>
+            Broad searches like "Charizard" or "Pikachu" can take longer. Add a card number
+            to narrow it down.
+          </span>
         </p>
       ) : lastSearchTerm && !error ? (
         <p className="card-search__status card-search__status--success">
