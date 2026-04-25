@@ -29,8 +29,6 @@ export type CollectionCard = {
   set: string;
   number: string;
   price: number;
-  trend: "up" | "down";
-  trendPct: number;
   image: string;
   grade?: string;
   quantity: number;

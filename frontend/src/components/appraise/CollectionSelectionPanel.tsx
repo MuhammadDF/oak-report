@@ -62,13 +62,6 @@ export function CollectionSelectionPanel({
               <dd>{formatCurrency("USD", card.price)}</dd>
             </div>
             <div>
-              <dt>Trend</dt>
-              <dd className={card.trend === "up" ? "trend-up" : "trend-down"}>
-                {card.trend === "up" ? "+" : "-"}
-                {card.trendPct}%
-              </dd>
-            </div>
-            <div>
               <dt>Total held</dt>
               <dd>{formatCurrency("USD", totalHeld)}</dd>
             </div>

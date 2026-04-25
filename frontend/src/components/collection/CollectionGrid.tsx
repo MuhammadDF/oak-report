@@ -40,10 +40,6 @@ export function CollectionGrid({ cards, onSelectCard }: CollectionGridProps) {
             </p>
             <div className="collection-card__meta">
               <strong>{formatCurrency("USD", card.price)}</strong>
-              <span className={card.trend === "up" ? "trend-up" : "trend-down"}>
-                {card.trend === "up" ? "+" : "-"}
-                {card.trendPct}%
-              </span>
             </div>
           </div>
         </article>

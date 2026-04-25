@@ -1759,14 +1759,6 @@ img {
   margin-top: 16px;
 }
 
-.trend-up {
-  color: var(--success);
-}
-
-.trend-down {
-  color: var(--danger);
-}
-
 .library-table {
   margin-top: 18px;
   display: grid;
