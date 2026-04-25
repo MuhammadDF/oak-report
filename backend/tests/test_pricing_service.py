@@ -62,6 +62,10 @@ def test_product_matches_card_number_exact_match() -> None:
     assert _product_matches_card_number(None, "4") is False
 
 
+def test_product_matches_card_number_requires_number_token() -> None:
+    assert _product_matches_card_number("Charizard Holo", "4") is False
+
+
 def test_get_all_cards_returns_csv_text_on_success() -> None:
     response = MagicMock(status_code=200, text="id,name\n1,Charizard")
 
@@ -115,6 +119,29 @@ async def test_get_card_info_returns_unknown_when_no_match() -> None:
 
     with patch("backend.services.pricing_service.SessionLocal", new=MagicMock(return_value=query_session)):
         result = await get_card_info(CardIdentity(name="MissingNo", card_number="999", language="English"))
+
+    assert result == (1.0, "Unknown Set", "")
+
+
+@pytest.mark.asyncio
+async def test_get_card_info_skips_rows_with_non_matching_card_numbers() -> None:
+    from backend.models.card_model import CardIdentity
+
+    wrong_match = SimpleNamespace(
+        id="pc-1",
+        product_name="Charizard #5",
+        console_name="Pokemon Base Set",
+        loose_price=249.99,
+        image_url="https://example.com/cards/charizard-1600.jpg",
+        tcg_id=None,
+        refreshed_at=datetime.now(UTC),
+    )
+
+    with patch(
+        "backend.services.pricing_service.SessionLocal",
+        new=MagicMock(return_value=_FakeSession(rows=[wrong_match])),
+    ):
+        result = await get_card_info(CardIdentity(name="Charizard", card_number="004", language="English"))
 
     assert result == (1.0, "Unknown Set", "")
 
@@ -268,3 +295,25 @@ async def test_get_all_card_info_keeps_existing_images_without_commit() -> None:
     assert result[0].image_url == "https://example.com/cards/charizard-1600.jpg"
     assert session.committed is False
     mock_get_card_image.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_get_all_card_info_applies_non_english_filter_without_card_number() -> None:
+    from backend.models.card_model import CardIdentity
+
+    japanese_match = SimpleNamespace(
+        id="pc-1",
+        product_name="Pikachu #25",
+        console_name="Pokemon Japanese",
+        loose_price=12.0,
+        image_url="https://example.com/cards/pikachu-1600.jpg",
+        tcg_id=None,
+        refreshed_at=datetime.now(UTC),
+    )
+    session = _FakeSession(rows=[japanese_match])
+
+    with patch("backend.services.pricing_service.SessionLocal", new=MagicMock(return_value=session)):
+        result = await get_all_card_info(CardIdentity(name="Pikachu", card_number=None, language="Japanese"))
+
+    assert len(result) == 1
+    assert result[0].console_name == "Pokemon Japanese"
