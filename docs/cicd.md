@@ -38,7 +38,7 @@ GitHub push to main
    gcloud run deploy --image=<sha>
 ```
 
----
+--- 
 
 ## One-time GCP setup
 
