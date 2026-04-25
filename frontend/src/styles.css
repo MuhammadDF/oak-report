@@ -2032,11 +2032,19 @@ img {
     gap: 12px;
   }
 
+  .collection-search .search-field {
+    flex: initial;
+  }
+
   .collection-search .search-field input {
-    padding: 5px 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 52px;
+    min-height: 52px;
+    padding: 0 10px;
+    line-height: 1.2;
     border-radius: 10px;
     font-size: 0.82rem;
-    min-height: 34px;
   }
 
   .mobile-nav {
