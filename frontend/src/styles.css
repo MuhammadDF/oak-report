@@ -26,7 +26,6 @@ body {
   min-width: 320px;
   height: auto;
   min-height: 100dvh;
-  overflow: hidden;
   line-height: 1.5;
   background:
     radial-gradient(circle at top, rgba(245, 158, 11, 0.14), transparent 30%),
@@ -221,10 +220,15 @@ img {
 
 .content > .screen {
   width: 100%;
-  flex: 0 0 auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.content > .screen--collection {
+  flex: 0 0 auto;
+  min-height: max-content;
 }
 
 .screen--appraise {
@@ -968,6 +972,27 @@ img {
 .search-field--collection input {
   padding: 12px 14px;
   border-radius: 14px;
+}
+
+.collection-sort {
+  display: grid;
+  gap: 6px;
+  min-width: 210px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.collection-sort select {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+.collection-sort select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .collection-empty {
@@ -1714,8 +1739,13 @@ img {
 
 .collection-card__image {
   position: relative;
-  height: 180px;
+  aspect-ratio: 5 / 7;
+  min-height: 180px;
   background: var(--bg-soft);
+}
+
+.collection-card__image img {
+  object-fit: contain;
 }
 
 .collection-card__quantity {
@@ -2035,6 +2065,20 @@ img {
     min-height: 52px;
     padding: 0 10px;
     line-height: 1.2;
+    border-radius: 10px;
+    font-size: 0.82rem;
+  }
+
+  .collection-sort {
+    min-width: 0;
+  }
+
+  .collection-sort select {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 52px;
+    min-height: 52px;
+    padding: 0 10px;
     border-radius: 10px;
     font-size: 0.82rem;
   }

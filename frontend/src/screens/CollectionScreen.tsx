@@ -6,6 +6,14 @@ import { CollectionSearch } from "../components/collection/CollectionSearch";
 import { CollectionSelectionPanel } from "../components/appraise/CollectionSelectionPanel";
 import { CollectionCard } from "../types/app";
 
+type CollectionSort =
+  | "name"
+  | "set"
+  | "price-desc"
+  | "price-asc"
+  | "copies-desc"
+  | "copies-asc";
+
 type CollectionScreenProps = {
   cards: CollectionCard[];
   onCardQuantityChange: (cardId: string, nextQuantity: number) => void;
@@ -19,6 +27,7 @@ export function CollectionScreen({
 }: CollectionScreenProps) {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<CollectionSort>("name");
   const activeCard = useMemo(
     () => cards.find((card) => card.id === activeCardId) ?? null,
     [activeCardId, cards],
@@ -37,6 +46,44 @@ export function CollectionScreen({
       );
     });
   }, [cards, normalizedQuery]);
+
+  const sortedCards = useMemo(() => {
+    const cardsToSort = [...filteredCards];
+
+    if (sortBy === "price-desc") {
+      return cardsToSort.sort((left, right) => right.price - left.price);
+    }
+
+    if (sortBy === "price-asc") {
+      return cardsToSort.sort((left, right) => left.price - right.price);
+    }
+
+    if (sortBy === "copies-desc") {
+      return cardsToSort.sort((left, right) => right.quantity - left.quantity);
+    }
+
+    if (sortBy === "copies-asc") {
+      return cardsToSort.sort((left, right) => left.quantity - right.quantity);
+    }
+
+    if (sortBy === "set") {
+      return cardsToSort.sort((left, right) => {
+        return (
+          left.set.localeCompare(right.set) ||
+          left.name.localeCompare(right.name) ||
+          left.number.localeCompare(right.number)
+        );
+      });
+    }
+
+    return cardsToSort.sort((left, right) => {
+      return (
+        left.name.localeCompare(right.name) ||
+        left.set.localeCompare(right.set) ||
+        left.number.localeCompare(right.number)
+      );
+    });
+  }, [filteredCards, sortBy]);
 
   useEffect(() => {
     if (activeCardId && !activeCard) {
@@ -59,12 +106,17 @@ export function CollectionScreen({
         title="Your Collection"
       />
 
-      <CollectionSearch onChange={setSearch} value={search} />
+      <CollectionSearch
+        onChange={setSearch}
+        onSortChange={setSortBy}
+        sortBy={sortBy}
+        value={search}
+      />
 
-      <CollectionStats cards={filteredCards} />
-      {filteredCards.length ? (
+      <CollectionStats cards={sortedCards} />
+      {sortedCards.length ? (
         <CollectionGrid
-          cards={filteredCards}
+          cards={sortedCards}
           onSelectCard={(card) => setActiveCardId(card.id)}
         />
       ) : (
