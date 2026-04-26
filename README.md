@@ -32,6 +32,7 @@ To run the full backend QA test suite:
 ```
 
 This runs the repository's pytest suite through `uv` so developers have one consistent QA command.
+The script also starts the local `postgres` service first so the database-backed backend tests run against a real Postgres test database.
 
 ## Alembic (database migrations)
 
