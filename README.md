@@ -25,6 +25,15 @@ To reset the database during development/testing:
 
 `reset_database` clears schema state, re-runs Alembic migrations, and reseeds baseline data from `data/pokemon_cards.csv`.
 
+To run the full backend QA test suite:
+
+```bash
+./scripts/run_qa.sh
+```
+
+This runs the repository's pytest suite through `uv` so developers have one consistent QA command.
+The script also starts the local `postgres` service first so the database-backed backend tests run against a real Postgres test database.
+
 ## Alembic (database migrations)
 
 Alembic is the schema migration system for the backend Postgres database. In this project, it keeps table/index changes versioned and reproducible across local development, dev containers, and Docker.
