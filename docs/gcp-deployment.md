@@ -133,6 +133,20 @@ Output format: `YOUR_PROJECT_ID:us-central1:pokemon-db`. Save this as `$INSTANCE
 
 **✅ Success check:** `gcloud sql instances list` shows `pokemon-db` with status `RUNNABLE`.
 
+### 1.5 Grant Cloud Run access to the instance
+
+Cloud Run's runtime service account (`PROJECT_NUMBER-compute@developer.gserviceaccount.com`) needs `roles/cloudsql.client` to open connections through the Cloud SQL Auth Proxy. Without this, the backend container will start but crash on the first DB query with `ConnectionRefusedError [Errno 111]`.
+
+```bash
+PROJECT_NUMBER='YOUR_PROJECT_NUMBER'   # gcloud projects describe YOUR_PROJECT_ID --format="value(projectNumber)"
+
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/cloudsql.client"
+```
+
+> Note: this is the *runtime* SA's permission to talk to Cloud SQL at the GCP level. The DB username/password (Phase 1.2) is a separate, database-level credential — both are required.
+
 ---
 
 ## Phase 2 — Secret Manager
@@ -352,6 +366,10 @@ Output: `https://pokemon-backend-XXXXX-uc.a.run.app`. Save as `$BACKEND_URL`.
 
 ## Phase 6 — Build and deploy the frontend
 
+> ⚠️ **Superseded.** The frontend is now hosted on **Firebase Hosting**, not Cloud Run. See [cicd.md](cicd.md) for the current setup (one-time GCP/IAM steps + the GitHub Actions workflow that builds and runs `firebase deploy`). The Cloud Run flow below is preserved for historical reference and as a fallback if you ever need to revert.
+>
+> If you're following this doc top-to-bottom for a fresh deploy, **skip Phase 6** entirely. After Phase 5 (backend deploy) and Phase 7 (CORS — set `ALLOWED_ORIGINS` to the Firebase URL instead), jump to [cicd.md](cicd.md) for the frontend.
+
 ### 6.1 Build with the backend URL baked in
 
 ```bash
@@ -394,15 +412,15 @@ Save as `$FRONTEND_URL`.
 
 ## Phase 7 — Wire up CORS
 
-Update the backend's `ALLOWED_ORIGINS` with the real frontend URL:
+Update the backend's `ALLOWED_ORIGINS` with the Firebase Hosting URLs:
 
 ```bash
-FRONTEND_URL='https://pokemon-frontend-XXXXX-uc.a.run.app'
-
 gcloud run services update pokemon-backend \
   --region=us-central1 \
-  --update-env-vars="ALLOWED_ORIGINS=${FRONTEND_URL}"
+  --update-env-vars="ALLOWED_ORIGINS=https://oak-report.web.app,https://oak-report.firebaseapp.com"
 ```
+
+Same-origin traffic via Firebase Hosting's `/api/**` rewrite doesn't actually need CORS — the request reaches Cloud Run already authenticated by Firebase's managed SA, no browser preflight involved. `ALLOWED_ORIGINS` is still useful for direct calls to the backend's `*.run.app` URL (e.g. local dev tools hitting prod) and as a guardrail if you ever expose the backend more broadly.
 
 This triggers a new backend revision without rebuilding the image.
 
@@ -474,6 +492,7 @@ gcloud run services update-traffic pokemon-backend --to-revisions=pokemon-backen
 |---|---|---|
 | `403 Forbidden` pulling image | Docker not authed to Artifact Registry | `gcloud auth configure-docker us-central1-docker.pkg.dev` |
 | Backend container exits, logs show `sqlalchemy` connection error | DB creds wrong, or Cloud SQL connector not attached | Verify `--add-cloudsql-instances` flag and that `DATABASE_URL` uses `host=/cloudsql/...` |
+| Backend logs show `ConnectionRefusedError [Errno 111]` on the Unix socket | Runtime SA missing `roles/cloudsql.client` | Re-run Phase 1.5 |
 | Frontend loads but API calls CORS-fail | `ALLOWED_ORIGINS` not set or wrong | Re-run Phase 7 with exact frontend URL (no trailing slash) |
 | OAuth error: `redirect_uri_mismatch` | OAuth authorized origins not updated | Re-check Phase 8 |
 | `exec format error` at container start | Built for arm64 on Apple Silicon | Add `--platform linux/amd64` to `docker build` |

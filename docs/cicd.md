@@ -1,8 +1,8 @@
-# CI/CD: GitHub Actions → Cloud Run
+# CI/CD: GitHub Actions → Cloud Run + Firebase Hosting
 
 This doc walks through the **one-time** setup required to enable automatic deploys, then describes how the pipeline behaves day-to-day.
 
-Companion to [gcp-deployment.md](gcp-deployment.md), which covers the manual first-time deploy.
+Companion to [gcp-deployment.md](gcp-deployment.md), which covers the manual first-time deploy of the backend.
 
 ---
 
@@ -11,11 +11,13 @@ Companion to [gcp-deployment.md](gcp-deployment.md), which covers the manual fir
 On every push to `main`:
 
 - Changes under `backend/`, `alembic/`, `pyproject.toml`, `uv.lock`, `data/`, or `backend.Dockerfile` → `deploy-backend.yml` runs.
-- Changes under `frontend/` or `frontend.prod.Dockerfile` → `deploy-frontend.yml` runs.
+- Changes under `frontend/`, `firebase.json`, or `.firebaserc` → `deploy-frontend.yml` runs.
 - A change touching both runs both workflows in parallel.
 - A change touching neither (e.g. only docs) runs nothing.
 
-Each workflow: builds the image, pushes it to Artifact Registry tagged with the commit SHA, then `gcloud run deploy <service> --image=<sha>`. **No other deploy flags are passed**, so existing Cloud Run config (CloudSQL connection, env vars, Secret Manager bindings, service account) is preserved from the initial manual deploy.
+**Backend** workflow: builds a Docker image, pushes it to Artifact Registry tagged with the commit SHA, then `gcloud run deploy <service> --image=<sha>`. **No other deploy flags are passed**, so existing Cloud Run config (CloudSQL connection, env vars, Secret Manager bindings, service account) is preserved from the initial manual deploy.
+
+**Frontend** workflow: runs `npm ci && npm run build` to produce `frontend/dist/`, then `firebase deploy --only hosting`. Firebase Hosting handles static asset serving + a same-origin rewrite from `/api/**` to the Cloud Run backend.
 
 ```
 GitHub push to main
@@ -29,16 +31,17 @@ GitHub push to main
    gcloud auth via Workload Identity Federation (no JSON keys)
           │                          │
           ▼                          ▼
-   docker build --platform linux/amd64
+   docker build → push to        npm ci && npm run build
+   Artifact Registry             (VITE_API_BASE_URL="" → relative URLs)
           │                          │
           ▼                          ▼
-   docker push us-central1-docker.pkg.dev/oak-report/pokemon-images/{backend|frontend}
-          │                          │
-          ▼                          ▼
-   gcloud run deploy --image=<sha>
+   gcloud run deploy             firebase deploy --only hosting
+   pokemon-backend               → oak-report.web.app
 ```
 
---- 
+At runtime, the browser hits `https://oak-report.web.app/api/...` → Firebase Hosting rewrites it to the private `pokemon-backend` Cloud Run service. Same-origin, no CORS for normal traffic.
+
+---
 
 ## One-time GCP setup
 
@@ -52,6 +55,7 @@ PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(project
 REPO="organized-nick/pokemon"   # GitHub <org>/<repo>
 DEPLOYER_SA="github-deployer@${PROJECT_ID}.iam.gserviceaccount.com"
 RUNTIME_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+HOSTING_SA="service-${PROJECT_NUMBER}@gcp-sa-firebasehosting.iam.gserviceaccount.com"
 ```
 
 ### 1. Create the deployer service account
@@ -70,10 +74,15 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${DEPLOYER_SA}" \
   --role="roles/run.admin"
 
-# Push images to Artifact Registry
+# Push backend images to Artifact Registry
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${DEPLOYER_SA}" \
   --role="roles/artifactregistry.writer"
+
+# Publish to Firebase Hosting
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:${DEPLOYER_SA}" \
+  --role="roles/firebasehosting.admin"
 
 # Act as the runtime SA (required to deploy a service that runs *as* the compute SA)
 gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" \
@@ -81,7 +90,26 @@ gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" \
   --role="roles/iam.serviceAccountUser"
 ```
 
-### 3. Create the Workload Identity Pool + GitHub OIDC provider
+### 3. Wire Firebase Hosting to invoke the private backend
+
+The Firebase rewrite proxies `/api/**` to Cloud Run as a Google-managed service account. The backend stays private; Firebase is the only authorized caller from the browser path.
+
+```bash
+# Make sure the backend isn't publicly reachable (best-effort cleanup)
+gcloud run services remove-iam-policy-binding pokemon-backend \
+  --region=us-central1 \
+  --member=allUsers --role=roles/run.invoker || true
+
+# Allow Firebase Hosting's managed SA to invoke pokemon-backend
+gcloud run services add-iam-policy-binding pokemon-backend \
+  --region=us-central1 \
+  --member="serviceAccount:${HOSTING_SA}" \
+  --role="roles/run.invoker"
+```
+
+> The Firebase Hosting SA is auto-created the first time Hosting is used on the project. If the second command fails with "service account does not exist," do an initial manual `firebase deploy --only hosting` from the devcontainer first to provision it, then re-run.
+
+### 4. Create the Workload Identity Pool + GitHub OIDC provider
 
 ```bash
 gcloud iam workload-identity-pools create github-pool \
@@ -101,7 +129,7 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
 
 The `attribute-condition` locks the federation to this repo only. Without it, any GitHub repo could authenticate as `github-deployer` — Google requires this restriction since 2023.
 
-### 4. Allow the GitHub repo to impersonate the deployer SA
+### 5. Allow the GitHub repo to impersonate the deployer SA
 
 ```bash
 gcloud iam service-accounts add-iam-policy-binding "$DEPLOYER_SA" \
@@ -110,13 +138,13 @@ gcloud iam service-accounts add-iam-policy-binding "$DEPLOYER_SA" \
   --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO}"
 ```
 
-### 5. Get the WIF provider resource name (for GitHub config below)
+### 6. Print the WIF provider resource name (for GitHub config below)
 
 ```bash
 echo "projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
 ```
 
-Copy this value — it goes into the `WIF_PROVIDER` GitHub variable in the next section.
+Copy this value — it goes into the `WIF_PROVIDER` GitHub variable.
 
 ---
 
@@ -132,10 +160,8 @@ Repo Settings → **Secrets and variables** → **Actions**.
 | `GCP_REGION` | `us-central1` |
 | `ARTIFACT_REPO` | `pokemon-images` |
 | `BACKEND_SERVICE` | `pokemon-backend` |
-| `FRONTEND_SERVICE` | `pokemon-frontend` |
-| `WIF_PROVIDER` | `projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/github-pool/providers/github-provider` (from step 5 above) |
+| `WIF_PROVIDER` | `projects/<PROJECT_NUMBER>/locations/global/workloadIdentityPools/github-pool/providers/github-provider` (from step 6) |
 | `DEPLOY_SA` | `github-deployer@oak-report.iam.gserviceaccount.com` |
-| `VITE_API_BASE_URL` | The deployed backend URL, e.g. `https://pokemon-backend-XXXXX-uc.a.run.app` (no trailing slash) |
 
 ### Secrets (Secrets tab — masked in logs)
 
@@ -143,26 +169,35 @@ Repo Settings → **Secrets and variables** → **Actions**.
 |---|---|
 | `VITE_GOOGLE_CLIENT_ID` | The Google OAuth Client ID used at build time |
 
-> Both values end up in the public JS bundle, so neither is truly secret. `VITE_GOOGLE_CLIENT_ID` is stored as a GitHub secret only to keep it out of Action logs.
+> The client ID ends up in the public JS bundle, so it's not truly secret. It's stored as a GitHub secret only to keep it out of Action logs.
+
+### OAuth origins
+
+Console → APIs & Credentials → OAuth Client → **Authorized JavaScript origins**:
+- `https://oak-report.web.app`
+- `https://oak-report.firebaseapp.com`
+
+(Plus any custom domain you map later.)
 
 ---
 
 ## First run
 
-Path filters mean a docs-only merge won't trigger anything. Manually dispatch each workflow once: **Actions** tab → pick the workflow → "Run workflow" → branch `main`. The "Deploy to Cloud Run" step prints the new revision URL on success.
+Path filters mean a docs-only merge won't trigger anything. Manually dispatch each workflow once: **Actions** tab → pick the workflow → "Run workflow" → branch `main`.
+
+- Backend: succeeds when the Cloud Run revision URL prints in the deploy step.
+- Frontend: succeeds when `firebase deploy` prints the Hosting URL (`https://oak-report.web.app`).
 
 ---
 
 ## Day-to-day
 
 - **Normal change:** branch off `main`, open a PR, merge. CI auto-deploys.
-- **Frontend change that needs a different backend URL:** update the `VITE_API_BASE_URL` GitHub variable, then re-run the frontend workflow manually.
-- **Rotate `VITE_GOOGLE_CLIENT_ID`:** update the secret, re-run the frontend workflow.
+- **Rotate `VITE_GOOGLE_CLIENT_ID`:** update the GitHub secret, re-run the frontend workflow.
 
 ### Rolling back
 
-Same flow as the manual deploy doc — list revisions and shift traffic:
-
+**Backend (Cloud Run):**
 ```bash
 gcloud run revisions list --service=pokemon-backend --region=us-central1
 gcloud run services update-traffic pokemon-backend \
@@ -170,7 +205,13 @@ gcloud run services update-traffic pokemon-backend \
   --region=us-central1
 ```
 
-This is instant (no rebuild) because every CI deploy creates a new immutable revision tagged with the commit SHA.
+**Frontend (Firebase Hosting):**
+```bash
+# In the devcontainer
+firebase hosting:releases:list
+firebase hosting:rollback     # rolls back to the previous release
+```
+Or use the Firebase Console → Hosting → Release history → "Rollback" on any prior release. Both are instant — every release is immutable on Firebase's CDN.
 
 ---
 
@@ -178,18 +219,20 @@ This is instant (no rebuild) because every CI deploy creates a new immutable rev
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `Error: google-github-actions/auth failed with: the GitHub Actions OIDC token...` | `WIF_PROVIDER` typo or `attribute-condition` doesn't match this repo | Double-check the value from step 5 and that step 3's condition has `organized-nick/pokemon` |
-| `Permission 'iam.serviceaccounts.getAccessToken' denied` | Step 4 (workloadIdentityUser binding) not run, or `principalSet` repo path is wrong | Re-run step 4 with the right `${REPO}` |
-| `denied: Permission "artifactregistry.repositories.uploadArtifacts" denied` | Deployer SA missing `roles/artifactregistry.writer` | Re-run step 2 |
-| Deploy step fails with `Permission 'run.services.update' denied` | Deployer SA missing `roles/run.admin` | Re-run step 2 |
-| Deploy step fails with `iam.serviceaccounts.actAs` on the compute SA | Step 2's `roles/iam.serviceAccountUser` binding missing | Re-run that command |
-| `exec format error` on container start | (Shouldn't happen — runner is x86) but if you ever drop the `--platform linux/amd64` flag, multi-arch builds may surface this | Restore `--platform linux/amd64` in the workflow |
+| `Error: google-github-actions/auth failed with: the GitHub Actions OIDC token...` | `WIF_PROVIDER` typo or `attribute-condition` doesn't match this repo | Double-check the value from step 6 and that step 4's condition has `organized-nick/pokemon` |
+| `Permission 'iam.serviceaccounts.getAccessToken' denied` | Step 5 (workloadIdentityUser binding) not run, or `principalSet` repo path is wrong | Re-run step 5 with the right `${REPO}` |
+| Backend: `denied: Permission "artifactregistry.repositories.uploadArtifacts" denied` | Deployer SA missing `roles/artifactregistry.writer` | Re-run step 2 |
+| Backend deploy: `Permission 'run.services.update' denied` | Deployer SA missing `roles/run.admin` | Re-run step 2 |
+| Backend deploy: `iam.serviceaccounts.actAs` on the compute SA | Step 2's `roles/iam.serviceAccountUser` binding missing | Re-run that command |
+| Frontend: `HTTP Error: 403, The caller does not have permission` from `firebase deploy` | Deployer SA missing `roles/firebasehosting.admin` | Re-run step 2 |
+| Frontend deploys, but `/api/*` calls return 403 from the browser | Firebase Hosting SA missing `roles/run.invoker` on `pokemon-backend` | Re-run step 3 |
+| Frontend deploys, but `/api/*` calls return 404 | Wrong `serviceId` or `region` in `firebase.json` rewrites | Confirm both match the actual Cloud Run service |
 | Pipeline didn't trigger after a merge | None of the changed files matched the workflow's `paths:` filter | Either expand the filter or merge a change in a watched path |
 
 ---
 
 ## What is *not* automated
 
-- **First-time deploy of a service** still goes through [gcp-deployment.md](gcp-deployment.md) — CI only updates the image, it doesn't create the initial CloudSQL connection, env vars, secret bindings, or service.
+- **First-time deploy of the backend** still goes through [gcp-deployment.md](gcp-deployment.md) — CI only updates the image, it doesn't create the initial CloudSQL connection, env vars, secret bindings, or service.
 - **Schema-altering migrations** still run on container startup ([backend.Dockerfile](../backend.Dockerfile) `CMD`). For long-running migrations, run them out-of-band before the deploy.
-- **Tests / linting** — none configured in this repo today. Frontend's `npm run build` runs `tsc -b` inside the Docker build, so type errors will fail CI naturally; pure runtime regressions won't be caught until you hit the deployed service.
+- **Tests / linting** — none configured in this repo today. The frontend's `npm run build` runs `tsc -b` (typecheck) before bundling, so type errors fail CI naturally; runtime regressions won't be caught until you hit the deployed service.

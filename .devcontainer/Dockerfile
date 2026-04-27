@@ -25,3 +25,6 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
         -o APT::Get::List-Cleanup="0" \
     && apt-get install -y --no-install-recommends google-cloud-cli \
     && rm -rf /var/lib/apt/lists/*
+
+# Firebase CLI — used for deploying the frontend to Firebase Hosting (see docs/cicd.md)
+RUN npm install -g firebase-tools
