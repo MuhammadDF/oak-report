@@ -1,62 +1,46 @@
-# Phase 1: Evaluation of Alternative Platforms
+# Platform Selection
 
-To identify the most effective architecture, the following technologies were evaluated based on scalability, AI integration, and development velocity.
+This document captures platform direction and rationale for Oak Report. It is product and architecture context; see the current implementation docs for what is already present in the repo.
 
-## 1. Hosting & Infrastructure (PaaS)
+## Alternatives Evaluated
 
-| Alternative                 | Pros                                                                                        | Cons                                                                         |
-| --------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Heroku                      | Rapid deployment; excellent for standard CRUD apps.                                         | Limited native AI orchestration; higher cost for performance tiers.          |
-| AWS (Amazon Web Services)   | Deepest feature set; Lambda is highly mature for serverless.                                | High configuration overhead; pricing can be unpredictable for startups.      |
-| Microsoft Azure             | Strong enterprise support; seamless integration with OpenAI.                                | Complex UI/UX for resource management; higher latency for non-OpenAI models. |
-| Google Cloud Platform (GCP) | Selected. Best-in-class AI tools; superior serverless integration for Gemini and Vertex AI. | Requires specific expertise in IAM and project billing structures.           |
+### Hosting and Infrastructure
 
-## 2. Frontend Frameworks
+| Alternative | Pros | Cons |
+| --- | --- | --- |
+| Heroku | Rapid deployment and a familiar workflow for CRUD apps. | Limited native AI orchestration and higher cost at larger performance tiers. |
+| AWS | Broadest service catalog and mature serverless options. | Higher configuration overhead and less predictable cost for a small team. |
+| Azure | Strong enterprise support and OpenAI integration. | More complex resource management for this project shape. |
+| Google Cloud Platform | Strong fit for Gemini, Vertex AI, Cloud Run, and Google ecosystem access. | Requires careful IAM, billing, and deployment configuration. |
 
-| Alternative  | Pros                                                                                       | Cons                                                        |
-| ------------ | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| Vue.js       | Low barrier to entry; highly performant for simple UIs.                                    | Fewer libraries for complex mobile-web camera integrations. |
-| Angular      | Opinionated and robust; ideal for large enterprise scale.                                  | Significant boilerplate; overkill for an MVP-focused app.   |
-| React (Vite) | Selected. Industry-standard ecosystem; excellent responsiveness and fast refresh via Vite. | Frequent library updates can cause dependency friction.     |
+### Frontend Framework
 
-## 3. Backend & Language
+| Alternative | Pros | Cons |
+| --- | --- | --- |
+| Vue | Low barrier to entry and strong performance for simple UI. | Smaller ecosystem for complex mobile camera integrations. |
+| Angular | Opinionated and robust for enterprise apps. | More framework overhead than the MVP needs. |
+| React with Vite | Fast iteration, broad ecosystem, and strong support for component testing. | Dependency updates require active maintenance. |
 
-| Alternative          | Pros                                                                                   | Cons                                                                        |
-| -------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Node.js (Typescript) | High concurrency; single-language stack (JS/TS).                                       | Less mature than Python for high-level AI/ML library support.               |
-| Go (Golang)          | Superior performance; compiled for high-speed execution.                               | Smaller ecosystem for LLM orchestration and Pydantic-style data validation. |
-| Python               | Selected. Native support for AI frameworks; required for Google ADK and agentic logic. | Slower execution for standard web logic compared to Go or Node.             |
+### Backend Language
 
-# Phase 2: Final Platform Selection & Justification
+| Alternative | Pros | Cons |
+| --- | --- | --- |
+| Node.js / TypeScript | High concurrency and one language across the stack. | Less direct fit for Python-first AI tooling. |
+| Go | Excellent performance and simple deployment artifacts. | Smaller ecosystem for LLM orchestration and Pydantic-style validation. |
+| Python | Strong AI/ML ecosystem and FastAPI productivity. | Lower raw throughput than Go or Node for general web logic. |
 
-The "Oak Report" will utilize a serverless client-server architecture optimized for high-speed image inference and live market grounding.
+## Selected Direction
 
-## Strategic Justification
+Oak Report targets a client-server architecture with:
 
-The primary driver for the platform selection is the unique partnership with our client, who provides direct access to the Google Cloud Ecosystem. This allows the team to leverage premium enterprise-grade tools, specifically Vertex AI and Google Search Grounding, at pretty much zero cost.
+- React and Vite for the frontend.
+- Python and FastAPI for backend APIs.
+- Postgres for persistent collection and catalog data.
+- Gemini-oriented AI integration for image reasoning.
+- Google Cloud Platform and Cloud Run as the likely deployment direction.
 
-By centralizing the project on Google Cloud Platform, we eliminate the budget constraints typically associated with high-frequency AI inference and live search APIs. This allows for a more robust "Proxy/Fake Guard" logic that requires multiple visual passes, which would be cost-prohibitive on other platforms like AWS or Azure.
+The current repository already uses React/Vite, FastAPI, Postgres, SQLModel, and Alembic locally. Cloud deployment and richer AI orchestration remain deployment/roadmap concerns unless documented elsewhere as implemented.
 
-Note: Most of these decisions were also made to prioritize seamless integration between the AI model (Gemini) and the hosting environment (Cloud Run). Using a unified Google ecosystem reduces "glue code" and minimizes latency for real-time appraisals.
+## Rationale
 
-## Final Stack Components
-
-● Frontend: React (Vite) + Tailwind CSS. Chosen for the speed and responsiveness required for mobile camera usage.
-
-● Backend: Python. Selected for its ability to handle complex agentic reasoning and Pydantic data schemas.
-
-● AI/Inference: Gemini 2.0/3 Flash (Vertex AI). Leveraged for its "Visual Reasoning" capabilities and lightning-fast response times.
-
-● Database: Postgres. Provides a relational "Memory Bank" to track card scan history.
-
-● Hosting: GCP Cloud Run. Offers a scalable, serverless environment that ensures the app remains operational after the project handoff without ongoing maintenance overhead.
-
-## Documentation & References
-
-● Google ADK Documentation: Guidelines for building agentic workflows.
-
-● Vertex AI Search Grounding: Documentation for live web-grounded market data.
-
-● TCG Analytics Reference: Case studies on visual detection of counterfeit collectibles.
-
-This platform configuration ensures that the Oak Report is not only a functional MVP but a cost-efficient, production-ready tool that maximizes the technological advantages provided by the project's stakeholders.
+The main driver is the need for fast image appraisal, market grounding, and a mobile-friendly collection workflow. Python keeps the backend close to AI tooling, React/Vite supports rapid frontend development, and Postgres gives the app durable relational storage for user and collection data.

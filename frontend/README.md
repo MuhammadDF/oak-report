@@ -1,26 +1,43 @@
-# Frontend Scaffold
+# Oak Report Frontend
 
-This folder houses the presentation layer for the Pokémon appraisal tool.
+This directory contains the React/Vite presentation layer for Oak Report.
 
-## Current layout
-- `components/`: Holds reusable UI primitives (buttons, card previews, scan overlays).
-- `pages/`: Entry points for major screens such as the camera viewfinder, dashboard, and admin console.
+For the full frontend guide, see [../docs/frontend.md](../docs/frontend.md).
 
-## Card Scanning
+## Commands
 
-The Appraise screen (`src/screens/AppraiseScreen.tsx`) offers two scanning modes, switchable via a tab bar:
+Install dependencies:
 
-### Upload tab (default)
-- **Mobile:** Shows a "Use camera" button backed by `<input type="file" capture="environment">`. Tapping it opens the native OS camera picker.
-- **Desktop:** Shows a drag-and-drop zone for selecting a card image file.
+```bash
+npm install
+```
 
-### Live Camera tab
-Uses the browser's WebRTC `getUserMedia` API to stream the camera directly into a `<video>` element — no button click required to see the feed. A "Capture" button snaps a frame, converts it to JPEG via `<canvas>`, and posts it to the scan API.
+Run the dev server:
 
-**Works on MacBook Pro:** The built-in FaceTime camera is used. The browser will prompt for camera permission on first use. Tested in Chrome, Safari, and Firefox on macOS.
+```bash
+npm run dev -- --host 0.0.0.0 --port 5173
+```
 
-**Key files:**
-- `src/components/appraise/LiveCameraPanel.tsx` — live camera component (getUserMedia, capture, cleanup on unmount)
-- `src/components/appraise/UploadPanel.tsx` — original file-input/drag-drop flow
-- `src/hooks/useAppraisal.ts` — shared scan state; exposes `handleFileChange` (for file inputs) and `handleFileDirect` (for direct File objects from LiveCameraPanel)
+Build:
 
+```bash
+npm run build
+```
+
+Run tests:
+
+```bash
+npm run test
+npm run test:coverage
+```
+
+## Structure
+
+- `src/screens`: route-level screen components.
+- `src/components`: reusable UI and screen sections.
+- `src/hooks`: shared stateful behavior.
+- `src/repositories`: API/mock data access boundaries.
+- `src/types`: shared TypeScript contracts.
+- `src/test`: Vitest setup and helpers.
+
+The current implementation uses "screens" rather than the older top-level `pages` pattern.

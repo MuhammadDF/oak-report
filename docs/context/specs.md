@@ -1,81 +1,79 @@
-# 1. Functional Requirements
+# Product Specifications
 
-These requirements define the specific behaviors and services the system must provide.
+These requirements describe product intent for Oak Report. Some items are implemented today, while others remain roadmap context; see [Architecture](../architecture.md) for current implementation state.
 
-## Definite (Must-Have)
+## Functional Requirements
 
-**FR-1: Image-Based Identification:**  
-The system shall identify a Pokémon card (Name, Set, Number) via a smartphone camera scan or image upload with at least 90% accuracy for English cards.
+### Must Have
 
-**FR-2: Real-Time Valuation:**  
-Upon identification, the system shall fetch current market pricing (Market Price, Low, High) using integrated APIs (e.g., TCGPlayer or eBay).
+**FR-1: Image-Based Identification**
+The system shall identify a Pokemon card by name, set, and number from a smartphone camera scan or image upload with at least 90% accuracy for English cards.
 
-**FR-3: Personal Collection (Inventory):**  
-Users shall be able to add identified cards to a digital “Collection,” with the ability to edit conditions (Near Mint, Lightly Played, etc.) and delete entries.
+**FR-2: Real-Time Valuation**
+After identification, the system shall fetch current market pricing using integrated sources such as PriceCharting, TCGPlayer, or eBay.
 
-**FR-4: Searchable Library:**  
-Users shall be able to search a text-based database of all Pokémon cards to view details and base-level pricing without a physical scan.
+**FR-3: Personal Collection**
+Users shall be able to add identified cards to a digital collection, edit collection details, and delete entries.
 
-**FR-5: User Authentication:**  
-The system shall provide secure Login/Sign-up functionality to persist collection data across sessions.
+**FR-4: Searchable Library**
+Users shall be able to search a text-based Pokemon card library and view card details and base pricing.
 
-## Perhaps (Should-Have)
+**FR-5: User Authentication**
+The system shall provide secure login and session handling so collection data persists across sessions.
 
-**FR-6: Visual Reasoning (Red-Flagging):**  
-The AI shall provide a visual overlay or bulleted list explaining why a card was flagged as a proxy (e.g., “Holographic pattern is static”).
+### Should Have
 
-**FR-8: Basic Proxy Detection:**  
-The system shall analyze uploaded images for common counterfeit indicators, specifically font irregularities and incorrect expansion symbols.
+**FR-6: Visual Reasoning**
+The AI should explain likely proxy or counterfeit flags, such as font issues, static holographic patterns, or incorrect symbols.
 
-## Improbable (Nice-to-Have)
+**FR-8: Basic Proxy Detection**
+The system should analyze uploaded images for common counterfeit indicators.
 
-**FR-9: Bulk Scan Mode:**  
-The ability to scan and identify multiple cards in a single camera frame for rapid inventorying.
+### Nice to Have
 
-**FR-10: Admin Overrides:**  
-An admin interface to reset user passwords and manually flag “bad data” in the global library.
+**FR-9: Bulk Scan Mode**
+Users may scan and identify multiple cards in a single camera frame.
 
-# 2. Non-Functional Requirements
+**FR-10: Admin Overrides**
+Admins may manage access or correct bad library data.
 
-These requirements define the quality attributes and constraints of the system.
+## Non-Functional Requirements
 
-## Definite (Must-Have)
+### Must Have
 
-**NFR-1: Performance (Speed):**  
-The “Instant Appraisal” (Identification + Pricing) must return results within 5 seconds under standard 4G/5G/Wi-Fi conditions.
+**NFR-1: Performance**
+Instant appraisal should return identification and pricing results within 5 seconds under normal mobile or Wi-Fi conditions.
 
-**NFR-2: Usability:**  
-The mobile interface must follow a “Camera-First” design, allowing a user to initiate a scan within one tap of opening the webapp.
+**NFR-2: Usability**
+The mobile interface should prioritize low-friction card capture.
 
-**NFR-3: Reliability:**  
-The system shall utilize a cloud-based database to ensure collection data is not lost if the user uninstalls the app.
+**NFR-3: Reliability**
+Collection data should persist in a cloud-capable database rather than local-only storage.
 
-## Perhaps (Should-Have)
+### Should Have
 
-**NFR-4: Scalability:**  
-The backend must be able to handle at least 25 concurrent users performing image analysis without a degradation in response time.
+**NFR-4: Scalability**
+The backend should handle at least 25 concurrent users performing image analysis without material response degradation.
 
-## Improbable (Nice-to-Have)
+### Nice to Have
 
-**NFR-5: Security:**  
-Administrative access (Alice Admin) must require Multi-Factor Authentication (MFA) to prevent unauthorized access to the user database.
+**NFR-5: Security**
+Administrative access should support stronger controls such as MFA before production use.
 
-# 3. Interfaces
+## Interfaces
 
-This section describes how the user and other systems interact with the application.
+### Must Have
 
-## Definite (Must-Have)
+**I-1: Mobile GUI**
+The app should provide a clean, high-contrast interface for appraisal, collection, and market details.
 
-**I-1: Mobile GUI:**  
-A clean, high-contrast interface designed for “one-handed” use. Key screens include the Viewfinder (Camera), Dashboard (Collection), and Market Details.
+**I-2: Camera Integration**
+The frontend should support mobile camera capture and image upload workflows.
 
-**I-2: Camera Integration:**  
-The app must interface directly with the mobile device’s hardware camera API to control focus and flash for high-detail texture shots.
+**I-3: External Pricing APIs**
+The backend should integrate with at least one pricing source for market data.
 
-**I-3: External Pricing APIs:**  
-The system must interface with at least one major TCG pricing API via RESTful calls to retrieve “Sold” and “List” price data.
+### Nice to Have
 
-## Improbable (Nice-to-Have)
-
-**I-4: Direct Marketplace Integration:**  
-An API interface that allows Sally Seller to “Push to eBay,” pre-filling a listing with the card’s name, set, and AI-identified condition.
+**I-4: Direct Marketplace Integration**
+The app may eventually prefill marketplace listings with appraised card data.
