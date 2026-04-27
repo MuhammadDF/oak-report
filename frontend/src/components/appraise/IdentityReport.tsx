@@ -2,12 +2,10 @@ import { ScanResult } from "../../types/app";
 import { formatCurrency } from "../../utils/format";
 
 type IdentityReportProps = {
-  previewUrl: string | null;
   result: ScanResult;
 };
 
 export function IdentityReport({
-  previewUrl,
   result,
 }: IdentityReportProps) {
   return (
@@ -24,8 +22,6 @@ export function IdentityReport({
         <div className="report-summary__art">
           {result.image_url ? (
             <img alt={result.card.name} src={result.image_url} />
-          ) : previewUrl ? (
-            <img alt={result.card.name} src={previewUrl} />
           ) : (
             <div className="report-summary__placeholder">No card image</div>
           )}
