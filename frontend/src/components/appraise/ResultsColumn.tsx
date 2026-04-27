@@ -26,20 +26,16 @@ export function ResultsColumn({
   >("idle");
 
   async function handleAddToCollection() {
-    if (!result || !authToken || collectionStatus === "loading") {
-      return;
-    }
-
     setCollectionStatus("loading");
 
     try {
-      await collectionRepository.addScanToCollection(authToken, {
-        name: result.card.name,
-        set: result.set_name ?? "Unknown Set",
-        number: result.card.card_number ?? "--",
-        price: result.pricing,
-        image: result.image_url ?? reportPreviewUrl,
-        language: result.card.language,
+      await collectionRepository.addScanToCollection(authToken!, {
+        name: result!.card.name,
+        set: result!.set_name ?? "Unknown Set",
+        number: result!.card.card_number ?? "--",
+        price: result!.pricing,
+        image: result!.image_url ?? reportPreviewUrl,
+        language: result!.card.language,
       });
 
       setCollectionStatus("success");
