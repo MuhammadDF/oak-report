@@ -96,7 +96,7 @@ export default function App() {
   }
 
   function handleCollectionChanged() {
-    if (!authToken || authUser?.role === "na") {
+    if (!authToken) {
       return;
     }
 

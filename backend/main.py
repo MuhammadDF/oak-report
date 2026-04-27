@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 import asyncio
-from contextlib import suppress
+from contextlib import asynccontextmanager, suppress
 import logging
 
 from .db.config import get_database_settings
@@ -23,7 +23,16 @@ from .api import (
     search_routes,
 )
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await verify_database_connection()
+    try:
+        yield
+    finally:
+        await shutdown_background_tasks()
+
+
+app = FastAPI(lifespan=lifespan)
 logger = logging.getLogger(__name__)
 _pricing_refresh_lock = asyncio.Lock()
 
@@ -58,7 +67,6 @@ async def _pricing_catalog_scheduler_loop(
             logger.exception("Weekly PriceCharting catalog refresh failed")
 
 
-@app.on_event("startup")
 async def verify_database_connection() -> None:
     """Fail fast on startup if postgres provider cannot reach the database."""
 
@@ -81,7 +89,6 @@ async def verify_database_connection() -> None:
     )
 
 
-@app.on_event("shutdown")
 async def shutdown_background_tasks() -> None:
     task = getattr(app.state, "pricing_catalog_refresh_task", None)
     if task is None:
