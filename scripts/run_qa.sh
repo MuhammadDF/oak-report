@@ -6,6 +6,15 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 cd "$REPO_ROOT"
 
+cleanup_qa_artifacts() {
+  rm -f .coverage
+  rm -rf frontend/coverage
+}
+
+trap cleanup_qa_artifacts EXIT
+
+cleanup_qa_artifacts
+
 docker compose up -d postgres >/dev/null
 
 POSTGRES_CONTAINER_ID="$(docker compose ps -q postgres)"
@@ -20,3 +29,4 @@ if [[ -n "${POSTGRES_CONTAINER_ID}" ]]; then
 fi
 
 uv run pytest backend/tests --cov=backend --cov-report=term-missing
+npm --prefix frontend run test:coverage

@@ -85,7 +85,7 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
   }, [pendingRoles, users]);
 
   const orderedUsers = useMemo(() => {
-    const currentUserId = authUser?.id ?? null;
+    const currentUserId = authUser?.id;
 
     return [...users].sort((left, right) => {
       if (left.id === currentUserId && right.id !== currentUserId) {
@@ -118,16 +118,13 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
   }
 
   async function handleSave(user: AdminUserRecord) {
-    const nextRole = pendingRoles[user.id];
-    if (!authToken || !nextRole || nextRole === user.role) {
-      return;
-    }
+    const nextRole = pendingRoles[user.id]!;
 
     setSavingIds((current) => ({ ...current, [user.id]: true }));
     setError(null);
 
     try {
-      const updated = await adminRepository.updateUserRole(authToken, user.id, nextRole);
+      const updated = await adminRepository.updateUserRole(authToken!, user.id, nextRole);
       setUsers((current) =>
         current.map((item) => (item.id === updated.id ? updated : item)),
       );
@@ -235,16 +232,14 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
                         </td>
                         <td>
                           {isDirty ? (
-                            currentUser ? null : (
-                              <button
-                                className="primary-button admin-action-button"
-                                disabled={isSaving}
-                                onClick={() => void handleSave(user)}
-                                type="button"
-                              >
-                                {isSaving ? "Saving..." : "Save"}
-                              </button>
-                            )
+                            <button
+                              className="primary-button admin-action-button"
+                              disabled={isSaving}
+                              onClick={() => void handleSave(user)}
+                              type="button"
+                            >
+                              {isSaving ? "Saving..." : "Save"}
+                            </button>
                           ) : null}
                         </td>
                       </tr>
