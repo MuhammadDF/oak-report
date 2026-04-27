@@ -18,5 +18,21 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    test: {
+      environment: "jsdom",
+      setupFiles: "./src/test/setup.ts",
+      clearMocks: true,
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "html"],
+        include: ["src/**/*.{ts,tsx}"],
+        exclude: [
+          "src/main.tsx",
+          "src/test/**",
+          "src/vite-env.d.ts",
+          "src/types/**",
+        ],
+      },
+    },
   };
 });
