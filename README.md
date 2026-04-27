@@ -25,13 +25,13 @@ To reset the database during development/testing:
 
 `reset_database` clears schema state, re-runs Alembic migrations, and reseeds baseline data from `data/pokemon_cards.csv`.
 
-To run the full backend QA test suite:
+To run the full QA test suite:
 
 ```bash
 ./scripts/run_qa.sh
 ```
 
-This runs the repository's pytest suite through `uv` so developers have one consistent QA command.
+This runs the backend pytest suite with coverage and the frontend Vitest suite with coverage so developers have one consistent full-stack QA command.
 The script also starts the local `postgres` service first so the database-backed backend tests run against a real Postgres test database.
 
 ## Alembic (database migrations)
@@ -122,6 +122,18 @@ Admin visibility endpoint:
 3. Start the frontend with `npm run dev`.
 
 The Vite app runs at `https://localhost:5173` and is already allowed by backend CORS.
+
+To run just the frontend tests:
+
+```bash
+npm --prefix frontend run test
+```
+
+To run frontend tests with coverage:
+
+```bash
+npm --prefix frontend run test:coverage
+```
 
 ## Containers
 
