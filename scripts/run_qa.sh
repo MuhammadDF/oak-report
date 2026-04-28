@@ -29,4 +29,4 @@ if [[ -n "${POSTGRES_CONTAINER_ID}" ]]; then
 fi
 
 uv run pytest backend/tests --cov=backend --cov-report=term-missing
-npm --prefix frontend run test:coverage
+VITE_API_BASE_URL= npm --prefix frontend run test:coverage
