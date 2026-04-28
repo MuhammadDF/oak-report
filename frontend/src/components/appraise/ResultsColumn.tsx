@@ -10,6 +10,7 @@ type ResultsColumnProps = {
   onCollectionAdded?: () => void;
   onBackToSearchPage?: () => void;
   onSearchPageClick?: () => void;
+  onClose?: () => void;
   reportPreviewUrl: string | null;
   result: ScanResult | null;
 };
@@ -21,6 +22,7 @@ export function ResultsColumn({
   hasBackToSearchPage,
   onBackToSearchPage,
   onCollectionAdded,
+  onClose,
   onSearchPageClick,
   reportPreviewUrl,
   result,
@@ -52,10 +54,17 @@ export function ResultsColumn({
   }
 
   return (
-    <section className="results-column">
+    <article className="panel report-panel report-modal__panel results-column">
       {result ? (
         <>
-          <IdentityReport previewUrl={reportPreviewUrl} result={result} />
+          {onClose ? (
+            <div className="report-modal__header report-modal__header--right">
+              <button className="report-modal__close" onClick={onClose} type="button">
+                Close
+              </button>
+            </div>
+          ) : null}
+          <IdentityReport embedded previewUrl={reportPreviewUrl} result={result} />
           <div className="report-actions">
             <button
               className="primary-button"
@@ -91,6 +100,6 @@ export function ResultsColumn({
       ) : (
         <EmptyReport />
       )}
-    </section>
+    </article>
   );
 }

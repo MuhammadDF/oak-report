@@ -4,22 +4,19 @@ import { formatCurrency } from "../../utils/format";
 type IdentityReportProps = {
   previewUrl: string | null;
   result: ScanResult;
+  embedded?: boolean;
 };
 
 export function IdentityReport({
   previewUrl,
   result,
+  embedded = false,
 }: IdentityReportProps) {
   const artSrc = result.image_url ?? previewUrl;
-  return (
-    <article className="panel report-panel">
-      <div className="report-panel__header">
-        <div>
-          <p className="panel__eyebrow">Card identity</p>
-          <h2>{result.card.name}</h2>
-        </div>
-        <span className="report-badge">{result.card.language ?? "Language pending"}</span>
-      </div>
+
+  const content = (
+    <>
+      <h2>{result.card.name}</h2>
 
       <div className="report-summary">
         <div className="report-summary__art">
@@ -49,6 +46,12 @@ export function IdentityReport({
           </div>
         </dl>
       </div>
-    </article>
+    </>
   );
+
+  if (embedded) {
+    return content;
+  }
+
+  return <article className="panel report-panel">{content}</article>;
 }

@@ -463,6 +463,18 @@ img {
   object-fit: cover;
 }
 
+.live-camera__video--hidden {
+  opacity: 0;
+}
+
+.live-camera__capture-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Card alignment frame — absolutely covers the viewfinder.
    The inner rectangle is transparent; box-shadow creates the dark surround. */
 .card-frame {
@@ -1010,11 +1022,15 @@ img {
 }
 
 .collection-sort select {
+  width: 100%;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: var(--bg-elevated);
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-soft);
   color: var(--text);
-  padding: 12px 14px;
+  padding: 14px 16px;
+  line-height: normal;
 }
 
 .collection-sort select:focus-visible {
@@ -1082,13 +1098,6 @@ img {
   border: 1px solid rgba(248, 113, 113, 0.4);
   background: rgba(248, 113, 113, 0.1);
   color: var(--danger);
-}
-
-.admin-action-button {
-  min-width: 64px;
-  padding: 0.52rem 0.72rem;
-  min-height: 32px;
-  font-size: 0.86rem;
 }
 
 .admin-role-select:disabled {
@@ -1393,7 +1402,12 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  /* margin-bottom: 8px; */
+}
+
+/* Right-align header content (used to place Close button at top-right) */
+.report-modal__header--right {
+  justify-content: flex-end;
 }
 
 .report-modal__close {
@@ -1451,10 +1465,6 @@ img {
   grid-template-columns: minmax(220px, 240px) minmax(0, 1fr);
   gap: 16px;
   margin-top: 4px;
-  padding: 18px;
-  border-radius: 24px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
 }
 
 .report-summary__art,
@@ -1592,7 +1602,14 @@ img {
   margin: 0;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* Symmetric grid: two equal columns on desktop, single column on narrow screens */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .metric-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .metric-list div,
@@ -1879,6 +1896,10 @@ img {
     --mobile-nav-height: 76px;
   }
 
+  .app__chrome {
+    height: calc(100svh - var(--mobile-nav-height));
+  }
+
   .sidebar {
     display: none;
   }
@@ -1908,7 +1929,7 @@ img {
   .live-camera__viewfinder {
     max-width: none;
     border-radius: 16px;
-    height: calc(100dvh - var(--mobile-nav-height) - 200px);
+    height: calc(100svh - var(--mobile-nav-height) - 200px);
   }
 
   .live-camera .camera-button {
@@ -1991,6 +2012,7 @@ img {
 
   .report-modal__panel {
     padding: 20px;
+    max-height: calc(100svh - var(--mobile-nav-height) - 48px);
   }
 
   .library-row {
@@ -1998,8 +2020,97 @@ img {
     align-items: flex-start;
   }
 
+  .admin-screen .screen-header {
+    margin-bottom: 14px;
+  }
+
+  .admin-screen .screen-header__copy {
+    margin-top: 8px;
+    font-size: 0.92rem;
+  }
+
+  .admin-panel {
+    padding: 14px;
+    gap: 12px;
+    border-radius: 24px;
+  }
+
   .admin-controls {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-input,
+  .admin-select {
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 14px;
+  }
+
+  .admin-select {
+    padding-right: 40px;
+  }
+
+  .admin-table-wrap {
+    overflow-x: visible;
+  }
+
+  .admin-table {
+    min-width: 0;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-user-row {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-soft);
+  }
+
+  .admin-user-row:focus-within {
+    z-index: 2;
+  }
+
+  .admin-user-row td {
+    border-bottom: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .admin-user-row td + td {
+    margin-top: 8px;
+  }
+
+  .admin-user-row td::before {
+    display: none;
+  }
+
+  .admin-user-row td[data-label="Name"] .admin-user-name {
+    flex-wrap: wrap;
+  }
+
+  .admin-user-row td[data-label="Role"] .admin-select {
+    width: 100%;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    overflow: visible;
   }
 
   .search-page-panel .admin-table-wrap {
@@ -2058,9 +2169,24 @@ img {
     margin-top: 4px;
   }
 
+  .admin-pagination {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .admin-pagination button {
+    flex: 1 1 140px;
+  }
+
+  .admin-pagination p {
+    width: 100%;
+    text-align: center;
+    order: 3;
+  }
+
   .collection-panel__wrap {
     width: calc(100vw - 24px);
-    max-height: calc(100dvh - var(--mobile-nav-height) - 12px);
+    max-height: calc(100svh - var(--mobile-nav-height) - 12px);
   }
 
   .collection-panel {

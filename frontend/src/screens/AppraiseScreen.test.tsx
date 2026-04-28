@@ -69,15 +69,20 @@ vi.mock("../components/appraise/ResultsColumn", () => ({
   ResultsColumn: ({
     result,
     hasBackToSearchPage,
+    onClose,
     onBackToSearchPage,
     onSearchPageClick,
   }: {
     result: { card: { name: string } };
     hasBackToSearchPage?: boolean;
+    onClose?: () => void;
     onBackToSearchPage?: () => void;
     onSearchPageClick?: () => void;
   }) => (
     <div>
+      <button onClick={onClose} type="button">
+        Close
+      </button>
       <div>Derived result: {result.card.name}</div>
       {hasBackToSearchPage ? (
         <>
