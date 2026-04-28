@@ -1,8 +1,10 @@
-# Deploying to Google Cloud Run
+# Deploying to Google Cloud
 
-This document walks through deploying the Pokemon app to Google Cloud Platform using Cloud Run.
+This document walks through the first-time Google Cloud setup for Oak Report. The current production shape is a Cloud Run backend, Cloud SQL Postgres database, Secret Manager secrets, Artifact Registry backend images, and a Firebase Hosting frontend.
 
-**Architecture:** Two separate Cloud Run services (backend + frontend) with a Cloud SQL Postgres database. Secrets live in Google Secret Manager.
+Day-to-day redeploys after the first setup are handled by GitHub Actions; see [CI/CD](cicd.md).
+
+**Architecture:** Cloud Run backend + Firebase Hosting frontend + Cloud SQL Postgres. Secrets live in Google Secret Manager.
 
 **Expected time:** 2–4 hours the first time.
 
@@ -11,32 +13,31 @@ This document walks through deploying the Pokemon app to Google Cloud Platform u
 ## Architecture overview
 
 ```
-┌──────────────────┐         ┌──────────────────┐
-│ pokemon-frontend │  HTTPS  │ pokemon-backend  │
-│   (Cloud Run)    │ ──────▶ │   (Cloud Run)    │
-│   nginx + Vite   │         │  FastAPI/uvicorn │
-│   build output   │         │                  │
-└──────────────────┘         └────────┬─────────┘
-                                      │ Cloud SQL
-                                      │ Unix socket
-                                      ▼
-                             ┌──────────────────┐
-                             │   Cloud SQL      │
-                             │   Postgres 16    │
-                             └──────────────────┘
+┌──────────────────┐    /api rewrite    ┌──────────────────┐
+│ Firebase Hosting │ ─────────────────▶ │ pokemon-backend  │
+│ Vite static app  │                    │   Cloud Run      │
+│ frontend/dist    │                    │ FastAPI/uvicorn  │
+└──────────────────┘                    └────────┬─────────┘
+                                                 │ Cloud SQL
+                                                 │ Unix socket
+                                                 ▼
+                                        ┌──────────────────┐
+                                        │   Cloud SQL      │
+                                        │   Postgres 16    │
+                                        └──────────────────┘
 
 Secrets (JWT_SECRET, GOOGLE_CLIENT_ID, PRICE_CHARTING,
 GEMINI_API_KEY, db-password) → Secret Manager
 ```
 
-**Why two services instead of one?** Clean separation, independent scaling, easier to iterate on the frontend without rebuilding the backend. The tradeoff is dealing with CORS and two URLs.
+Firebase Hosting serves the static frontend and rewrites same-origin `/api/**` requests to the Cloud Run backend. That keeps normal browser traffic same-origin and avoids CORS for the primary production path.
 
 ---
 
 ## Conventions used in this doc
 
 - Commands are meant to be run from the **devcontainer shell**, inside `/workspaces/pokemon`.
-- Placeholders like `$PROJECT_ID`, `$INSTANCE_CONNECTION_NAME`, `$BACKEND_URL`, `$FRONTEND_URL` should be replaced with your actual values. You can also `export` them as shell variables.
+- Placeholders like `$PROJECT_ID`, `$INSTANCE_CONNECTION_NAME`, `$BACKEND_URL`, and `$FRONTEND_URL` should be replaced with your actual values. You can also `export` them as shell variables.
 - Region used throughout: `us-central1`. Change consistently if you pick a different one.
 
 ---
@@ -214,66 +215,27 @@ The second command writes Docker auth config so `docker push` works against the 
 
 ---
 
-## Phase 4 — Code changes required for production
+## Phase 4 — Code configuration required for production
 
-The local dev setup relies on Vite's proxy and hard-coded localhost URLs. For production we need 4 changes:
+The production code paths are already in this repository. Review these settings before the first deploy:
 
 ### 4.1 Make the frontend API base URL configurable
 
 File: `frontend/src/constants/api.ts`
 
-Read from a Vite env var at build time, falling back to `""` so the dev proxy still works locally.
+Read from a Vite env var at build time, falling back to `""` so the dev proxy and Firebase Hosting rewrites work with relative `/api` URLs.
 
 ```ts
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 ```
 
-### 4.2 Production frontend Dockerfile (multi-stage: build + nginx)
+### 4.2 Firebase Hosting rewrite
 
-A separate file `frontend.prod.Dockerfile` exists alongside the dev `frontend.Dockerfile` (which `docker-compose` still uses for hot reload). Stage 1 runs `npm run build` with the API URL baked in. Stage 2 serves the static output via nginx on the port Cloud Run provides.
+File: `firebase.json`
 
-```dockerfile
-# Stage 1 — build
-FROM node:20-bookworm-slim AS build
-WORKDIR /app
-ARG VITE_API_BASE_URL
-ARG VITE_GOOGLE_CLIENT_ID
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
-COPY frontend/ ./
-RUN npm run build
+Firebase serves `frontend/dist`, rewrites `/api/**` to the `pokemon-backend` Cloud Run service, and falls back all other paths to `index.html` for the single-page app.
 
-# Stage 2 — serve
-FROM nginx:1.27-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY frontend/nginx.conf /etc/nginx/templates/default.conf.template
-ENV PORT=8080
-EXPOSE 8080
-CMD ["/bin/sh", "-c", "envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
-```
-
-### 4.3 Nginx config for the frontend
-
-File: `frontend/nginx.conf`
-
-SPA fallback so client-side routes (React Router) work on refresh. `$PORT` is templated at container start from Cloud Run's injected `PORT` env var.
-
-```nginx
-server {
-  listen       ${PORT};
-  server_name  _;
-  root         /usr/share/nginx/html;
-  index        index.html;
-
-  location / {
-    try_files $uri $uri/ /index.html;
-  }
-}
-```
-
-### 4.4 Backend CORS — allow the frontend's Cloud Run URL
+### 4.3 Backend CORS — allow direct frontend origins when needed
 
 File: `backend/main.py` (around line 92)
 
@@ -294,7 +256,7 @@ app.add_middleware(
 )
 ```
 
-### 4.5 Run Alembic migrations on backend startup
+### 4.4 Run Alembic migrations on backend startup
 
 File: `backend.Dockerfile`
 
@@ -364,49 +326,17 @@ Output: `https://pokemon-backend-XXXXX-uc.a.run.app`. Save as `$BACKEND_URL`.
 
 ---
 
-## Phase 6 — Build and deploy the frontend
+## Phase 6 — Set up Firebase Hosting and CI/CD
 
-> ⚠️ **Superseded.** The frontend is now hosted on **Firebase Hosting**, not Cloud Run. See [cicd.md](cicd.md) for the current setup (one-time GCP/IAM steps + the GitHub Actions workflow that builds and runs `firebase deploy`). The Cloud Run flow below is preserved for historical reference and as a fallback if you ever need to revert.
->
-> If you're following this doc top-to-bottom for a fresh deploy, **skip Phase 6** entirely. After Phase 5 (backend deploy) and Phase 7 (CORS — set `ALLOWED_ORIGINS` to the Firebase URL instead), jump to [cicd.md](cicd.md) for the frontend.
+The frontend is hosted on Firebase Hosting, not Cloud Run. After the backend service exists, follow [CI/CD](cicd.md) to:
 
-### 6.1 Build with the backend URL baked in
+- authorize Firebase Hosting to invoke the private Cloud Run backend;
+- create the GitHub Workload Identity Federation provider;
+- configure the required GitHub variables and secrets;
+- run the frontend workflow that builds `frontend/dist` with `VITE_API_BASE_URL=""`;
+- deploy Firebase Hosting with the `/api/**` rewrite in `firebase.json`.
 
-```bash
-IMAGE_FRONTEND="us-central1-docker.pkg.dev/${PROJECT_ID}/pokemon-images/frontend:v1"
-BACKEND_URL='https://pokemon-backend-XXXXX-uc.a.run.app'
-GOOGLE_CLIENT_ID='YOUR_GOOGLE_CLIENT_ID'
-
-docker build -f frontend.prod.Dockerfile \
-  --platform linux/amd64 \
-  --build-arg VITE_API_BASE_URL="$BACKEND_URL" \
-  --build-arg VITE_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
-  -t "$IMAGE_FRONTEND" .
-
-docker push "$IMAGE_FRONTEND"
-```
-
-Vite inlines `import.meta.env.VITE_*` values at build time. If you ever change `BACKEND_URL` you must rebuild and redeploy the frontend image.
-
-### 6.2 Deploy frontend to Cloud Run
-
-```bash
-gcloud run deploy pokemon-frontend \
-  --image="$IMAGE_FRONTEND" \
-  --region=us-central1 \
-  --platform=managed \
-  --allow-unauthenticated
-```
-
-Nginx listens on Cloud Run's `PORT` env var (defaulted to 8080 in the Dockerfile).
-
-### 6.3 Capture the frontend URL
-
-```bash
-gcloud run services describe pokemon-frontend --region=us-central1 --format="value(status.url)"
-```
-
-Save as `$FRONTEND_URL`.
+Record the Firebase Hosting URL, normally `https://oak-report.web.app`, as `$FRONTEND_URL`.
 
 ---
 
@@ -441,7 +371,7 @@ This triggers a new backend revision without rebuilding the image.
 1. Open `$FRONTEND_URL` in a browser.
 2. Open DevTools → Network. Confirm:
    - Static assets load from `$FRONTEND_URL`.
-   - `/api/*` calls hit `$BACKEND_URL` and return 200s (not CORS errors).
+   - `/api/*` calls stay same-origin in the browser and return 200s through the Firebase Hosting rewrite.
 3. Log in with Google — verify the OAuth flow completes.
 4. Exercise a few features that read and write the database.
 
@@ -449,7 +379,6 @@ This triggers a new backend revision without rebuilding the image.
 
 ```bash
 gcloud run services logs tail pokemon-backend  --region=us-central1
-gcloud run services logs tail pokemon-frontend --region=us-central1
 ```
 
 ---
@@ -469,12 +398,9 @@ gcloud run deploy pokemon-backend --image="$IMAGE_BACKEND" --region=us-central1
 ### Frontend only
 
 ```bash
-docker build -f frontend.prod.Dockerfile --platform linux/amd64 \
-  --build-arg VITE_API_BASE_URL="$BACKEND_URL" \
-  --build-arg VITE_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
-  -t "$IMAGE_FRONTEND" .
-docker push "$IMAGE_FRONTEND"
-gcloud run deploy pokemon-frontend --image="$IMAGE_FRONTEND" --region=us-central1
+npm --prefix frontend ci
+VITE_API_BASE_URL= VITE_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" npm --prefix frontend run build
+firebase deploy --only hosting --project "$PROJECT_ID"
 ```
 
 ### Rolling back

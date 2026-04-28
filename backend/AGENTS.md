@@ -34,6 +34,7 @@ uv run pytest backend/tests --cov=backend --cov-report=term-missing
 ## Constraints
 
 - `DATA_PROVIDER=postgres` is required for user, collection, and pricing catalog repositories.
-- Search, library, and scan catalog repositories are still mock-backed.
+- Scan uses Gemini plus pricing catalog lookup; search uses pricing catalog lookup.
+- The standalone library feature is scratched; leftover library code exists only for possible future work.
 - Do not add hidden global state unless it matches the existing factory pattern and is test-covered.
 - Update docs and tests when routes, environment variables, or provider behavior change.

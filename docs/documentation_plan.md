@@ -12,7 +12,7 @@ Our users fall into two groups: **End Users** (Pokémon collectors using the app
 
 ### Client / Administrator
 
-- **Updated `README.md`** covering how to set up the project, configure the `.env` file, run it locally or with Docker, deploy to **Google Cloud Platform (Cloud Run)**, and the **GitHub Actions CI/CD pipeline** that automatically builds and deploys the app on merge.
+- **Updated `README.md`** covering how to set up the project, configure the `.env` file, run it locally or with Docker, deploy to **Google Cloud Platform** with a Cloud Run backend and Firebase Hosting frontend, and use the **GitHub Actions CI/CD pipeline** that automatically builds and deploys the app on merge.
 - **Supporting docs in `/docs/`** that give background and context for the project — the goals, specs, user stories, and design decisions behind how things are built — so future maintainers understand the *why*, not just the *how*.
 - **Short demo** with the client at handoff, walking through the app and the setup steps live so they can ask questions in the moment.
 

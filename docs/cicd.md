@@ -10,14 +10,14 @@ Companion to [gcp-deployment.md](gcp-deployment.md), which covers the manual fir
 
 On every push to `main`:
 
-- Changes under `backend/`, `alembic/`, `pyproject.toml`, `uv.lock`, `data/`, or `backend.Dockerfile` → `deploy-backend.yml` runs.
-- Changes under `frontend/`, `firebase.json`, or `.firebaserc` → `deploy-frontend.yml` runs.
+- Changes under `backend/`, `alembic/`, `alembic.ini`, `pyproject.toml`, `uv.lock`, `data/`, `backend.Dockerfile`, or the backend workflow file → `deploy-backend.yml` runs.
+- Changes under `frontend/`, `firebase.json`, `.firebaserc`, or the frontend workflow file → `deploy-frontend.yml` runs.
 - A change touching both runs both workflows in parallel.
 - A change touching neither (e.g. only docs) runs nothing.
 
-**Backend** workflow: builds a Docker image, pushes it to Artifact Registry tagged with the commit SHA, then `gcloud run deploy <service> --image=<sha>`. **No other deploy flags are passed**, so existing Cloud Run config (CloudSQL connection, env vars, Secret Manager bindings, service account) is preserved from the initial manual deploy.
+**Backend** workflow: starts a Postgres service container, runs `uv run pytest backend/tests`, builds a Docker image, pushes it to Artifact Registry tagged with the commit SHA and `latest`, then `gcloud run deploy <service> --image=<sha>`. **No other deploy flags are passed**, so existing Cloud Run config (CloudSQL connection, env vars, Secret Manager bindings, service account) is preserved from the initial manual deploy.
 
-**Frontend** workflow: runs `npm ci && npm run build` to produce `frontend/dist/`, then `firebase deploy --only hosting`. Firebase Hosting handles static asset serving + a same-origin rewrite from `/api/**` to the Cloud Run backend.
+**Frontend** workflow: runs `npm ci`, `npm test -- --run`, and `npm run build` to produce `frontend/dist/`, then `firebase deploy --only hosting`. Firebase Hosting handles static asset serving + a same-origin rewrite from `/api/**` to the Cloud Run backend.
 
 ```
 GitHub push to main
@@ -31,7 +31,8 @@ GitHub push to main
    gcloud auth via Workload Identity Federation (no JSON keys)
           │                          │
           ▼                          ▼
-   docker build → push to        npm ci && npm run build
+   pytest → docker build        vitest → npm run build
+       → push to
    Artifact Registry             (VITE_API_BASE_URL="" → relative URLs)
           │                          │
           ▼                          ▼
@@ -235,4 +236,4 @@ Or use the Firebase Console → Hosting → Release history → "Rollback" on an
 
 - **First-time deploy of the backend** still goes through [gcp-deployment.md](gcp-deployment.md) — CI only updates the image, it doesn't create the initial CloudSQL connection, env vars, secret bindings, or service.
 - **Schema-altering migrations** still run on container startup ([backend.Dockerfile](../backend.Dockerfile) `CMD`). For long-running migrations, run them out-of-band before the deploy.
-- **Tests / linting** — none configured in this repo today. The frontend's `npm run build` runs `tsc -b` (typecheck) before bundling, so type errors fail CI naturally; runtime regressions won't be caught until you hit the deployed service.
+- **Full-stack E2E / linting / security scans** are not automated today. The deploy workflows run backend or frontend tests for the changed service, and the frontend build runs `tsc -b` before bundling.

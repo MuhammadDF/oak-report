@@ -13,6 +13,7 @@ cp .env.example .env
 Important values:
 
 - `DATA_PROVIDER`: backend provider selector. `postgres` is the primary current mode.
+- `VITE_API_BASE_URL`: optional frontend API base. Leave blank for local Vite proxying and Firebase Hosting rewrites.
 - `DATABASE_URL`: direct backend/Alembic database URL for local non-Compose runs.
 - `APP_DATABASE_URL`: Compose-facing override that becomes backend `DATABASE_URL`.
 - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`: Compose database values.
@@ -20,6 +21,26 @@ Important values:
 - `JWT_SECRET`: backend JWT signing secret.
 - `PRICE_CHARTING`: PriceCharting CSV/API token.
 - `GEMINI_API_KEY`: Gemini API key for scan behavior.
+
+## Frontend API Routing
+
+The frontend should normally call relative `/api/...` URLs.
+
+- Local Vite dev server: `/api` is proxied to `http://localhost:8000`.
+- Firebase Hosting: `/api/**` is rewritten to the `pokemon-backend` Cloud Run service by `firebase.json`.
+- Tests: `./scripts/run_qa.sh` clears `VITE_API_BASE_URL` before frontend coverage so tests are deterministic.
+
+Set `VITE_API_BASE_URL` only for a build that must call an absolute backend URL directly. If frontend tests unexpectedly assert `http://localhost:8000/api/...` instead of `/api/...`, check for an exported `VITE_API_BASE_URL`:
+
+```bash
+env | grep '^VITE_API_BASE_URL='
+```
+
+Unset it for the current shell:
+
+```bash
+unset VITE_API_BASE_URL
+```
 
 ## Compose Environment Precedence
 
@@ -101,3 +122,12 @@ GET /api/admin/pricing-catalog/status
 ```
 
 The endpoint reports scheduler settings, row count, and last refresh timestamp.
+
+## Deployment Operations
+
+Day-to-day deploys are handled by GitHub Actions after merges to `main`:
+
+- Backend-relevant changes run backend tests, build a Docker image, push it to Artifact Registry, and deploy the configured Cloud Run service.
+- Frontend-relevant changes run Vitest, build `frontend/dist`, and deploy it to Firebase Hosting.
+
+First-time GCP setup and manual backend service creation are documented in [GCP deployment](gcp-deployment.md). The operational CI/CD runbook is [CI/CD](cicd.md).

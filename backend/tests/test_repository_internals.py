@@ -11,7 +11,6 @@ from backend.db.models import CollectionItemTable, PricingCatalogTable, UserTabl
 from backend.models.user_profile import UserRole
 from backend.repositories.collection_repository import (
     CollectionItemRecord,
-    InMemoryCollectionRepository,
     PostgresCollectionRepository,
     _hydrate_item_record,
     _to_item_record,
@@ -20,8 +19,6 @@ from backend.repositories.factory import (
     get_collection_repository,
     get_library_repository,
     get_pricing_catalog_repository,
-    get_scan_catalog_repository,
-    get_search_repository,
     get_user_repository,
 )
 from backend.repositories.library_repository import MockLibraryRepository
@@ -29,10 +26,7 @@ from backend.repositories.pricing_catalog_repository import (
     PostgresPricingCatalogRepository,
     PricingCatalogRecord,
 )
-from backend.repositories.scan_catalog_repository import MockScanCatalogRepository
-from backend.repositories.search_repository import MockSearchRepository
 from backend.repositories.user_repository import (
-    InMemoryUserRepository,
     PostgresUserRepository,
     _to_user_profile,
 )
@@ -52,18 +46,9 @@ def _collection_item(quantity: int = 1) -> CollectionItemRecord:
 
 
 @pytest.mark.asyncio(loop_scope="session")
-async def test_mock_repositories_return_expected_data() -> None:
+async def test_library_mock_repository_returns_expected_data() -> None:
     library_cards = await MockLibraryRepository().list_cards()
     assert len(library_cards) == 4
-
-    empty_results = await MockSearchRepository().search_cards("   ")
-    charizard_results = await MockSearchRepository().search_cards("charizard")
-    assert empty_results == []
-    assert len(charizard_results) == 3
-
-    scan_repo = MockScanCatalogRepository()
-    assert (await scan_repo.select_card_identity(b"")).name == "Charizard ex"
-    assert (await scan_repo.select_card_identity(bytes([1]))).name == "Mewtwo VSTAR"
 
 
 def test_repository_factory_respects_provider_and_caching(
@@ -73,12 +58,8 @@ def test_repository_factory_respects_provider_and_caching(
 
     monkeypatch.setenv("DATA_PROVIDER", "mock")
     factory._library_repo = None
-    factory._search_repo = None
-    factory._scan_catalog_repo = None
 
     assert get_library_repository() is get_library_repository()
-    assert get_search_repository() is get_search_repository()
-    assert get_scan_catalog_repository() is get_scan_catalog_repository()
 
     monkeypatch.setenv("DATA_PROVIDER", "postgres")
     session = object()
@@ -97,59 +78,21 @@ def test_repository_factory_respects_provider_and_caching(
         get_user_repository()
 
     factory._library_repo = None
-    factory._search_repo = None
-    factory._scan_catalog_repo = None
 
     assert get_library_repository().__class__.__name__ == "MockLibraryRepository"
     factory._library_repo = None
-    assert get_search_repository().__class__.__name__ == "MockSearchRepository"
-    factory._search_repo = None
-    assert get_scan_catalog_repository().__class__.__name__ == "MockScanCatalogRepository"
 
     monkeypatch.setenv("DATA_PROVIDER", "invalid")
     factory._library_repo = None
-    factory._search_repo = None
-    factory._scan_catalog_repo = None
 
     with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
         get_library_repository()
-    with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
-        get_search_repository()
-    with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
-        get_scan_catalog_repository()
     with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
         get_collection_repository(object())
     with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
         get_pricing_catalog_repository(object())
     with pytest.raises(ValueError, match="Unsupported DATA_PROVIDER 'invalid'"):
         get_user_repository(object())
-
-
-@pytest.mark.asyncio(loop_scope="session")
-async def test_in_memory_collection_repository_covers_merge_update_and_remove() -> None:
-    repository = InMemoryCollectionRepository()
-    item = _collection_item()
-
-    record = await repository.add_item("user-1", item)
-    assert len(record.items) == 1
-
-    merged = await repository.add_item("user-1", _collection_item(quantity=2))
-    assert merged.items[0].quantity == 3
-
-    updated = await repository.update_quantity("user-1", "card-1", 7)
-    assert updated.items[0].quantity == 7
-
-    removed_by_zero = await repository.update_quantity("user-1", "card-1", 0)
-    assert removed_by_zero.items == []
-
-    with pytest.raises(KeyError):
-        await repository.update_quantity("user-1", "missing", 1)
-    with pytest.raises(KeyError):
-        await repository.remove_item("user-1", "missing")
-
-    await repository.add_item("user-1", _collection_item())
-    removed = await repository.remove_item("user-1", "card-1")
-    assert removed.items == []
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -366,55 +309,6 @@ async def test_hydrate_item_record_uses_catalog_price() -> None:
 
     assert item.pricing_catalog_id == "pc-1"
     assert item.price == 319.99
-
-
-@pytest.mark.asyncio(loop_scope="session")
-async def test_in_memory_user_repository_covers_admin_search_and_role_update() -> None:
-    repository = InMemoryUserRepository()
-    now = datetime.now(UTC)
-    admin_identity = GoogleUserIdentity(
-        subject="admin-user",
-        email="muhammadfouly@gmail.com",
-        display_name="Admin",
-        issued_at=now,
-        expires_at=now + timedelta(hours=1),
-    )
-    user_identity = GoogleUserIdentity(
-        subject="collector-user",
-        email="ash@example.com",
-        display_name="Ash",
-        issued_at=now,
-        expires_at=now + timedelta(hours=1),
-    )
-
-    admin = await repository.upsert_google_user(admin_identity)
-    collector = await repository.upsert_google_user(user_identity)
-    updated = await repository.upsert_google_user(
-        user_identity.model_copy(update={"display_name": "Ash Ketchum"})
-    )
-
-    assert admin.role == UserRole.ADMIN
-    assert collector.role == UserRole.NA
-    assert updated.display_name == "Ash Ketchum"
-    assert await repository.get_user_by_id("collector-user") is not None
-
-    filtered, total = await repository.list_users(
-        page=1,
-        page_size=10,
-        search="ash",
-        role=UserRole.NA.value,
-    )
-    assert total == 1
-    assert filtered[0].id == "collector-user"
-
-    paged, total_all = await repository.list_users(page=2, page_size=1, search=None, role=None)
-    assert total_all == 2
-    assert len(paged) == 1
-
-    assert await repository.update_user_role(user_id="missing", role=UserRole.ADMIN) is None
-    assert (await repository.update_user_role(user_id="collector-user", role=UserRole.COLLECTOR)).role == (
-        UserRole.COLLECTOR
-    )
 
 
 @pytest.mark.asyncio(loop_scope="session")

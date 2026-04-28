@@ -19,7 +19,7 @@ Frontend unit tests would cover every React component, custom hook, repository f
 
 ### Integration and System Testing
 
-API integration tests would exercise FastAPI routes through HTTP clients, dependency injection, SQLModel models, Alembic-created schema, and real Postgres test databases. These tests would verify auth requirements, role-based access, request validation, collection persistence, pricing catalog search, admin workflows, and scan/search/library behavior at the route boundary.
+API integration tests would exercise FastAPI routes through HTTP clients, dependency injection, SQLModel models, Alembic-created schema, and real Postgres test databases. These tests would verify auth requirements, role-based access, request validation, collection persistence, pricing catalog search, admin workflows, and scan/search behavior at the route boundary.
 
 Full UI end-to-end tests would use Playwright to launch the React app and backend together. The suite would script real user journeys such as signing in, searching pricing catalog cards, scanning or uploading a card image, selecting a pricing match, adding a card to a collection, editing quantity, removing a card, and using admin screens. These tests would assert visible DOM output, network behavior, and user-facing error messages.
 
@@ -35,7 +35,7 @@ Cross-browser and device coverage would run the Playwright suite on Chromium, Fi
 - Alembic: schema migration verification.
 - Locust or k6: backend load and stress testing.
 - OWASP ZAP, `pip-audit`, `npm audit`: security and dependency vulnerability testing.
-- GitHub Actions or equivalent CI: automated regression runs on pull requests and main-branch updates.
+- GitHub Actions or equivalent CI/CD: automated regression runs on deploy-relevant main-branch updates before deployment.
 
 ### End Users Considered
 
@@ -66,7 +66,7 @@ Team C runs the automated suite locally before commits that change backend, fron
 
 Manual system tests are run by Team C before demos, deployments, or major merges that affect user-visible workflows. Course reviewers or future maintainers can repeat the manual tests using the steps and expected outputs below.
 
-There are no committed GitHub Actions workflows in this checkout yet. The intended CI command, when CI is added, is the same local full QA command: `./scripts/run_qa.sh`.
+GitHub Actions workflows are committed for deploy-relevant changes on `main`. Backend changes run backend tests before a Cloud Run deploy, and frontend changes run Vitest before a Firebase Hosting deploy. The local full QA command remains `./scripts/run_qa.sh`.
 
 ### Test Environments
 
@@ -123,17 +123,41 @@ Run frontend tests with coverage:
 npm --prefix frontend run test:coverage
 ```
 
+If the shell exports `VITE_API_BASE_URL`, use the same deterministic frontend test environment as the full QA script:
+
+```bash
+VITE_API_BASE_URL= npm --prefix frontend run test:coverage
+```
+
+### CI/CD Test Commands
+
+The backend deployment workflow runs:
+
+```bash
+uv run pytest backend/tests
+```
+
+against a Postgres service container.
+
+The frontend deployment workflow runs:
+
+```bash
+npm test -- --run
+```
+
+before building and deploying `frontend/dist`.
+
 ### Current Backend Automated Coverage
 
 The backend tests live in `backend/tests`. They use pytest, pytest-asyncio, httpx ASGI transport, dependency overrides, and a Postgres test database derived from `DATABASE_URL`. The test database name is the configured database name with `_test` appended, such as `pokemon_test`.
 
 The suite currently covers:
 
-- Route behavior for auth, scan, search, library, collection, and admin endpoints.
+- Route behavior for auth, scan, search, collection, and admin endpoints.
 - Request validation errors such as missing fields, invalid payloads, invalid query length, unsupported file types, and empty upload bodies.
 - Role and authorization behavior for collector, admin, and unauthenticated/unauthorized flows.
-- Service behavior for scan, search, library, pricing, collection, auth, and admin workflows.
-- Repository behavior for in-memory repositories and Postgres repositories.
+- Service behavior for scan, search, pricing, collection, auth, and admin workflows.
+- Repository behavior for Postgres repositories.
 - Postgres persistence for users, roles, collection items, and pricing catalog rows.
 - JWT and Google OAuth helper behavior using mocked token and environment conditions.
 - Database configuration, test database helper behavior, startup database verification, and script helper behavior.
@@ -158,11 +182,11 @@ The frontend tests live under `frontend/src` next to the code they verify. They 
 The suite currently covers:
 
 - App shell, sidebar, mobile navigation, basic screens, and screen header rendering.
-- Appraise, library, collection, admin, sign-in, profile, and access-required screen behavior.
+- Appraise, collection, admin, sign-in, profile, and access-required screen behavior.
 - Appraise UI components including upload, camera, results, empty report, identity report, collection selection, and search result panels.
-- Library and collection components including grids, tables, stats, and search controls.
+- Collection components including grids, stats, and search controls.
 - Custom hooks for appraisal, card search, auth session, mobile checks, and media query behavior.
-- Frontend repository modules for collection, library, and admin API access.
+- Frontend repository modules for collection and admin API access.
 - Formatting utilities and navigation constants.
 
 Frontend oracles include:
@@ -181,7 +205,7 @@ Automated backend integration exists at two levels:
 - Route-level integration uses FastAPI, dependency injection, auth overrides, Pydantic validation, and httpx ASGI transport.
 - Database integration uses a real Postgres test database with SQLModel metadata and async sessions.
 
-Full browser-to-backend E2E testing is manual today. The repo does not currently include Playwright, Cypress, BrowserStack, Locust, k6, OWASP ZAP, `pip-audit`, or committed GitHub Actions workflows.
+Full browser-to-backend E2E testing is manual today. The repo does not currently include Playwright, Cypress, BrowserStack, Locust, k6, OWASP ZAP, or `pip-audit`. GitHub Actions provide deploy-gated backend and frontend regression runs, but not full E2E, load, cross-browser, or security automation.
 
 Manual system test setup:
 
@@ -202,10 +226,10 @@ Manual test case 2: Auth-gated access.
 - Input: Open a protected workflow such as collection or admin while not signed in.
 - Expected output: The app shows the sign-in or access-required state instead of protected data.
 
-Manual test case 3: Search/appraise flow with mocked providers.
+Manual test case 3: Search/appraise flow.
 
 - Input: Sign in using the configured local auth/OAuth path if credentials are available, then use the appraise/search UI with a valid card query such as `Pikachu` or `Charizard`.
-- Expected output: The app displays pricing/search results from the current provider implementation. Loading indicators clear after the request. No uncaught browser errors appear.
+- Expected output: The app displays pricing/search results from the pricing catalog and appraisal results from the current scan service. Loading indicators clear after the request. No uncaught browser errors appear.
 
 Manual test case 4: Scan upload validation.
 
@@ -245,4 +269,4 @@ The current automated and manual plan specifically covers:
 
 ### Current Limitations
 
-The current practical plan does not claim automated browser E2E coverage, cross-browser automation, load testing, automated security scanning, or CI execution. Those remain ideal-plan items or future work. The strongest current coverage is automated backend route/service/repository coverage, real Postgres repository integration, and frontend unit/component/hook/repository coverage.
+The current practical plan does not claim automated browser E2E coverage, cross-browser automation, load testing, or automated security scanning. Those remain ideal-plan items or future work. The strongest current coverage is automated backend route/service/repository coverage, real Postgres repository integration, frontend unit/component/hook/repository coverage, and deploy-gated GitHub Actions test runs.

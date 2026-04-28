@@ -59,10 +59,12 @@ npm --prefix frontend run build
 
 The root README is a hub. Detailed procedures belong in `docs/`. If a change affects setup, operations, architecture, testing, or contribution workflow, update the matching doc.
 
+Deployment workflow details live in [docs/cicd.md](docs/cicd.md). First-time Google Cloud setup lives in [docs/gcp-deployment.md](docs/gcp-deployment.md).
+
 ## Pull Request Checklist
 
 - Commands and environment documentation still match the repo.
 - New or changed behavior has focused tests.
 - Database changes include reviewed migrations.
 - README links and docs links resolve.
-- CI/CD claims remain honest: no badge or workflow should be referenced unless it exists.
+- CI/CD claims match the committed GitHub Actions workflows and Firebase/Cloud Run deployment shape.

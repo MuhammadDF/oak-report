@@ -1,18 +1,20 @@
 # Repository Injection Summary
 
-This codebase uses two repository wiring patterns instead of a dedicated IoC container.
+This codebase uses explicit repository wiring instead of a dedicated IoC container.
 
 ## 1) FastAPI Dependency Injection (request-scoped)
 
-Used for database-backed repositories in authenticated/collection flows.
+Used for database-backed repositories in authenticated, collection, admin, and pricing catalog flows.
 
 - `SessionDI` is defined with `Depends(get_session)` in `backend/db/dependencies.py`.
 - Repository dependency providers call the factory with the current request session:
   - `get_collection_repository_dependency(...)`
   - `get_user_repository_dependency(...)`
+  - `get_pricing_catalog_repository_dependency(...)`
 - Route handlers request typed DI aliases:
   - `CollectionRepositoryDI` in `backend/api/collection_routes.py`
   - `UserRepositoryDI` in `backend/api/auth_routes.py`
+  - `PricingCatalogRepositoryDI` in `backend/api/admin_routes.py`
 
 Runtime flow:
 
@@ -22,22 +24,20 @@ Runtime flow:
 4. Factory builds a repository with that session.
 5. Route passes repository into service functions.
 
-## 2) Direct Factory Calls in Services (module-cached instances)
+## 2) Dormant Library Factory Wiring
 
-Used for scan/search/library flows.
+The standalone library feature was scratched because appraise-page search covers the current card lookup workflow. Its code remains in the repo for possible future work, but it is not an active product surface.
 
-- Services call factory functions directly:
-  - `backend/services/search_service.py` -> `get_search_repository()`
-  - `backend/services/library_service.py` -> `get_library_repository()`
-  - `backend/services/scan_service.py` -> `get_scan_catalog_repository()`
-- The factory stores these in module globals (`_search_repo`, `_library_repo`, `_scan_catalog_repo`) and reuses them.
+- Search and scan no longer use repository mock adapters. Search uses pricing catalog lookup, and scan uses Gemini identity extraction plus pricing catalog lookup.
+- Leftover library service code calls `get_library_repository()`.
+- The factory stores the dormant library adapter in `_library_repo` and reuses it.
 
 ### "module-level instance"
 
 A module-level instance is an object saved in a top-level variable in a Python file and reused later.
 
-- In this project, variables like `_search_repo` are defined once at file scope in `backend/repositories/factory.py`.
-- On first call, `get_search_repository()` creates and stores the object.
+- In this project, `_library_repo` is defined once at file scope in `backend/repositories/factory.py`.
+- On first call, `get_library_repository()` creates and stores the object.
 - On later calls, it returns the same stored object.
 
 This is singleton-like behavior per Python process (not globally across all processes).
@@ -62,16 +62,16 @@ Provider selection is environment-driven:
 
 Current behavior in `backend/repositories/factory.py`:
 
-- Collection/User repositories:
+- Collection/User/Pricing catalog repositories:
   - Require `DATA_PROVIDER=postgres`.
   - Require an `AsyncSession` parameter.
   - Raise `ValueError` otherwise.
-- Search/Library/Scan repositories:
-  - Return mock repository implementations.
-  - This is true for both `mock` and `postgres` provider values right now.
+- Dormant library repository:
+  - Returns `MockLibraryRepository` for `mock` or `postgres`.
+  - Is retained only for possible future work.
 
 ## Practical Takeaway
 
-- Auth and collection paths are injected via FastAPI dependencies with per-request DB session scope.
-- Search, library, and scan paths are service-level factory lookups with cached mock adapters.
-- If you want a single style across the app, the next step is typically to move search/library/scan to explicit FastAPI DI dependencies as well.
+- Auth, collection, admin user management, and pricing catalog paths are injected via FastAPI dependencies with per-request DB session scope.
+- Search and scan are real service flows rather than mock repository lookups.
+- Standalone library code is dormant; do not treat it as an active feature unless product scope explicitly reinstates it.

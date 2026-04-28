@@ -57,7 +57,6 @@ services:
     environment:
       API_PROXY_TARGET: ${API_PROXY_TARGET:-http://backend:8000}
       VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
-      VITE_DATA_PROVIDER: ${VITE_DATA_PROVIDER:-api}
     ports:
       - "5173:5173"
     volumes:

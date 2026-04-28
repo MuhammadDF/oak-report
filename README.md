@@ -1,6 +1,6 @@
 # Oak Report
 
-Oak Report is a Pokemon TCG appraisal web app for identifying cards, estimating value, and managing a personal collection. The current vertical slice includes a FastAPI backend, Postgres persistence for auth and collection data, a React/Vite frontend, and staged mock adapters for scan, search, and library flows.
+Oak Report is a Pokemon TCG appraisal web app for identifying cards, estimating value, and managing a personal collection. The current vertical slice includes a FastAPI backend, Postgres persistence for auth, collection, and pricing catalog data, Gemini-backed scan identity extraction, pricing-catalog search on the appraise page, and a React/Vite frontend.
 
 This README is the project hub. Detailed setup, architecture, operations, and contribution guidance live in the linked docs.
 
@@ -22,6 +22,7 @@ This README is the project hub. Detailed setup, architecture, operations, and co
 | Database | Postgres 16, Alembic migrations, seeded Pokemon card data |
 | Frontend | React 18, Vite, TypeScript, Vitest, Testing Library |
 | Tooling | uv, npm, Docker Compose, VS Code Dev Containers |
+| Deployment | GitHub Actions, Cloud Run backend, Firebase Hosting frontend |
 | Integrations | Google OAuth, JWT auth, Gemini API, PriceCharting catalog sync |
 
 ## Quick Start
@@ -99,6 +100,8 @@ npm --prefix frontend run test:coverage
 - [Frontend guide](docs/frontend.md) - React/Vite screens, components, hooks, repositories, and tests.
 - [Database guide](docs/database.md) - Postgres, SQLModel tables, Alembic, and seed data.
 - [Testing guide](docs/testing.md) - backend, frontend, coverage, and full-stack QA.
+- [CI/CD guide](docs/cicd.md) - GitHub Actions, Cloud Run backend deploys, and Firebase Hosting frontend deploys.
+- [GCP deployment guide](docs/gcp-deployment.md) - first-time Google Cloud setup and manual backend deploy.
 - [Contributing](CONTRIBUTING.md) - contribution workflow and standards.
 - [Agent guides](AGENTS.md) - actionable context for AI coding agents and human contributors.
 
@@ -106,13 +109,18 @@ Product and planning context lives under [docs/context](docs/context/README.md).
 
 ## Quality and CI/CD
 
-There are no GitHub Actions workflows in this checkout yet, so the project does not publish a CI badge. The canonical verification command for local development and future automation is:
+The canonical local verification command is:
 
 ```bash
 ./scripts/run_qa.sh
 ```
 
-That script starts the local Postgres service, runs backend pytest with coverage, and runs frontend Vitest with coverage.
+That script starts the local Postgres service, runs backend pytest with coverage, and runs frontend Vitest with coverage. The frontend test step clears `VITE_API_BASE_URL` so tests exercise the same relative `/api` contract used by local Vite proxying and Firebase Hosting rewrites.
+
+GitHub Actions are configured for deployment:
+
+- [Deploy backend](.github/workflows/deploy-backend.yml) runs backend tests for backend-relevant changes, builds the backend image, pushes it to Artifact Registry, and deploys it to Cloud Run.
+- [Deploy frontend](.github/workflows/deploy-frontend.yml) runs frontend tests for frontend-relevant changes, builds with relative `/api` URLs, and deploys `frontend/dist` to Firebase Hosting.
 
 ## Contributing
 
@@ -134,7 +142,8 @@ Implemented today:
 - React screens for sign-in, appraise, collection, admin, profile, and access-required states.
 - PriceCharting catalog refresh support and admin status visibility.
 - Scan returns a stable appraisal-shaped response while full image reasoning is evolving.
+- GitHub Actions deployment workflows for Cloud Run backend updates and Firebase Hosting frontend updates.
 
-Staged or mocked today:
+Scratched feature:
 
-- CI/CD workflow automation is not yet committed.
+- The standalone library feature is not part of the current product. Search on the appraise page covers the intended card lookup workflow. Some library code remains in the repo for possible future work, but it should not be treated as an active feature.
