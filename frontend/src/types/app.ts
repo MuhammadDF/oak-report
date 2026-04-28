@@ -21,6 +21,7 @@ export type ScanResult = {
   image_url?: string | null;
   set_name?: string | null;
   pricing: number;
+  pricing_catalog_id?: string | null;
   matches?: CardPricingMatch[] | null;
 };
 

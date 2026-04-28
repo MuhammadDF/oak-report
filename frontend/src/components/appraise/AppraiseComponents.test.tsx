@@ -269,7 +269,6 @@ describe("ResultsColumn", () => {
 
   it("adds cards to the collection and reports errors", async () => {
     const onCollectionAdded = vi.fn();
-    const onSearchPageClick = vi.fn();
     mockAddScanToCollection
       .mockResolvedValueOnce(undefined)
       .mockRejectedValueOnce(new Error("boom"));
@@ -290,7 +289,6 @@ describe("ResultsColumn", () => {
       <ResultsColumn
         authToken="token-123"
         onCollectionAdded={onCollectionAdded}
-        onSearchPageClick={onSearchPageClick}
         reportPreviewUrl="/preview.png"
         result={result}
       />,
@@ -312,8 +310,7 @@ describe("ResultsColumn", () => {
     });
     expect(onCollectionAdded).toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-    expect(onSearchPageClick).toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Search page" })).not.toBeInTheDocument();
 
     rerender(
       <ResultsColumn
@@ -327,6 +324,34 @@ describe("ResultsColumn", () => {
     await waitFor(() => {
       expect(screen.getByText("Could not save to collection.")).toBeInTheDocument();
     });
+  });
+
+  it("shows a back button when returning to a multi-match search result", () => {
+    const onBackToSearchPage = vi.fn();
+
+    render(
+      <ResultsColumn
+        authToken="token-123"
+        hasBackToSearchPage
+        onBackToSearchPage={onBackToSearchPage}
+        reportPreviewUrl="/preview.png"
+        result={{
+          processed_at: "2026-04-26T00:00:00Z",
+          card: {
+            name: "Pikachu",
+            card_number: "25",
+            language: "English",
+          },
+          set_name: "Base",
+          image_url: null,
+          pricing: 12.5,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(onBackToSearchPage).toHaveBeenCalled();
   });
 
   it("falls back to default collection payload values", async () => {

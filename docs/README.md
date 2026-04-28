@@ -7,6 +7,7 @@ Use this directory as the project handbook. The root README stays concise; the f
 - [Getting started](getting-started.md) - install dependencies, configure environment, and run the app.
 - [Architecture](architecture.md) - understand frontend, backend, database, and provider boundaries.
 - [Testing](testing.md) - run focused or full-stack verification.
+- [Test plan](test-plan.md) - ideal testing strategy and concrete current test scope.
 - [Contributing](../CONTRIBUTING.md) - contribution workflow and review expectations.
 
 ## Deep Dives

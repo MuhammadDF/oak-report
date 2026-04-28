@@ -9,6 +9,7 @@ export type AddCollectionInput = {
   image?: string | null;
   grade?: string | null;
   language?: string | null;
+  pricing_catalog_id?: string | null;
 };
 
 export type CollectionRepository = {
