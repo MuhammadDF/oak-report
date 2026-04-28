@@ -331,12 +331,15 @@ export function AppraiseScreen({
 					}}
 					role="dialog"
 				>
-					<div
-						className="report-modal__panel"
+					<article
+						className="panel report-panel admin-panel search-page-panel report-modal__panel"
 						onClick={(event) => event.stopPropagation()}
 					>
-						<div className="report-modal__header">
-							<p className="panel__eyebrow">Search page</p>
+						<div className="report-panel__header">
+							<div>
+								<p className="panel__eyebrow">Search page</p>
+								<h2>Search results</h2>
+							</div>
 							<button
 								className="report-modal__close"
 								onClick={handleSearchPageClose}
@@ -346,130 +349,128 @@ export function AppraiseScreen({
 							</button>
 						</div>
 
-						<article className="panel admin-panel search-page-panel">
-							<div className="admin-controls">
+						<div className="admin-controls">
+							<input
+								className="admin-input"
+								onChange={(event) => {
+									setSearchPageInput(event.target.value);
+									setSearchPagePage(1);
+								}}
+								placeholder="Search current matches"
+								type="search"
+								value={searchPageInput}
+							/>
+							<select
+								className="admin-select"
+								onChange={(event) => {
+									setSearchPageSetFilter(event.target.value);
+									setSearchPagePage(1);
+								}}
+								value={searchPageSetFilter}
+							>
+								<option value="">All sets</option>
+								{searchPageSetOptions.map((setName) => (
+									<option key={setName} value={setName}>
+										{setName}
+									</option>
+								))}
+							</select>
+							<label className="search-page-checkbox">
 								<input
-									className="admin-input"
+									type="checkbox"
+									checked={searchPageOnlyWithImages}
 									onChange={(event) => {
-										setSearchPageInput(event.target.value);
+										setSearchPageOnlyWithImages(event.target.checked);
 										setSearchPagePage(1);
 									}}
-									placeholder="Search current matches"
-									type="search"
-									value={searchPageInput}
 								/>
-								<select
-									className="admin-select"
-									onChange={(event) => {
-										setSearchPageSetFilter(event.target.value);
-										setSearchPagePage(1);
-									}}
-									value={searchPageSetFilter}
-								>
-									<option value="">All sets</option>
-									{searchPageSetOptions.map((setName) => (
-										<option key={setName} value={setName}>
-											{setName}
-										</option>
-									))}
-								</select>
-								<label className="search-page-checkbox">
-									<input
-										type="checkbox"
-										checked={searchPageOnlyWithImages}
-										onChange={(event) => {
-											setSearchPageOnlyWithImages(event.target.checked);
-											setSearchPagePage(1);
-										}}
-									/>
-									<span>Only show cards with images</span>
-								</label>
-							</div>
+								<span>Only show cards with images</span>
+							</label>
+						</div>
 
-							{searchPageError ? <p className="error-banner">{searchPageError}</p> : null}
+						{searchPageError ? <p className="error-banner">{searchPageError}</p> : null}
 
-							<div className="admin-table-wrap" role="region" aria-label="Card matches">
-								<table className="admin-table">
-									<thead>
+						<div className="admin-table-wrap" role="region" aria-label="Card matches">
+							<table className="admin-table">
+								<thead>
+									<tr>
+										<th>Image</th>
+										<th>Product</th>
+										<th>Set</th>
+										<th>
+											<button
+												className="search-page-sort-button"
+												onClick={handlePriceSortToggle}
+												type="button"
+											>
+												Price {searchPagePriceSort === "none" ? "↕" : searchPagePriceSort === "asc" ? "↑" : "↓"}
+											</button>
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{searchPageLoading ? (
 										<tr>
-											<th>Image</th>
-											<th>Product</th>
-											<th>Set</th>
-											<th>
-												<button
-													className="search-page-sort-button"
-													onClick={handlePriceSortToggle}
-													type="button"
-												>
-													Price {searchPagePriceSort === "none" ? "↕" : searchPagePriceSort === "asc" ? "↑" : "↓"}
-												</button>
-											</th>
+											<td colSpan={4}>Loading matches...</td>
 										</tr>
-									</thead>
-									<tbody>
-										{searchPageLoading ? (
-											<tr>
-												<td colSpan={4}>Loading matches...</td>
+									) : null}
+									{!searchPageLoading && pagedSearchPageResults.length === 0 ? (
+										<tr>
+											<td colSpan={4}>No matching cards found.</td>
+										</tr>
+									) : null}
+									{!searchPageLoading
+										? pagedSearchPageResults.map((item) => (
+											<tr
+												className="search-page-row"
+												key={item.id}
+												onClick={() => handleSearchPageRowSelect(item)}
+											>
+												<td className="search-page-thumb-cell">
+													<img
+														alt={item.product_name}
+														className="search-page-thumb"
+														src={item.image_url?.trim() ? item.image_url : FALLBACK_CARD_IMAGE_URL}
+													/>
+												</td>
+												<td>{item.product_name}</td>
+												<td>{item.console_name}</td>
+												<td>{formatCurrency("USD", item.loose_price)}</td>
 											</tr>
-										) : null}
-										{!searchPageLoading && pagedSearchPageResults.length === 0 ? (
-											<tr>
-												<td colSpan={4}>No matching cards found.</td>
-											</tr>
-										) : null}
-										{!searchPageLoading
-											? pagedSearchPageResults.map((item) => (
-												<tr
-													className="search-page-row"
-													key={item.id}
-													onClick={() => handleSearchPageRowSelect(item)}
-												>
-													<td className="search-page-thumb-cell">
-														<img
-															alt={item.product_name}
-															className="search-page-thumb"
-															src={item.image_url?.trim() ? item.image_url : FALLBACK_CARD_IMAGE_URL}
-														/>
-													</td>
-													<td>{item.product_name}</td>
-													<td>{item.console_name}</td>
-													<td>{formatCurrency("USD", item.loose_price)}</td>
-												</tr>
-											))
-											: null}
-									</tbody>
-								</table>
-							</div>
+										))
+										: null}
+								</tbody>
+							</table>
+						</div>
 
-							<div className="admin-pagination">
-								<button
-									className="secondary-button"
-									disabled={searchPagePage <= 1}
-									onClick={() =>
-										setSearchPagePage((current) => Math.max(1, current - 1))
-									}
-									type="button"
-								>
-									Previous
-								</button>
-								<p>
-									Page {searchPagePage} of {searchPageTotalPages}
-								</p>
-								<button
-									className="secondary-button"
-									disabled={searchPagePage >= searchPageTotalPages}
-									onClick={() =>
-										setSearchPagePage((current) =>
-											Math.min(searchPageTotalPages, current + 1),
-										)
-									}
-									type="button"
-								>
-									Next
-								</button>
-							</div>
-						</article>
-					</div>
+						<div className="admin-pagination">
+							<button
+								className="secondary-button"
+								disabled={searchPagePage <= 1}
+								onClick={() =>
+									setSearchPagePage((current) => Math.max(1, current - 1))
+								}
+								type="button"
+							>
+								Previous
+							</button>
+							<p>
+								Page {searchPagePage} of {searchPageTotalPages}
+							</p>
+							<button
+								className="secondary-button"
+								disabled={searchPagePage >= searchPageTotalPages}
+								onClick={() =>
+									setSearchPagePage((current) =>
+										Math.min(searchPageTotalPages, current + 1),
+									)
+								}
+								type="button"
+							>
+								Next
+							</button>
+						</div>
+					</article>
 				</div>
 			) : null}
 		</section>
