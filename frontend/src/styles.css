@@ -449,6 +449,18 @@ img {
   object-fit: cover;
 }
 
+.live-camera__video--hidden {
+  opacity: 0;
+}
+
+.live-camera__capture-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Card alignment frame — absolutely covers the viewfinder.
    The inner rectangle is transparent; box-shadow creates the dark surround. */
 .card-frame {

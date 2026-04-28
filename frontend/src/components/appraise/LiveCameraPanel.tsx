@@ -9,13 +9,23 @@ type LiveCameraPanelProps = {
   error: string | null;
   // True while the scan API call is in-flight. Disables the Capture button.
   loading: boolean;
+  // True when the appraisal modal/search page has opened and the frozen frame
+  // should be cleared so the live view can resume underneath.
+  isAppraisalOpen?: boolean;
   // Called with the captured JPEG File once the user clicks "Capture".
   onFileCaptured: (file: File) => void;
   // Passes search query + results up to AppraiseScreen to open the result modal.
   onSearchResults: (query: string, results: CardPricingMatch[]) => void;
 };
 
-export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onSearchResults }: LiveCameraPanelProps) {
+export function LiveCameraPanel({
+  authToken,
+  error,
+  isAppraisalOpen = false,
+  loading,
+  onFileCaptured,
+  onSearchResults,
+}: LiveCameraPanelProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   // Keep a ref to the active MediaStream so we can stop all tracks on unmount,
   // which releases the camera indicator light on the device.
@@ -25,8 +35,25 @@ export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onS
   // Becomes true once the video element fires `canplay`, meaning frames are
   // flowing and a capture will produce a valid image.
   const [ready, setReady] = useState(false);
+  // Frozen still shown after capture so the user sees the exact frame that was
+  // taken while the scan starts processing.
+  const [capturedPreviewUrl, setCapturedPreviewUrl] = useState<string | null>(null);
 
   const search = useCardSearch(authToken, onSearchResults);
+
+  useEffect(() => {
+    if (isAppraisalOpen && capturedPreviewUrl) {
+      setCapturedPreviewUrl(null);
+    }
+  }, [capturedPreviewUrl, isAppraisalOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (capturedPreviewUrl) {
+        URL.revokeObjectURL(capturedPreviewUrl);
+      }
+    };
+  }, [capturedPreviewUrl]);
 
   // Start the camera stream as soon as this component mounts.
   // The cleanup function stops all tracks when the user switches tabs or
@@ -131,6 +158,13 @@ export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onS
     canvas.toBlob((blob) => {
       if (!blob) return;
       const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+      const nextPreviewUrl = URL.createObjectURL(file);
+      setCapturedPreviewUrl((current) => {
+        if (current) {
+          URL.revokeObjectURL(current);
+        }
+        return nextPreviewUrl;
+      });
       onFileCaptured(file);
     }, "image/jpeg", 0.92);
   }
@@ -145,12 +179,21 @@ export function LiveCameraPanel({ authToken, error, loading, onFileCaptured, onS
           <div className="live-camera__viewfinder">
             <video
               autoPlay
-              className="live-camera__video"
+              className={`live-camera__video${capturedPreviewUrl ? " live-camera__video--hidden" : ""}`}
               muted         // Required for autoPlay without a user gesture in most browsers
               onCanPlay={() => setReady(true)}  // Unlocks Capture once frames are flowing
               playsInline   // Prevents iOS from forcing full-screen playback
               ref={videoRef}
             />
+
+            {capturedPreviewUrl ? (
+              <img
+                alt="Captured card preview"
+                aria-hidden="true"
+                className="live-camera__capture-preview"
+                src={capturedPreviewUrl}
+              />
+            ) : null}
 
             {/* Card alignment frame overlay — corner brackets show the user
                 where to position the card. box-shadow darkens the surrounding

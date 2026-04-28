@@ -265,6 +265,7 @@ export function AppraiseScreen({
 					<LiveCameraPanel
 						authToken={authToken}
 						error={error}
+						isAppraisalOpen={isReportOpen || isSearchPageOpen}
 						loading={loading}
 						onFileCaptured={handleFileDirect}
 						onSearchResults={handleSearchResults}
