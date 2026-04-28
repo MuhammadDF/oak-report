@@ -1074,13 +1074,6 @@ img {
   color: var(--danger);
 }
 
-.admin-action-button {
-  min-width: 64px;
-  padding: 0.52rem 0.72rem;
-  min-height: 32px;
-  font-size: 0.86rem;
-}
-
 .admin-role-select:disabled {
   opacity: 0.66;
   cursor: not-allowed;
@@ -1996,8 +1989,97 @@ img {
     align-items: flex-start;
   }
 
+  .admin-screen .screen-header {
+    margin-bottom: 14px;
+  }
+
+  .admin-screen .screen-header__copy {
+    margin-top: 8px;
+    font-size: 0.92rem;
+  }
+
+  .admin-panel {
+    padding: 14px;
+    gap: 12px;
+    border-radius: 24px;
+  }
+
   .admin-controls {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-input,
+  .admin-select {
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 14px;
+  }
+
+  .admin-select {
+    padding-right: 40px;
+  }
+
+  .admin-table-wrap {
+    overflow-x: visible;
+  }
+
+  .admin-table {
+    min-width: 0;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-user-row {
+    position: relative;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--bg-soft);
+  }
+
+  .admin-user-row:focus-within {
+    z-index: 2;
+  }
+
+  .admin-user-row td {
+    border-bottom: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .admin-user-row td + td {
+    margin-top: 8px;
+  }
+
+  .admin-user-row td::before {
+    display: none;
+  }
+
+  .admin-user-row td[data-label="Name"] .admin-user-name {
+    flex-wrap: wrap;
+  }
+
+  .admin-user-row td[data-label="Role"] .admin-select {
+    width: 100%;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    overflow: visible;
   }
 
   .search-page-panel .admin-table-wrap {
@@ -2054,6 +2136,21 @@ img {
   .search-page-panel .search-page-row td:nth-child(3),
   .search-page-panel .search-page-row td:nth-child(4) {
     margin-top: 4px;
+  }
+
+  .admin-pagination {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .admin-pagination button {
+    flex: 1 1 140px;
+  }
+
+  .admin-pagination p {
+    width: 100%;
+    text-align: center;
+    order: 3;
   }
 
   .collection-panel__wrap {

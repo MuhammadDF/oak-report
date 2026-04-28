@@ -73,17 +73,6 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
     }
   }, [page, totalPages]);
 
-  const dirtyIds = useMemo(() => {
-    const next = new Set<string>();
-    for (const user of users) {
-      const pending = pendingRoles[user.id];
-      if (pending && pending !== user.role) {
-        next.add(user.id);
-      }
-    }
-    return next;
-  }, [pendingRoles, users]);
-
   const orderedUsers = useMemo(() => {
     const currentUserId = authUser?.id;
 
@@ -113,13 +102,8 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
     return authUser?.id === userId;
   }
 
-  function handleRoleChange(userId: string, role: AppRole) {
-    setPendingRoles((current) => ({ ...current, [userId]: role }));
-  }
-
-  async function handleSave(user: AdminUserRecord) {
-    const nextRole = pendingRoles[user.id]!;
-
+  async function handleRoleChange(user: AdminUserRecord, nextRole: AppRole) {
+    setPendingRoles((current) => ({ ...current, [user.id]: nextRole }));
     setSavingIds((current) => ({ ...current, [user.id]: true }));
     setError(null);
 
@@ -135,6 +119,11 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
       });
     } catch {
       setError("Failed to save role update.");
+      setPendingRoles((current) => {
+        const next = { ...current };
+        delete next[user.id];
+        return next;
+      });
     } finally {
       setSavingIds((current) => {
         const next = { ...current };
@@ -185,62 +174,48 @@ export function AdminScreen({ authToken, authUser }: AdminScreenProps) {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Role</th>
-                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={4}>Loading users...</td>
+                  <td colSpan={3}>Loading users...</td>
                 </tr>
               ) : null}
               {!loading && users.length === 0 ? (
                 <tr>
-                  <td colSpan={4}>No matching users found.</td>
+                  <td colSpan={3}>No matching users found.</td>
                 </tr>
               ) : null}
               {!loading
                 ? orderedUsers.map((user) => {
-                    const isDirty = dirtyIds.has(user.id);
                     const isSaving = Boolean(savingIds[user.id]);
                     const currentUser = isCurrentUser(user.id);
 
                     return (
-                      <tr key={user.id}>
-                        <td>
+                      <tr key={user.id} className="admin-user-row">
+                        <td data-label="Name">
                           <div className="admin-user-name">
                             <span>{user.display_name}</span>
                             {currentUser ? <span className="admin-me-badge">You</span> : null}
                           </div>
                         </td>
-                        <td>{user.email}</td>
-                        <td>
+                        <td data-label="Email">{user.email}</td>
+                        <td data-label="Role">
                           <select
                             className="admin-select admin-role-select"
                             disabled={isSaving || currentUser}
                             aria-disabled={currentUser}
                             title={currentUser ? "You cannot change your own role." : undefined}
-                            onChange={(event) =>
-                              handleRoleChange(user.id, event.target.value as AppRole)
-                            }
+                            onChange={(event) => {
+                              void handleRoleChange(user, event.target.value as AppRole);
+                            }}
                             value={getEffectiveRole(user)}
                           >
                             <option value="na">NA</option>
                             <option value="collector">Collector</option>
                             <option value="admin">Admin</option>
                           </select>
-                        </td>
-                        <td>
-                          {isDirty ? (
-                            <button
-                              className="primary-button admin-action-button"
-                              disabled={isSaving}
-                              onClick={() => void handleSave(user)}
-                              type="button"
-                            >
-                              {isSaving ? "Saving..." : "Save"}
-                            </button>
-                          ) : null}
                         </td>
                       </tr>
                     );

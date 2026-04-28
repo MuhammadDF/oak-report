@@ -27,7 +27,7 @@ describe("AdminScreen", () => {
     mockUpdateUserRole.mockReset();
   });
 
-  it("loads users, supports filters, ordering, pagination, and saving roles", async () => {
+  it("loads users, supports filters, ordering, pagination, and autosaves roles", async () => {
     mockListUsers.mockResolvedValue({
       items: [
         authUser,
@@ -78,7 +78,6 @@ describe("AdminScreen", () => {
     fireEvent.change(within(ashRow as HTMLElement).getByRole("combobox"), {
       target: { value: "admin" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
       expect(mockUpdateUserRole).toHaveBeenCalledWith("token-123", "user-2", "admin");
@@ -126,7 +125,6 @@ describe("AdminScreen", () => {
     fireEvent.change(within(ashRow as HTMLElement).getByRole("combobox"), {
       target: { value: "admin" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => {
       expect(screen.getByText("Failed to save role update.")).toBeInTheDocument();
@@ -155,7 +153,7 @@ describe("AdminScreen", () => {
     });
   });
 
-  it("keeps the current user first and skips unchanged saves", async () => {
+  it("keeps the current user first", async () => {
     mockListUsers.mockResolvedValueOnce({
       items: [
         {
@@ -177,9 +175,7 @@ describe("AdminScreen", () => {
       total: 20,
     });
     mockListUsers.mockResolvedValueOnce({
-      items: [
-        authUser,
-      ],
+      items: [authUser],
       page: 2,
       page_size: 10,
       total: 1,
