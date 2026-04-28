@@ -1,6 +1,6 @@
 # Oak Report
 
-Oak Report is a Pokemon TCG appraisal web app for identifying cards, estimating value, and managing a personal collection. The current vertical slice includes a FastAPI backend, Postgres persistence for auth, collection, and pricing catalog data, Gemini-backed scan identity extraction, pricing-catalog search on the appraise page, and a React/Vite frontend.
+Oak Report is a Pokemon TCG appraisal web app for identifying cards, estimating value, and managing a personal collection. The current vertical slice includes a FastAPI backend, Postgres persistence for auth, collection, and pricing catalog data, Vertex AI-backed scan identity extraction, pricing-catalog search on the appraise page, and a React/Vite frontend.
 
 This README is the project hub. Detailed setup, architecture, operations, and contribution guidance live in the linked docs.
 
@@ -16,14 +16,14 @@ This README is the project hub. Detailed setup, architecture, operations, and co
 
 ## Stack
 
-| Area | Technology |
-| --- | --- |
-| Backend | Python 3.12, FastAPI, SQLModel, SQLAlchemy async, Pydantic |
-| Database | Postgres 16, Alembic migrations, seeded Pokemon card data |
-| Frontend | React 18, Vite, TypeScript, Vitest, Testing Library |
-| Tooling | uv, npm, Docker Compose, VS Code Dev Containers |
-| Deployment | GitHub Actions, Cloud Run backend, Firebase Hosting frontend |
-| Integrations | Google OAuth, JWT auth, Gemini API, PriceCharting catalog sync |
+| Area         | Technology                                                    |
+| ------------ | ------------------------------------------------------------- |
+| Backend      | Python 3.12, FastAPI, SQLModel, SQLAlchemy async, Pydantic    |
+| Database     | Postgres 16, Alembic migrations, seeded Pokemon card data     |
+| Frontend     | React 18, Vite, TypeScript, Vitest, Testing Library           |
+| Tooling      | uv, npm, Docker Compose, VS Code Dev Containers               |
+| Deployment   | GitHub Actions, Cloud Run backend, Firebase Hosting frontend  |
+| Integrations | Google OAuth, JWT auth, Vertex AI, PriceCharting catalog sync |
 
 ## Quick Start
 
@@ -62,6 +62,36 @@ This README is the project hub. Detailed setup, architecture, operations, and co
 Open the app at `https://localhost:5173`. The API is available at `http://localhost:8000`, with Swagger docs at `http://localhost:8000/docs`.
 
 For full local, Docker Compose, and dev container setup details, see [Getting Started](docs/getting-started.md).
+
+## Google Cloud ADC (local Docker / Vertex AI)
+
+If you need to run Vertex AI operations locally or let Docker Compose mount Application Default Credentials (ADC), perform the following steps with your personal Google account.
+
+1. Auth gcloud as your personal Google account:
+
+   ```bash
+   gcloud auth login --no-launch-browser
+   ```
+
+2. Create the Application Default Credentials file:
+
+   ```bash
+   gcloud auth application-default login --no-launch-browser
+   ```
+
+3. Pin the project (replace `oak-report` with your project if different):
+
+   ```bash
+   gcloud config set project oak-report
+   ```
+
+4. Copy the ADC file into the workspace where Docker Compose can mount it:
+
+   ```bash
+   cp ~/.config/gcloud/application_default_credentials.json gcp-adc.json
+   ```
+
+The repository expects `gcp-adc.json` at the workspace root for local container mounts; do not commit your personal ADC file to source control.
 
 ## Usage Examples
 
