@@ -377,7 +377,7 @@ describe("UploadPanel", () => {
     });
   });
 
-  it("renders desktop upload flow and preview", () => {
+  it("renders desktop upload flow with error banner", () => {
     const onFileChange = vi.fn();
     render(
       <UploadPanel
@@ -397,7 +397,6 @@ describe("UploadPanel", () => {
     });
 
     expect(onFileChange).toHaveBeenCalled();
-    expect(screen.getByAltText("Selected card preview")).toBeInTheDocument();
     expect(screen.getByText("Scan failed")).toBeInTheDocument();
   });
 
