@@ -54,7 +54,7 @@ export function ResultsColumn({
     <section className="results-column">
       {result ? (
         <>
-          <IdentityReport result={result} />
+          <IdentityReport previewUrl={reportPreviewUrl} result={result} />
           <div className="report-actions">
             <button
               className="primary-button"

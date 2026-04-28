@@ -311,7 +311,8 @@ def test_to_item_record_maps_collection_row() -> None:
     assert item.quantity == 2
 
 
-def test_hydrate_item_record_uses_catalog_price() -> None:
+@pytest.mark.asyncio(loop_scope="session")
+async def test_hydrate_item_record_uses_catalog_price() -> None:
     from backend.db.models import PricingCatalogTable
 
     class FakeResult:
@@ -333,43 +334,38 @@ def test_hydrate_item_record_uses_catalog_price() -> None:
             _ = statement
             return self._results.pop(0)
 
-    async def _run_test() -> None:
-        session = FakeSession(
-            [
-                FakeResult(
-                    all_values=[
-                        PricingCatalogTable(
-                            id="pc-1",
-                            console_name="Base Set",
-                            product_name="Charizard #4",
-                            loose_price=319.99,
-                            tcg_id=None,
-                            image_url="",
-                        )
-                    ]
-                )
-            ]
-        )
-        row = SimpleNamespace(
-            card_id="card-1",
-            name="Charizard",
-            set="Base Set",
-            number="4",
-            price=249.99,
-            image="https://example.com/card.jpg",
-            grade="NM",
-            quantity=2,
-            pricing_catalog_id=None,
-        )
+    session = FakeSession(
+        [
+            FakeResult(
+                all_values=[
+                    PricingCatalogTable(
+                        id="pc-1",
+                        console_name="Base Set",
+                        product_name="Charizard #4",
+                        loose_price=319.99,
+                        tcg_id=None,
+                        image_url="",
+                    )
+                ]
+            )
+        ]
+    )
+    row = SimpleNamespace(
+        card_id="card-1",
+        name="Charizard",
+        set="Base Set",
+        number="4",
+        price=249.99,
+        image="https://example.com/card.jpg",
+        grade="NM",
+        quantity=2,
+        pricing_catalog_id=None,
+    )
 
-        item = await _hydrate_item_record(session, _to_item_record(row))
+    item = await _hydrate_item_record(session, _to_item_record(row))
 
-        assert item.pricing_catalog_id == "pc-1"
-        assert item.price == 319.99
-
-    import asyncio
-
-    asyncio.run(_run_test())
+    assert item.pricing_catalog_id == "pc-1"
+    assert item.price == 319.99
 
 
 @pytest.mark.asyncio(loop_scope="session")

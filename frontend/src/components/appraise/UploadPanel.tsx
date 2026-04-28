@@ -73,6 +73,10 @@ export function UploadPanel({
         query={search.query}
       />
 
+      {previewUrl ? (
+        <img alt="Selected card preview" className="upload-preview" src={previewUrl} />
+      ) : null}
+
       {loading ? (
         <p className="upload-status">Analyzing upload... building report.</p>
       ) : null}

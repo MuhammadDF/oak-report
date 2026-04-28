@@ -2,12 +2,15 @@ import { ScanResult } from "../../types/app";
 import { formatCurrency } from "../../utils/format";
 
 type IdentityReportProps = {
+  previewUrl: string | null;
   result: ScanResult;
 };
 
 export function IdentityReport({
+  previewUrl,
   result,
 }: IdentityReportProps) {
+  const artSrc = result.image_url ?? previewUrl;
   return (
     <article className="panel report-panel">
       <div className="report-panel__header">
@@ -20,8 +23,8 @@ export function IdentityReport({
 
       <div className="report-summary">
         <div className="report-summary__art">
-          {result.image_url ? (
-            <img alt={result.card.name} src={result.image_url} />
+          {artSrc ? (
+            <img alt={result.card.name} src={artSrc} />
           ) : (
             <div className="report-summary__placeholder">No card image</div>
           )}
