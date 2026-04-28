@@ -50,6 +50,7 @@ export function AppraiseScreen({
 	const [searchPagePriceSort, setSearchPagePriceSort] = useState<"none" | "asc" | "desc">("none");
 	const [searchPagePage, setSearchPagePage] = useState(1);
 	const [searchPageSelectedResult, setSearchPageSelectedResult] = useState<ScanResult | null>(null);
+	const [searchPageHasMultipleOptions, setSearchPageHasMultipleOptions] = useState(false);
 
 	// Auto-open the result modal whenever a real scan completes.
 	// Also clears any leftover search state so the modal shows only the scan.
@@ -61,6 +62,7 @@ export function AppraiseScreen({
 				return;
 			}
 
+			setSearchPageHasMultipleOptions(false);
 			setIsReportOpen(true);
 		}
 	}, [result]);
@@ -71,6 +73,7 @@ export function AppraiseScreen({
 		setIsSearchPageOpen(false);
 		setSearchPageError(null);
 		setSearchPageSelectedResult(null);
+		setSearchPageHasMultipleOptions(false);
 		resetAppraisal();
 	}
 
@@ -128,6 +131,12 @@ export function AppraiseScreen({
 		void loadSearchPageResults(currentCard);
 	}
 
+	function handleBackToSearchPage() {
+		setIsReportOpen(false);
+		setSearchPageSelectedResult(null);
+		setIsSearchPageOpen(true);
+	}
+
 	function handleSearchPageClose() {
 		setIsSearchPageOpen(false);
 	}
@@ -158,6 +167,7 @@ export function AppraiseScreen({
 		setSearchPagePriceSort("none");
 		setSearchPagePage(1);
 		setSearchPageSelectedResult(null);
+		setSearchPageHasMultipleOptions(results.length > 1);
 		setSearchPageResults(results);
 		setSearchPageError(null);
 		setIsSearchPageOpen(true);
@@ -291,6 +301,8 @@ export function AppraiseScreen({
 
 								<ResultsColumn
 									authToken={authToken}
+									hasBackToSearchPage={searchPageHasMultipleOptions}
+									onBackToSearchPage={handleBackToSearchPage}
 									onSearchPageClick={handleSearchPageOpen}
 									onCollectionAdded={onCollectionAdded}
 									reportPreviewUrl={reportPreviewUrl}

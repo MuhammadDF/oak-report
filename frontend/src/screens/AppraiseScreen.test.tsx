@@ -60,16 +60,20 @@ vi.mock("../components/appraise/LiveCameraPanel", () => ({
 vi.mock("../components/appraise/ResultsColumn", () => ({
   ResultsColumn: ({
     result,
-    onSearchPageClick,
+    hasBackToSearchPage,
+    onBackToSearchPage,
   }: {
     result: { card: { name: string } };
-    onSearchPageClick?: () => void;
+    hasBackToSearchPage?: boolean;
+    onBackToSearchPage?: () => void;
   }) => (
     <div>
       <div>Derived result: {result.card.name}</div>
-      <button onClick={onSearchPageClick} type="button">
-        Search page
-      </button>
+      {hasBackToSearchPage ? (
+        <button onClick={onBackToSearchPage} type="button">
+          Back
+        </button>
+      ) : null}
     </div>
   ),
 }));
@@ -140,7 +144,7 @@ describe("AppraiseScreen", () => {
     expect(screen.getByRole("button", { name: "Open camera search" })).toBeInTheDocument();
   });
 
-  it("auto-opens result modals for scan results and supports search-page loading, filtering, sorting, pagination, and selection", async () => {
+  it("auto-opens single-result reports and hides the secondary action", () => {
     mockUseAppraisal.mockReturnValue({
       error: null,
       handleFileChange: vi.fn(),
@@ -161,189 +165,11 @@ describe("AppraiseScreen", () => {
         pricing: 120,
       },
     });
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        results: Array.from({ length: 11 }, (_, index) => ({
-          id: `match-${index}`,
-          console_name: index === 0 ? "Japanese Neo" : "Base Set",
-          product_name: index === 0 ? "Charizard # 6" : `Pikachu # ${index}`,
-          loose_price: index,
-          tcg_id: null,
-          image_url: index === 0 ? "" : `/card-${index}.png`,
-          refreshed_at: "2026-04-26T00:00:00Z",
-        })),
-      }),
-    } as never);
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        results: Array.from({ length: 11 }, (_, index) => ({
-          id: `match-${index}`,
-          console_name: index === 0 ? "Japanese Neo" : "Base Set",
-          product_name: index === 0 ? "Charizard # 6" : `Pikachu # ${index}`,
-          loose_price: index,
-          tcg_id: null,
-          image_url: index === 0 ? "" : `/card-${index}.png`,
-          refreshed_at: "2026-04-26T00:00:00Z",
-        })),
-      }),
-    } as never);
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        results: Array.from({ length: 11 }, (_, index) => ({
-          id: `match-${index}`,
-          console_name: index === 0 ? "Japanese Neo" : "Base Set",
-          product_name: index === 0 ? "Charizard # 6" : `Pikachu # ${index}`,
-          loose_price: index,
-          tcg_id: null,
-          image_url: index === 0 ? "" : `/card-${index}.png`,
-          refreshed_at: "2026-04-26T00:00:00Z",
-        })),
-      }),
-    } as never);
 
-    const { unmount } = render(<AppraiseScreen authToken="token-123" />);
+    render(<AppraiseScreen authToken="token-123" />);
 
     expect(screen.getByText("Derived result: Charizard")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("dialog"));
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-
-    unmount();
-    render(<AppraiseScreen authToken="token-123" />);
-    expect(screen.getByText("Derived result: Charizard")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Charizard # 6")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    await waitFor(() => {
-      expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Previous" }));
-    await waitFor(() => {
-      expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    await waitFor(() => {
-      expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Search current matches"), {
-      target: { value: "charizard" },
-    });
-    fireEvent.change(screen.getByRole("combobox"), {
-      target: { value: "Japanese Neo" },
-    });
-    fireEvent.click(screen.getByLabelText(/Only show cards with images/i));
-    expect(screen.getByText("No matching cards found.")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByLabelText(/Only show cards with images/i));
-    await waitFor(() => {
-      expect(screen.getByText("Page 1 of 1")).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByPlaceholderText("Search current matches"), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByRole("combobox"), {
-      target: { value: "" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Price ↕/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Price ↑/ }));
-    fireEvent.click(screen.getByText("Pikachu # 1"));
-    await waitFor(() => {
-      expect(screen.getByText("Derived result: Pikachu")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-    await waitFor(() => {
-      expect(screen.getByText("Charizard # 6")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText("Charizard # 6"));
-
-    await waitFor(() => {
-      expect(screen.getByText("Derived result: Charizard")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-    await waitFor(() => {
-      expect(screen.getByText("Charizard # 6")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByRole("dialog"));
-
-    await waitFor(() => {
-      expect(screen.queryByText("Charizard # 6")).not.toBeInTheDocument();
-    });
-  });
-
-  it("handles missing auth and failed search-page loads", async () => {
-    mockUseAppraisal.mockReturnValue({
-      error: null,
-      handleFileChange: vi.fn(),
-      handleFileDirect: vi.fn(),
-      loading: false,
-      previewUrl: null,
-      reportPreviewUrl: "/preview.png",
-      resetAppraisal: vi.fn(),
-      result: {
-        processed_at: "2026-04-26T00:00:00Z",
-        card: {
-          name: "Pikachu",
-          card_number: "25",
-          language: "English",
-        },
-        image_url: "/pikachu.png",
-        set_name: "Base",
-        pricing: 12.5,
-      },
-    });
-
-    const { unmount } = render(<AppraiseScreen authToken={null} />);
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-    expect(await screen.findByText("Authentication required for search page.")).toBeInTheDocument();
-
-    unmount();
-
-    vi.mocked(fetch).mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({}),
-    } as never);
-
-    render(<AppraiseScreen authToken="token-123" />);
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-
-    expect(await screen.findByText("Could not load card matches.")).toBeInTheDocument();
-  });
-
-  it("handles generic non-error search-page failures", async () => {
-    mockUseAppraisal.mockReturnValue({
-      error: null,
-      handleFileChange: vi.fn(),
-      handleFileDirect: vi.fn(),
-      loading: false,
-      previewUrl: null,
-      reportPreviewUrl: "/preview.png",
-      resetAppraisal: vi.fn(),
-      result: {
-        processed_at: "2026-04-26T00:00:00Z",
-        card: {
-          name: "Mew",
-          card_number: "8",
-          language: "English",
-        },
-        image_url: "/mew.png",
-        set_name: "Promo",
-        pricing: 50,
-      },
-    });
-    vi.mocked(fetch).mockRejectedValueOnce("boom" as never);
-
-    render(<AppraiseScreen authToken="token-123" />);
-    fireEvent.click(screen.getByRole("button", { name: "Search page" }));
-
-    expect(await screen.findByText("Failed to load search page results.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Search page" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeInTheDocument();
   });
 });
