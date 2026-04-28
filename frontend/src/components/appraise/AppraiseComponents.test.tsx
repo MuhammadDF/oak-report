@@ -12,7 +12,7 @@ import { UploadPanel } from "./UploadPanel";
 
 const { mockAddScanToCollection, mockUseCardSearch } = vi.hoisted(() => ({
   mockAddScanToCollection: vi.fn(),
-  mockUseCardSearch: vi.fn(),
+  mockUseCardSearch: vi.fn(), 
 }));
 
 vi.mock("../../repositories/collectionRepository", () => ({

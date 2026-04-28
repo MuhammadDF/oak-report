@@ -2,7 +2,7 @@ name: Deploy frontend
 
 on:
   push:
-    branches: [main]
+    branches: [main, cicd/cloudrun]
     paths:
       - "frontend/**"
       - "firebase.json"
