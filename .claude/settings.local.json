@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(bash scripts/run_qa.sh)",
+      "Bash(bash /workspaces/pokemon/scripts/run_qa.sh)",
+      "Bash(npm --prefix frontend run test:coverage)",
+      "Bash(xargs ls *)",
+      "Bash(xargs cat *)",
+      "Bash(npx tsc *)"
     ]
   }
 }
