@@ -45,6 +45,7 @@ class AddCollectionItemInput(BaseModel):
     image: str | None = None
     grade: str | None = None
     language: str | None = None
+    pricing_catalog_id: str | None = None
 
 
 class AddToCollectionResult(BaseModel):
@@ -110,13 +111,16 @@ async def add_scan_to_collection(
         price=max(0.0, payload.price),
         image=payload.image or "https://placehold.co/600x840?text=Pokemon+Card",
         grade=payload.grade,
+        pricing_catalog_id=payload.pricing_catalog_id,
         quantity=1,
     )
 
     record = await repository.add_item(owner_id, item)
+    added_item = next(
+        (entry for entry in record.items if entry.id == item.id), item)
     return AddToCollectionResult(
         owner_id=record.owner_id,
-        added_item=_to_card_model(item),
+        added_item=_to_card_model(added_item),
         total_items=len(record.items),
     )
 

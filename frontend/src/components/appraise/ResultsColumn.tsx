@@ -6,7 +6,9 @@ import { IdentityReport } from "./IdentityReport";
 
 type ResultsColumnProps = {
   authToken: string | null;
+  hasBackToSearchPage?: boolean;
   onCollectionAdded?: () => void;
+  onBackToSearchPage?: () => void;
   onSearchPageClick?: () => void;
   reportPreviewUrl: string | null;
   result: ScanResult | null;
@@ -16,6 +18,8 @@ const collectionRepository = getCollectionRepository();
 
 export function ResultsColumn({
   authToken,
+  hasBackToSearchPage,
+  onBackToSearchPage,
   onCollectionAdded,
   onSearchPageClick,
   reportPreviewUrl,
@@ -36,6 +40,7 @@ export function ResultsColumn({
         price: result!.pricing,
         image: result!.image_url ?? reportPreviewUrl,
         language: result!.card.language,
+        pricing_catalog_id: result!.pricing_catalog_id,
       });
 
       setCollectionStatus("success");
@@ -50,7 +55,7 @@ export function ResultsColumn({
     <section className="results-column">
       {result ? (
         <>
-          <IdentityReport result={result} />
+          <IdentityReport previewUrl={reportPreviewUrl} result={result} />
           <div className="report-actions">
             <button
               className="primary-button"
@@ -62,13 +67,15 @@ export function ResultsColumn({
                 ? "Adding..."
                 : "Add to collection"}
             </button>
-            <button
-              className="secondary-button"
-              onClick={onSearchPageClick}
-              type="button"
-            >
-              Search page
-            </button>
+            {hasBackToSearchPage ? (
+              <button
+                className="secondary-button"
+                onClick={onBackToSearchPage}
+                type="button"
+              >
+                Back
+              </button>
+            ) : null}
             {collectionStatus === "success" ? (
               <span className="report-actions__status report-actions__status--success">
                 Saved to collection.
