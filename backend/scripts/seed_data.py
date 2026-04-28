@@ -52,7 +52,8 @@ async def seed_dev_data(session: AsyncSession) -> None:
         )
 
     existing_items = await session.exec(
-        select(CollectionItemTable).where(CollectionItemTable.owner_id == DEMO_USER_ID)
+        select(CollectionItemTable).where(
+            CollectionItemTable.owner_id == DEMO_USER_ID)
     )
     if existing_items.first() is not None:
         await session.commit()
@@ -68,6 +69,7 @@ async def seed_dev_data(session: AsyncSession) -> None:
                 CollectionItemTable(
                     owner_id=DEMO_USER_ID,
                     card_id=row.get("id") or f"seed-{index}",
+                    pricing_catalog_id=row.get("id") or f"seed-{index}",
                     name=row.get("product-name") or "Unknown Card",
                     set=row.get("console-name") or "Unknown Set",
                     number=str(index + 1),

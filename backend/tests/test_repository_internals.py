@@ -13,6 +13,7 @@ from backend.repositories.collection_repository import (
     CollectionItemRecord,
     InMemoryCollectionRepository,
     PostgresCollectionRepository,
+    _hydrate_item_record,
     _to_item_record,
 )
 from backend.repositories.factory import (
@@ -81,9 +82,12 @@ def test_repository_factory_respects_provider_and_caching(
 
     monkeypatch.setenv("DATA_PROVIDER", "postgres")
     session = object()
-    assert get_collection_repository(session).__class__.__name__ == "PostgresCollectionRepository"
-    assert get_pricing_catalog_repository(session).__class__.__name__ == "PostgresPricingCatalogRepository"
-    assert get_user_repository(session).__class__.__name__ == "PostgresUserRepository"
+    assert get_collection_repository(
+        session).__class__.__name__ == "PostgresCollectionRepository"
+    assert get_pricing_catalog_repository(
+        session).__class__.__name__ == "PostgresPricingCatalogRepository"
+    assert get_user_repository(
+        session).__class__.__name__ == "PostgresUserRepository"
 
     with pytest.raises(ValueError, match="database session is required"):
         get_collection_repository()
@@ -215,7 +219,8 @@ async def test_postgres_collection_repository_covers_all_paths(db_session, db_se
         await repository.update_quantity("user-1", "missing", 1)
 
     updated = await repository.update_quantity("user-1", "card-1", 7)
-    assert next(item for item in updated.items if item.id == "card-1").quantity == 7
+    assert next(item for item in updated.items if item.id ==
+                "card-1").quantity == 7
 
     removed_by_zero = await repository.update_quantity("user-1", "card-1", 0)
     assert {item.id for item in removed_by_zero.items} == {"card-2"}
@@ -225,6 +230,67 @@ async def test_postgres_collection_repository_covers_all_paths(db_session, db_se
 
     removed = await repository.remove_item("user-1", "card-2")
     assert removed.items == []
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_postgres_collection_repository_reflects_catalog_price_updates(
+    db_session,
+) -> None:
+    db_session.add(
+        UserTable(
+            id="user-1",
+            email="ash@example.com",
+            display_name="Ash",
+            role="collector",
+            hashed_password="secret",
+            feature_flags={},
+        )
+    )
+    db_session.add(
+        PricingCatalogTable(
+            id="pc-1",
+            console_name="Base Set",
+            product_name="Charizard #4",
+            loose_price=249.99,
+            tcg_id=None,
+            image_url="",
+        )
+    )
+    await db_session.commit()
+
+    repository = PostgresCollectionRepository(db_session)
+
+    added = await repository.add_item(
+        "user-1",
+        CollectionItemRecord(
+            id="card-1",
+            name="Charizard",
+            set="Base Set",
+            number="4",
+            price=123.45,
+            image="https://example.com/card.jpg",
+            grade="NM",
+            quantity=1,
+            pricing_catalog_id="pc-1",
+        ),
+    )
+
+    assert added.items[0].pricing_catalog_id == "pc-1"
+    assert added.items[0].price == 249.99
+
+    catalog_row = (
+        await db_session.exec(
+            select(PricingCatalogTable).where(PricingCatalogTable.id == "pc-1")
+        )
+    ).first()
+    assert catalog_row is not None
+    catalog_row.loose_price = 299.99
+    await db_session.commit()
+
+    refreshed = await repository.get_collection("user-1")
+
+    assert refreshed.items[0].pricing_catalog_id == "pc-1"
+    assert refreshed.items[0].price == 299.99
 
 
 def test_to_item_record_maps_collection_row() -> None:
@@ -243,6 +309,67 @@ def test_to_item_record_maps_collection_row() -> None:
 
     assert item.id == "card-1"
     assert item.quantity == 2
+
+
+def test_hydrate_item_record_uses_catalog_price() -> None:
+    from backend.db.models import PricingCatalogTable
+
+    class FakeResult:
+        def __init__(self, *, first_value=None, all_values=None):
+            self._first_value = first_value
+            self._all_values = all_values or []
+
+        def first(self):
+            return self._first_value
+
+        def all(self):
+            return self._all_values
+
+    class FakeSession:
+        def __init__(self, results):
+            self._results = list(results)
+
+        async def exec(self, statement):
+            _ = statement
+            return self._results.pop(0)
+
+    async def _run_test() -> None:
+        session = FakeSession(
+            [
+                FakeResult(
+                    all_values=[
+                        PricingCatalogTable(
+                            id="pc-1",
+                            console_name="Base Set",
+                            product_name="Charizard #4",
+                            loose_price=319.99,
+                            tcg_id=None,
+                            image_url="",
+                        )
+                    ]
+                )
+            ]
+        )
+        row = SimpleNamespace(
+            card_id="card-1",
+            name="Charizard",
+            set="Base Set",
+            number="4",
+            price=249.99,
+            image="https://example.com/card.jpg",
+            grade="NM",
+            quantity=2,
+            pricing_catalog_id=None,
+        )
+
+        item = await _hydrate_item_record(session, _to_item_record(row))
+
+        assert item.pricing_catalog_id == "pc-1"
+        assert item.price == 319.99
+
+    import asyncio
+
+    asyncio.run(_run_test())
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -322,7 +449,8 @@ async def test_postgres_user_repository_covers_all_paths(db_session, db_session_
 
     updated = await repository.upsert_google_user(identity)
     created = await repository.upsert_google_user(
-        identity.model_copy(update={"subject": "new-user", "email": "new@example.com", "display_name": "New"})
+        identity.model_copy(
+            update={"subject": "new-user", "email": "new@example.com", "display_name": "New"})
     )
     assert updated.email == "ash@example.com"
     assert created.id == "new-user"

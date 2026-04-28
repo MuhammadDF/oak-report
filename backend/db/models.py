@@ -39,11 +39,18 @@ class UserTable(SQLModel, table=True):
 
 class CollectionItemTable(SQLModel, table=True):
     __tablename__ = "collection_items"
-    __table_args__ = (UniqueConstraint("owner_id", "card_id", name="uq_owner_card"),)
+    __table_args__ = (UniqueConstraint(
+        "owner_id", "card_id", name="uq_owner_card"),)
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    id: str = Field(default_factory=lambda: str(
+        uuid.uuid4()), primary_key=True)
     owner_id: str = Field(foreign_key="users.id", index=True)
     card_id: str = Field(index=True)
+    pricing_catalog_id: str | None = Field(
+        default=None,
+        foreign_key="pricing_catalog.id",
+        index=True,
+    )
 
     name: str
     set: str
