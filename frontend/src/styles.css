@@ -1379,7 +1379,12 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  /* margin-bottom: 8px; */
+}
+
+/* Right-align header content (used to place Close button at top-right) */
+.report-modal__header--right {
+  justify-content: flex-end;
 }
 
 .report-modal__close {
@@ -1437,10 +1442,6 @@ img {
   grid-template-columns: minmax(220px, 240px) minmax(0, 1fr);
   gap: 16px;
   margin-top: 4px;
-  padding: 18px;
-  border-radius: 24px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
 }
 
 .report-summary__art,
@@ -1578,7 +1579,14 @@ img {
   margin: 0;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* Symmetric grid: two equal columns on desktop, single column on narrow screens */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .metric-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .metric-list div,

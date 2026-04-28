@@ -292,31 +292,16 @@ export function AppraiseScreen({
 					onClick={handleModalBackdropClick}
 					role="dialog"
 				>
-						<div
-							className="report-modal__panel"
-							onClick={(event) => event.stopPropagation()}
-						>
-						<div className="report-modal__header">
-							<p className="panel__eyebrow">Card overview</p>
-							<button
-								className="report-modal__close"
-								onClick={handleReportClose}
-								type="button"
-							>
-								Close
-							</button>
-						</div>
-
-								<ResultsColumn
-									authToken={authToken}
-									hasBackToSearchPage={searchPageHasMultipleOptions}
-									onBackToSearchPage={handleBackToSearchPage}
-									onSearchPageClick={handleSearchPageOpen}
-									onCollectionAdded={onCollectionAdded}
-									reportPreviewUrl={reportPreviewUrl}
-									result={derivedResult}
-								/>
-						</div>
+					<ResultsColumn
+						authToken={authToken}
+						hasBackToSearchPage={searchPageHasMultipleOptions}
+						onBackToSearchPage={handleBackToSearchPage}
+						onClose={handleReportClose}
+						onSearchPageClick={handleSearchPageOpen}
+						onCollectionAdded={onCollectionAdded}
+						reportPreviewUrl={reportPreviewUrl}
+						result={derivedResult}
+					/>
 					</div>
 				) : null}
 
