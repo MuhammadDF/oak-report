@@ -1882,6 +1882,10 @@ img {
     --mobile-nav-height: 76px;
   }
 
+  .app__chrome {
+    height: calc(100svh - var(--mobile-nav-height));
+  }
+
   .sidebar {
     display: none;
   }
@@ -1911,7 +1915,7 @@ img {
   .live-camera__viewfinder {
     max-width: none;
     border-radius: 16px;
-    height: calc(100dvh - var(--mobile-nav-height) - 200px);
+    height: calc(100svh - var(--mobile-nav-height) - 200px);
   }
 
   .live-camera .camera-button {
@@ -1994,6 +1998,7 @@ img {
 
   .report-modal__panel {
     padding: 20px;
+    max-height: calc(100svh - var(--mobile-nav-height) - 48px);
   }
 
   .library-row {
@@ -2167,7 +2172,7 @@ img {
 
   .collection-panel__wrap {
     width: calc(100vw - 24px);
-    max-height: calc(100dvh - var(--mobile-nav-height) - 12px);
+    max-height: calc(100svh - var(--mobile-nav-height) - 12px);
   }
 
   .collection-panel {
