@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthSession } from "./useAuthSession";
+import type { Screen } from "../types/app";
 import { mockFetchResponse } from "../test/testUtils";
 
 describe("useAuthSession", () => {
@@ -153,7 +154,7 @@ describe("useAuthSession", () => {
 
     const { result, rerender } = renderHook(
       ({ screen }) => useAuthSession({ screen, setScreen }),
-      { initialProps: { screen: "admin" as const } },
+      { initialProps: { screen: "admin" as Screen } },
     );
 
     await waitFor(() => {

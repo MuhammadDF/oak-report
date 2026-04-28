@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AccessRequiredScreen } from "./AccessRequiredScreen";
 import { ProfileScreen } from "./ProfileScreen";
 import { SignInScreen } from "./SignInScreen";
@@ -37,12 +37,16 @@ describe("ProfileScreen", () => {
 });
 
 describe("SignInScreen", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("renders a missing client id warning", () => {
-    const previous = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = "";
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
 
     render(
       <SignInScreen
+        isDark
         error={null}
         isSubmitting={false}
         onCredentialReceived={vi.fn()}
@@ -52,17 +56,15 @@ describe("SignInScreen", () => {
     expect(
       screen.getByText("Missing VITE_GOOGLE_CLIENT_ID in frontend environment."),
     ).toBeInTheDocument();
-
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = previous;
   });
 
   it("initializes google identity when configured", () => {
-    const previous = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = "client-id";
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
     const onCredentialReceived = vi.fn();
 
     render(
       <SignInScreen
+        isDark
         error="Bad auth"
         isSubmitting
         onCredentialReceived={onCredentialReceived}
@@ -71,9 +73,14 @@ describe("SignInScreen", () => {
 
     expect(window.google?.accounts.id.initialize).toHaveBeenCalled();
     expect(window.google?.accounts.id.renderButton).toHaveBeenCalled();
-    expect(window.google?.accounts.id.prompt).toHaveBeenCalled();
+    expect(window.google?.accounts.id.prompt).not.toHaveBeenCalled();
     expect(screen.getByText("Signing in...")).toBeInTheDocument();
     expect(screen.getByText("Bad auth")).toBeInTheDocument();
+
+    const renderOpts = vi.mocked(window.google!.accounts.id.renderButton).mock.calls[0][1] as {
+      theme: string;
+    };
+    expect(renderOpts.theme).toBe("filled_black");
 
     const initializeCall = vi.mocked(window.google!.accounts.id.initialize).mock.calls[0][0] as {
       callback: (response: { credential?: string }) => Promise<void>;
@@ -83,7 +90,23 @@ describe("SignInScreen", () => {
     expect(onCredentialReceived).toHaveBeenCalledWith("google-token");
     initializeCall.callback({});
     expect(onCredentialReceived).toHaveBeenCalledTimes(1);
+  });
 
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = previous;
+  it("uses outline theme for the Google button in light mode", () => {
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
+
+    render(
+      <SignInScreen
+        isDark={false}
+        error={null}
+        isSubmitting={false}
+        onCredentialReceived={vi.fn()}
+      />,
+    );
+
+    const renderOpts = vi.mocked(window.google!.accounts.id.renderButton).mock.calls[0][1] as {
+      theme: string;
+    };
+    expect(renderOpts.theme).toBe("outline");
   });
 });

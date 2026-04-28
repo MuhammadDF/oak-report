@@ -2,19 +2,6 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (options: unknown) => void;
-          renderButton: (element: HTMLElement, options: unknown) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
-}
 
 const createObjectURLMock = vi.fn(() => "blob:mock-url");
 const revokeObjectURLMock = vi.fn();
@@ -30,6 +17,40 @@ vi.stubGlobal("URL", {
   createObjectURL: createObjectURLMock,
   revokeObjectURL: revokeObjectURLMock,
 });
+
+// jsdom doesn't provide ResizeObserver; tests expect it to exist.
+class MockResizeObserver {
+  callback: ((entries: any[]) => void) | null;
+  constructor(cb?: (entries: any[]) => void) {
+    this.callback = cb ?? null;
+  }
+  observe(el?: Element | null) {
+    // Immediately invoke the callback with a fake contentRect so
+    // components relying on ResizeObserver react during tests.
+    const measuredWidth = (el as any)?.getBoundingClientRect?.()?.width;
+    const width = Math.round(measuredWidth || 300);
+    const entries = [
+      {
+        target: el,
+        contentRect: { width },
+      },
+    ];
+    if (this.callback) {
+      try {
+        this.callback(entries);
+      } catch (e) {
+        // swallow to avoid test noise
+      }
+    }
+  }
+  unobserve() {
+    /* noop */
+  }
+  disconnect() {
+    /* noop */
+  }
+}
+vi.stubGlobal("ResizeObserver", MockResizeObserver as any);
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn((query: string) => {

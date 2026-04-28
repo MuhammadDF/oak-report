@@ -10,7 +10,7 @@ Oak Report is a Pokemon TCG appraisal app with:
 - React/Vite frontend in `frontend`.
 - Postgres persistence through SQLModel and Alembic.
 - Docker Compose for local services.
-- Mock adapters still in place for scan, search, and library domains.
+- Real scan/search flows backed by Gemini and the pricing catalog. The standalone library feature is scratched; leftover code exists only for possible future work.
 
 ## Key Commands
 
@@ -30,7 +30,7 @@ npm --prefix frontend run dev -- --host 0.0.0.0 --port 5173
 - Keep HTTP behavior in `backend/api`, business behavior in `backend/services`, and data access in `backend/repositories`.
 - Keep frontend data access in `frontend/src/repositories`, not scattered through components.
 - Keep SQLModel table definitions and Alembic migrations aligned.
-- Preserve current provider boundaries. Do not replace mock adapters unless the task explicitly implements that domain.
+- Preserve current provider boundaries. Do not revive or expand leftover library code unless the task explicitly reinstates that feature.
 - Treat `docs/context` as product/roadmap context; implementation truth lives in code and current guides.
 
 ## Constraints

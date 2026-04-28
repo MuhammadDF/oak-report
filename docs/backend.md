@@ -44,7 +44,7 @@ Keep route handlers small. They should validate HTTP-level inputs, receive depen
 
 Services should avoid direct database session construction. Use repository interfaces or FastAPI dependencies so behavior stays testable.
 
-Repository factory behavior is centralized in `backend/repositories/factory.py`. Collection, user, and pricing catalog repositories require an async session when using Postgres.
+Repository factory behavior is centralized in `backend/repositories/factory.py`. Collection, user, and pricing catalog repositories require an async session and `DATA_PROVIDER=postgres`. Scan and search use service logic backed by Gemini and/or the pricing catalog rather than mock repositories. Standalone library code is dormant and should not be treated as an active feature.
 
 ## Auth
 

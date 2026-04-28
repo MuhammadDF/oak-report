@@ -50,7 +50,7 @@ Pain points:
 
 - Manual access support is time-consuming.
 - Admins need visibility into users and feature access.
-- Bad library or pricing data may require human correction.
+- Bad pricing/catalog data may require human correction.
 
 ## Stories
 
@@ -58,7 +58,7 @@ Pain points:
 
 - As Cal, I want to scan a card and receive an estimated value so I can understand its worth without manual research.
 - As Cal, I want to add, update, and remove cards from my collection so my digital inventory matches my physical collection.
-- As Cal, I want to search a Pokemon card library so I can research cards I do not own.
+- As Cal, I want to search for Pokemon cards from the appraise page so I can research cards I do not own.
 
 ### Sally Seller
 

@@ -1,4 +1,4 @@
-"""Collection repository abstractions and mock implementation."""
+"""Collection repository abstractions and Postgres implementation."""
 
 from __future__ import annotations
 
@@ -55,70 +55,6 @@ class CollectionRepository(Protocol):
 
     async def remove_item(self, owner_id: str, item_id: str) -> CollectionRecord:
         """Remove an item from the user's collection."""
-
-
-class InMemoryCollectionRepository:
-    """Simple in-memory collection adapter used until persistence is added."""
-
-    def __init__(self) -> None:
-        self._collections: dict[str, CollectionRecord] = {}
-
-    async def get_collection(self, owner_id: str) -> CollectionRecord:
-        return self._collections.setdefault(
-            owner_id,
-            CollectionRecord(owner_id=owner_id, items=[]),
-        )
-
-    async def add_item(
-        self,
-        owner_id: str,
-        item: CollectionItemRecord,
-    ) -> CollectionRecord:
-        record = await self.get_collection(owner_id)
-        existing = next(
-            (entry for entry in record.items if entry.id == item.id), None)
-        if existing:
-            existing.quantity += max(1, item.quantity)
-            existing.price = item.price
-            existing.grade = item.grade
-            existing.image = item.image
-            existing.name = item.name
-            existing.set = item.set
-            existing.number = item.number
-            existing.pricing_catalog_id = item.pricing_catalog_id
-            return record
-
-        record.items.append(item)
-        return record
-
-    async def update_quantity(
-        self,
-        owner_id: str,
-        item_id: str,
-        quantity: int,
-    ) -> CollectionRecord:
-        record = await self.get_collection(owner_id)
-        item = next(
-            (entry for entry in record.items if entry.id == item_id), None)
-        if item is None:
-            raise KeyError(item_id)
-
-        if quantity <= 0:
-            record.items = [
-                entry for entry in record.items if entry.id != item_id]
-            return record
-
-        item.quantity = quantity
-        return record
-
-    async def remove_item(self, owner_id: str, item_id: str) -> CollectionRecord:
-        record = await self.get_collection(owner_id)
-        existing_count = len(record.items)
-        record.items = [entry for entry in record.items if entry.id != item_id]
-        if len(record.items) == existing_count:
-            raise KeyError(item_id)
-
-        return record
 
 
 class PostgresCollectionRepository:

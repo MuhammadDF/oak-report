@@ -15,8 +15,8 @@ After identification, the system shall fetch current market pricing using integr
 **FR-3: Personal Collection**
 Users shall be able to add identified cards to a digital collection, edit collection details, and delete entries.
 
-**FR-4: Searchable Library**
-Users shall be able to search a text-based Pokemon card library and view card details and base pricing.
+**FR-4: Appraise-Page Search**
+Users shall be able to search for Pokemon cards from the appraise page and view pricing/catalog matches. The earlier standalone searchable library concept was scratched.
 
 **FR-5: User Authentication**
 The system shall provide secure login and session handling so collection data persists across sessions.
@@ -35,7 +35,7 @@ The system should analyze uploaded images for common counterfeit indicators.
 Users may scan and identify multiple cards in a single camera frame.
 
 **FR-10: Admin Overrides**
-Admins may manage access or correct bad library data.
+Admins may manage access or correct bad pricing/catalog data.
 
 ## Non-Functional Requirements
 

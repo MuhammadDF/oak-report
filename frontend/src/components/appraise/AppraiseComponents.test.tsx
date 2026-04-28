@@ -12,7 +12,7 @@ import { UploadPanel } from "./UploadPanel";
 
 const { mockAddScanToCollection, mockUseCardSearch } = vi.hoisted(() => ({
   mockAddScanToCollection: vi.fn(),
-  mockUseCardSearch: vi.fn(),
+  mockUseCardSearch: vi.fn(), 
 }));
 
 vi.mock("../../repositories/collectionRepository", () => ({
@@ -405,7 +405,7 @@ describe("UploadPanel", () => {
     });
   });
 
-  it("renders desktop upload flow and preview", () => {
+  it("renders desktop upload flow with error banner", () => {
     const onFileChange = vi.fn();
     render(
       <UploadPanel
@@ -708,7 +708,7 @@ describe("LiveCameraPanel", () => {
   });
 
   it("handles cancelled and non-dom getUserMedia failures", async () => {
-    let resolveStream: ((stream: MediaStream) => void) | null = null;
+    let resolveStream = null as ((stream: MediaStream) => void) | null;
     const stop = vi.fn();
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,

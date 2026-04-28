@@ -37,9 +37,9 @@ Oak Report targets a client-server architecture with:
 - Python and FastAPI for backend APIs.
 - Postgres for persistent collection and catalog data.
 - Gemini-oriented AI integration for image reasoning.
-- Google Cloud Platform and Cloud Run as the likely deployment direction.
+- Google Cloud Platform as the deployment direction, with Cloud Run for the backend and Firebase Hosting for the frontend.
 
-The current repository already uses React/Vite, FastAPI, Postgres, SQLModel, and Alembic locally. Cloud deployment and richer AI orchestration remain deployment/roadmap concerns unless documented elsewhere as implemented.
+The current repository already uses React/Vite, FastAPI, Postgres, SQLModel, and Alembic locally. GitHub Actions deployment automation, Cloud Run backend deployment, and Firebase Hosting frontend deployment are now documented in the current implementation docs. Richer AI orchestration remains roadmap scope unless reflected in code.
 
 ## Rationale
 

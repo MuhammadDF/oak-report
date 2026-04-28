@@ -22,7 +22,7 @@ From repo root, use `npm --prefix frontend ...`.
 - `src/screens`: route-level screens.
 - `src/components`: reusable UI and screen sections.
 - `src/hooks`: stateful behavior and browser APIs.
-- `src/repositories`: API and mock data access.
+- `src/repositories`: backend API data access.
 - `src/types`: shared TypeScript contracts.
 
 ## Coding Standards
@@ -30,7 +30,7 @@ From repo root, use `npm --prefix frontend ...`.
 - Use "screen" terminology for route-level UI.
 - Keep components focused on rendering and user events.
 - Put shared async or browser behavior in hooks.
-- Put backend calls and provider switching in repositories.
+- Put backend calls in repositories.
 - Prefer user-visible assertions in component tests.
 - Keep styles consistent with `src/styles.css` before adding new patterns.
 
@@ -38,5 +38,5 @@ From repo root, use `npm --prefix frontend ...`.
 
 - Do not edit `frontend/dist` for source changes.
 - Do not scatter `fetch` calls through screens or components.
-- Keep `VITE_GOOGLE_CLIENT_ID` and `VITE_DATA_PROVIDER` behavior explicit.
+- Keep `VITE_GOOGLE_CLIENT_ID` behavior explicit.
 - Update `docs/frontend.md` when structure, commands, or workflows change.

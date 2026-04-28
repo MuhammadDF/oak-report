@@ -18,7 +18,16 @@ The script:
 - Starts the `postgres` Compose service.
 - Waits for Postgres health.
 - Runs backend pytest with coverage.
-- Runs frontend Vitest with coverage.
+- Runs frontend Vitest with coverage, with `VITE_API_BASE_URL` cleared so frontend tests assert relative `/api` URLs.
+
+## GitHub Actions
+
+Deployment workflows also run automated tests before deploying:
+
+- Backend workflow: `uv run pytest backend/tests` against a Postgres service container.
+- Frontend workflow: `npm test -- --run`.
+
+The local full QA command remains broader than the deploy workflows because it runs both backend and frontend coverage in one command.
 
 ## Backend
 
@@ -51,6 +60,12 @@ npm --prefix frontend run test:coverage
 ```
 
 Vitest uses jsdom and `frontend/src/test/setup.ts`.
+
+Frontend API tests expect relative `/api` URLs. If your shell exports `VITE_API_BASE_URL`, run coverage with the same environment used by `./scripts/run_qa.sh`:
+
+```bash
+VITE_API_BASE_URL= npm --prefix frontend run test:coverage
+```
 
 ## Documentation Changes
 

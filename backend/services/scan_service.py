@@ -19,7 +19,18 @@ async def identify_card_from_image(image_bytes: bytes) -> ScanResultModel:
     """Analyze an uploaded image and return an appraisal payload."""
 
     load_dotenv()
-    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
+    location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+
+    client = genai.Client(
+        vertexai=True,        
+        project=project_id,    
+        location=location   
+    )
+
+    # print("Models: ")
+    # print(list(client.models.list()))
 
     try:
         response = client.models.generate_content(

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -9,6 +11,7 @@ from .db.config import get_database_settings
 from .db.session import SessionLocal
 from .repositories.factory import get_pricing_catalog_repository
 from .services.pricing_catalog_sync_service import (
+    PricingCatalogSyncResult,
     get_pricing_catalog_sync_settings,
     refresh_pricing_catalog,
 )
@@ -35,15 +38,15 @@ logger = logging.getLogger(__name__)
 _pricing_refresh_lock = asyncio.Lock()
 
 
-async def _run_pricing_catalog_refresh_once() -> None:
+async def _run_pricing_catalog_refresh_once() -> PricingCatalogSyncResult:
     if _pricing_refresh_lock.locked():
         logger.info("Skipping PriceCharting catalog refresh because a run is already in progress")
-        return
+        return PricingCatalogSyncResult(rows_loaded=0)
 
     async with _pricing_refresh_lock:
         async with SessionLocal() as session:
             repository = get_pricing_catalog_repository(session)
-            await refresh_pricing_catalog(repository)
+            return await refresh_pricing_catalog(repository)
 
 
 async def _pricing_catalog_scheduler_loop(
@@ -96,9 +99,11 @@ async def shutdown_background_tasks() -> None:
     with suppress(asyncio.CancelledError):
         await task
 
+_extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", *_extra_origins],
     allow_origin_regex=r"^https?://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+):5173$",
     allow_credentials=True,
     allow_methods=["*"],

@@ -1,5 +1,5 @@
 """Repository adapters used by services.
 
-Concrete implementations can be swapped by provider selection (e.g., mock vs postgres)
-without changing route handlers.
+Persisted domains use Postgres repositories. Library remains a staged adapter until
+its durable catalog source is implemented.
 """

@@ -9,3 +9,5 @@ frontend/tsconfig.node.tsbuildinfo
 frontend/tsconfig.tsbuildinfo
 frontend/vite.config.d.ts
 frontend/vite.config.js
+gcp-key.json
+gcp-adc.json

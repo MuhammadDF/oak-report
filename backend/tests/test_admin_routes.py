@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from backend.auth.dependencies import get_current_user
 from backend.auth.jwt_service import AuthTokenPayload
 from backend.main import app
+from backend.services.pricing_catalog_sync_service import PricingCatalogSyncResult
 
 
 @pytest.mark.asyncio
@@ -38,6 +39,49 @@ async def test_pricing_catalog_status_returns_admin_snapshot(
     assert body["run_on_startup"] is True
     assert body["row_count"] == 123
     assert body["last_refreshed_at"] == "2026-04-25T00:00:00+00:00"
+
+
+@pytest.mark.asyncio
+async def test_pricing_catalog_refresh_accepts_cloud_scheduler_oidc_token(
+    async_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL", "scheduler@example.iam.gserviceaccount.com")
+
+    with patch(
+        "backend.api.admin_routes.id_token.verify_oauth2_token",
+        return_value={"email": "scheduler@example.iam.gserviceaccount.com"},
+    ), patch(
+        "backend.main._run_pricing_catalog_refresh_once",
+        new=AsyncMock(return_value=PricingCatalogSyncResult(rows_loaded=2)),
+    ):
+        response = await async_client.post(
+            "/api/admin/pricing-catalog/refresh",
+            headers={"Authorization": "Bearer fake-token"},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"rows_loaded": 2}
+
+
+@pytest.mark.asyncio
+async def test_pricing_catalog_refresh_rejects_invalid_cloud_scheduler_oidc_token(
+    async_client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL", "scheduler@example.iam.gserviceaccount.com")
+
+    with patch(
+        "backend.api.admin_routes.id_token.verify_oauth2_token",
+        return_value={"email": "other@example.iam.gserviceaccount.com"},
+    ):
+        response = await async_client.post(
+            "/api/admin/pricing-catalog/refresh",
+            headers={"Authorization": "Bearer fake-token"},
+        )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Invalid Cloud Scheduler service account."
 
 
 @pytest.mark.asyncio

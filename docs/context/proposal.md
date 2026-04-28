@@ -40,7 +40,7 @@ The user captures multiple cards in one workflow and receives appraisals for eac
 | Backend | Python, FastAPI |
 | Database | Postgres |
 | AI | Gemini-oriented visual reasoning |
-| Deployment | Google Cloud / Cloud Run direction |
+| Deployment | Google Cloud direction; Cloud Run backend and Firebase Hosting frontend in the current implementation |
 | Market data | PriceCharting first, with possible future eBay/TCGPlayer grounding |
 
 ## Authentication and Counterfeit Reasoning Context

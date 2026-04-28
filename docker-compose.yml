@@ -40,6 +40,9 @@ services:
       POSTGRES_HOST: ${DB_HOST:?DB_HOST is required}
       POSTGRES_PORT: ${DB_PORT:?DB_PORT is required}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-oak-report}
+      GOOGLE_CLOUD_LOCATION: ${GOOGLE_CLOUD_LOCATION:-global}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-adc.json
     ports:
       - "8000:8000"
     volumes:
@@ -48,6 +51,7 @@ services:
       - ${HOST_WORKSPACE_FOLDER:-.}/alembic:/app/alembic
       - ${HOST_WORKSPACE_FOLDER:-.}/alembic.ini:/app/alembic.ini:ro
       - ${HOST_WORKSPACE_FOLDER:-.}/data:/app/data:ro
+      - ${HOST_WORKSPACE_FOLDER:-.}/gcp-adc.json:/app/gcp-adc.json:ro
     restart: unless-stopped
 
   frontend:
@@ -57,7 +61,6 @@ services:
     environment:
       API_PROXY_TARGET: ${API_PROXY_TARGET:-http://backend:8000}
       VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID}
-      VITE_DATA_PROVIDER: ${VITE_DATA_PROVIDER:-api}
     ports:
       - "5173:5173"
     volumes:

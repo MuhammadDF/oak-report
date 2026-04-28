@@ -24,9 +24,12 @@ Fill in real values for secrets when needed:
 - `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` for Google sign-in.
 - `JWT_SECRET` for backend JWT signing.
 - `PRICE_CHARTING` for catalog refreshes.
+- `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL` for Cloud Scheduler OIDC refreshes.
 - `GEMINI_API_KEY` for Gemini-backed scan behavior.
 
 See [Operations](operations.md) for the full environment model and database switching details.
+
+For local development, leave `VITE_API_BASE_URL` unset or blank when you want the frontend to call relative `/api/...` URLs through the Vite proxy. Production Firebase Hosting also uses relative `/api` URLs and rewrites them to the Cloud Run backend. Set `VITE_API_BASE_URL` only when intentionally building a frontend that calls an absolute backend URL.
 
 ## Local Backend and Frontend
 
@@ -93,3 +96,10 @@ cd frontend && npm install
 ```
 
 It forwards ports `5173` and `8000`, starts the local Postgres service on container startup, and configures default Postgres environment values for development.
+
+The dev container does not set `VITE_API_BASE_URL`; this keeps browser requests on relative `/api` paths so Vite can proxy them to the backend. If an older container session still has `VITE_API_BASE_URL=http://localhost:8000` exported, rebuild/recreate the container or unset it before running frontend tests.
+
+## Deployment Starting Points
+
+- Day-to-day deploys after merge to `main` are handled by GitHub Actions; see [CI/CD](cicd.md).
+- First-time Google Cloud setup and backend service creation are covered in [GCP deployment](gcp-deployment.md).

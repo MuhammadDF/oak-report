@@ -1,4 +1,4 @@
-"""Mock pricing service for the first appraisal vertical slice."""
+"""Pricing catalog lookup and PriceCharting image enrichment."""
 
 import re
 from sqlmodel import select
@@ -39,7 +39,7 @@ def _product_matches_card_number(product_name: str | None, card_num: str) -> boo
 
 
 async def get_card_info(card: CardIdentity) -> tuple[float, str | None, str]:
-    """Return a mock single market value that can later be replaced."""
+    """Return the best current market value for a card identity."""
 
     card_num = card.card_number.split("/")[0] if card.card_number else "0"
     card_num = str(card_num).lstrip("0") or "0"

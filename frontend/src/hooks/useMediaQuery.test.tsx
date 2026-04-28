@@ -42,7 +42,7 @@ describe("useMediaQuery", () => {
       addListener,
       removeListener,
       dispatchEvent: vi.fn(),
-    })) as typeof window.matchMedia;
+    })) as unknown as typeof window.matchMedia;
 
     const { unmount } = renderHook(() => useMediaQuery("(max-width: 640px)"));
 
