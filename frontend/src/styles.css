@@ -998,9 +998,11 @@ img {
 .collection-sort select {
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: var(--bg-elevated);
+  background: var(--bg-soft);
   color: var(--text);
   padding: 12px 14px;
+  height: 100%;
+  min-height: 0;
 }
 
 .collection-sort select:focus-visible {
