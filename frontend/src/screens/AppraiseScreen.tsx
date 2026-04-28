@@ -160,6 +160,14 @@ export function AppraiseScreen({
 	// Populates the search page with pricing-catalog rows returned from the
 	// free-form search bar, then opens the search-page modal.
 	function handleSearchResults(_query: string, results: CardPricingMatch[]) {
+		if (results.length === 1) {
+			setSearchPageHasMultipleOptions(false);
+			setSearchPageSelectedResult(createSearchPageAppraisal(results[0]));
+			setIsSearchPageOpen(false);
+			setIsReportOpen(true);
+			return;
+		}
+
 		setIsReportOpen(false);
 		setSearchPageInput("");
 		setSearchPageSetFilter("");
