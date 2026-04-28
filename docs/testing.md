@@ -2,6 +2,8 @@
 
 Oak Report has backend pytest coverage, frontend Vitest coverage, and one full-stack QA command.
 
+For the course-style two-part test plan, including the ideal strategy and the concrete tests currently present in the repository, see [Oak Report Test Plan](test-plan.md).
+
 ## Full QA
 
 Run:
