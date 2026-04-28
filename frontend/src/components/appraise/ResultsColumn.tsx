@@ -40,6 +40,7 @@ export function ResultsColumn({
         price: result!.pricing,
         image: result!.image_url ?? reportPreviewUrl,
         language: result!.card.language,
+        pricing_catalog_id: result!.pricing_catalog_id,
       });
 
       setCollectionStatus("success");

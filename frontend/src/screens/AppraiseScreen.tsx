@@ -482,6 +482,7 @@ function createSearchPageAppraisal(match: CardPricingMatch): ScanResult {
 		set_name: match.console_name,
 		image_url: match.image_url?.trim() ? match.image_url : FALLBACK_CARD_IMAGE_URL,
 		pricing: match.loose_price,
+		pricing_catalog_id: match.id,
 	};
 }
 
