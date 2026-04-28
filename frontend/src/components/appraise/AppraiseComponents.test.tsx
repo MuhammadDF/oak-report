@@ -99,6 +99,7 @@ describe("IdentityReport", () => {
   it("renders backend image data", () => {
     render(
       <IdentityReport
+        previewUrl={null}
         result={{
           processed_at: "2026-04-26T00:00:00Z",
           card: {
@@ -120,6 +121,7 @@ describe("IdentityReport", () => {
   it("falls back to preview and pending placeholders", () => {
     render(
       <IdentityReport
+        previewUrl="/preview.png"
         result={{
           processed_at: "2026-04-26T00:00:00Z",
           card: {
@@ -128,7 +130,7 @@ describe("IdentityReport", () => {
             language: null,
           },
           set_name: null,
-          image_url: "/preview.png",
+          image_url: null,
           pricing: 2,
         }}
       />,
@@ -141,6 +143,7 @@ describe("IdentityReport", () => {
   it("renders the no-image placeholder when no art is available", () => {
     render(
       <IdentityReport
+        previewUrl={null}
         result={{
           processed_at: "2026-04-26T00:00:00Z",
           card: {
