@@ -996,13 +996,15 @@ img {
 }
 
 .collection-sort select {
+  width: 100%;
   border: 1px solid var(--border);
   border-radius: 14px;
+  -webkit-appearance: none;
+  appearance: none;
   background: var(--bg-soft);
   color: var(--text);
-  padding: 12px 14px;
-  height: 100%;
-  min-height: 0;
+  padding: 14px 16px;
+  line-height: normal;
 }
 
 .collection-sort select:focus-visible {
