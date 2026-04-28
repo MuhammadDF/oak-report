@@ -102,7 +102,18 @@ export function useAppraisal(authToken: string | null) {
       });
 
       if (!response.ok) {
-        throw new Error(`Scan failed with status ${response.status}`);
+        let message = `Scan failed with status ${response.status}`;
+
+        try {
+          const payload = (await response.json()) as { detail?: string };
+          if (payload.detail) {
+            message = payload.detail;
+          }
+        } catch {
+          // Keep the status-based fallback when the body is not JSON.
+        }
+
+        throw new Error(message);
       }
 
       const payload = (await response.json()) as ScanResult;

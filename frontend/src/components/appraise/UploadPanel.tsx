@@ -77,12 +77,6 @@ export function UploadPanel({
         <p className="upload-status">Analyzing upload... building report.</p>
       ) : null}
 
-      {previewUrl ? (
-        <div className="preview-card">
-          <img alt="Selected card preview" src={previewUrl} />
-        </div>
-      ) : null}
-
       {error ? <p className="error-banner">{error}</p> : null}
     </section>
   );

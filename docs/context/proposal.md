@@ -1,114 +1,50 @@
-Pokemon Appraisal App  
-Sunday, January 25 · 11:30am – 12:30pm  
-Time zone: America/New_York
+# Oak Report Proposal Context
 
-Google Meet joining info  
-Video call link: https://meet.google.com/rup-toap-ngh
-
-COMP523 - TCG/Pokemon Appraisal Agent/Web App
+This document preserves the original project pitch and target product direction. It is background context, not a guarantee that every capability is implemented in the current repo.
 
 ## Executive Summary
 
-Project Name: PokéAgent Appraiser → Oak Report (Official app name)
+Oak Report is a Pokemon TCG appraisal web app intended to help collectors identify, authenticate, value, and track cards from a mobile-friendly experience.
 
-Objective: To create an agentic system designed to authenticate and value Pokémon TCG cards using Google Cloud Platform (GCP). Experience to be a low-friction, mobile-accessible web app & AI agent that enables collectors to instantly determine the market value of Pokémon TCG cards via a smartphone camera.
+The long-term product vision combines:
 
-Value Proposition: Unlike static price charts, this agent uses live web grounding to account for real-time market shifts and visual reasoning to detect counterfeits, all while running on a cost-effective serverless architecture.
+- Camera or image-upload based card identification.
+- Market-aware valuation from external pricing sources.
+- Visual reasoning for counterfeit or proxy signals.
+- Persistent collection tracking.
+- Admin controls for user and data oversight.
 
-## Component Service
+## Target Critical User Journeys
 
-| Component       | Service                    |
-| --------------- | -------------------------- |
-| Image Inference | Gemini 3 Flash (Vertex AI) |
-| Web Search      | Google Search Grounding    |
-| Orchestration   | Vertex AI Agent Builder    |
-| Hosting         | Cloud Run (Serverless)     |
+### Instant Appraisal
 
-## UX - Critical User Journeys (CUJs)
+The user opens the app, captures or uploads a card image, and receives normalized card identity plus estimated value.
 
-These are the three "Happy Paths" that define the success of the MVP:
+### Proxy/Fake Guard
 
-● CUJ 1: The Instant Appraisal
+The user scans a suspected counterfeit card. The system identifies visual red flags such as font issues, missing accents, incorrect symbols, spelling mistakes, or suspicious holographic texture.
 
-- User Action: Opens web app, points camera at a card, and clicks "Appraise."  
-  ○ Agent Action: Extracts card ID, searches Pricecharting,eBay/TCGPlayer, and returns a $ Value.
+### Market Tracking
 
-● CUJ 2: The Proxy/Fake Guard
+The user revisits a previously appraised card and can compare current value with prior collection context.
 
-- User Action: Scans a suspected counterfeit card.  
-  ○ Agent Action: Identifies visual red flags (font, holo-pattern, spelling) and alerts the user before displaying a price.
+### Batch Processing
 
-● CUJ 3: Price Market Tracking
+The user captures multiple cards in one workflow and receives appraisals for each card. This remains roadmap scope.
 
-- User Action: Re-scans a card previously appraised.  
-  ○ Agent Action: Recalls the previous price from the Memory Bank for quick comparison.
+## Target Stack Direction
 
-● CUJ 4: Batch processing
+| Category | Direction |
+| --- | --- |
+| Frontend | React, Vite, TypeScript |
+| Backend | Python, FastAPI |
+| Database | Postgres |
+| AI | Gemini-oriented visual reasoning |
+| Deployment | Google Cloud / Cloud Run direction |
+| Market data | PriceCharting first, with possible future eBay/TCGPlayer grounding |
 
-- User Action: Opens web ap, points camera at multiple of cards and clicks “Appraise.”  
-  ○ Agent Action: Batch extracts card ID, searches Pricecharting,eBay/TCGPlayer, and returns a $ Value.
+## Authentication and Counterfeit Reasoning Context
 
-## Tech Stack/Languages
+The original product concept included a TCG authentication prompt that checks for font quality, the accent in "Pokemon", holographic texture, spelling errors, and card-back color/printing issues.
 
-| Category | Technology                               |
-| -------- | ---------------------------------------- |
-| Frontend | React (Vite) + Tailwind CSS + Typescript |
-| Language | Python (Backend), Typescript (Frontend)  |
-
-Database: Postgres
-
-Agent Framework: Google ADK - https://github.com/google/adk-python
-
-AI Models: Gemini 2./3 Flash
-
-Compute: GCP Cloud Run Functions (Gen 2)
-
-Memory: Vertex AI Memory Bank (Postgres-backed)
-
-Grounding: Google Search Tool
-
-## High Level Project Plan & Estimated LOE
-
-| Phase                   | Tasks                                                         | Estimated Time |
-| ----------------------- | ------------------------------------------------------------- | -------------- |
-| Phase 1: Agent Logic    | Pydantic schemas, prompt engineering, search grounding setup. | 12 - 16 hours  |
-| Phase 2: Infrastructure | GCP project setup, IAM roles, deploy Cloud Functions.         | 6 - 8 hours    |
-| Phase 3: Frontend       | Camera integration, result UI, mobile responsiveness.         | 15 - 20 hours  |
-| Phase 4: Testing        | Proxy/Fake detection tuning, Memory Bank validation.          | 10 - 12 hours  |
-
-Target MVP Launch
-
-Notes:
-
-APIs:
-Pricecharting  
-Ebay  
-130pt 2tpt2.com  
-Tcgplayer  
-Google Search/Shopping
-
-https://gemini.google.com/share/5480eec2cf13
-
-I Built a Pokémon Card Analytics App That Prints PASSIVE Income w/ AI (step-by-step gu…
-
-authentication_instruction = """
-You are a master TCG Authenticator. Before searching for prices, perform a 'Proxy Check' on the image:
-
-1. THE FONT TEST: Real cards use a very specific, crisp font. If the font is overly thin, rounded, or bold, flag it as 'Incorrect Font'.
-
-2. THE ACCENT TEST: Check every instance of the word 'Pokémon'. If the accent over the 'é' is missing, it is 100% fake.
-
-3. THE HOLO TEST: If the card is a VMAX or Full Art, it should have a fingerprint-like 'texture'. If the image shows a flat, vertical rainbow shine with no texture, flag as 'Flat/Fake Holo'.
-
-4. THE SPELLING TEST: Look for typos in the attack descriptions.
-
-5. THE BACK TEST: If the back of the card is shown, check the blue swirl. Fakes are often 'washed out' or have a purplish tint.
-
-If you find 2+ flags, set is_authentic_guess to False and rate the value as 'Poor' regardless of the price.
-"""
-
-Card number / Set number
-
-Rarities: 4 of them
-
-Stamp: e.g., best buy exclusive, costco deal, etc.
+In implementation docs, treat that prompt as product direction. Current scan behavior should be verified from `backend/services/scan_service.py` and current tests before making claims about supported detection quality.

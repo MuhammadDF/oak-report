@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
+from fastapi import HTTPException
 
 
 @pytest.mark.asyncio
@@ -15,7 +16,8 @@ async def test_scan_route_rejects_unsupported_media_type(async_client: AsyncClie
     )
 
     assert response.status_code == 415
-    assert response.json()["detail"] == "Only JPEG, PNG, WebP, or HEIC images are supported."
+    assert response.json()[
+        "detail"] == "Only JPEG, PNG, WebP, or HEIC images are supported."
 
 
 @pytest.mark.asyncio
@@ -45,7 +47,8 @@ async def test_scan_route_success_returns_scan_result(async_client: AsyncClient)
             "set_name": "Base Set",
         }
 
-    mock_identify_card_from_image = MagicMock(side_effect=_mock_identify_card_from_image)
+    mock_identify_card_from_image = MagicMock(
+        side_effect=_mock_identify_card_from_image)
 
     with patch(
         "backend.api.scan_routes.identify_card_from_image",
@@ -61,3 +64,22 @@ async def test_scan_route_success_returns_scan_result(async_client: AsyncClient)
     assert body["card"]["name"] == "Charizard"
     assert isinstance(body["pricing"], float)
     mock_identify_card_from_image.assert_called_once_with(b"image-bytes")
+
+
+@pytest.mark.asyncio
+async def test_scan_route_returns_service_unavailable_message(async_client: AsyncClient) -> None:
+    with patch(
+        "backend.api.scan_routes.identify_card_from_image",
+        side_effect=HTTPException(
+            status_code=503,
+            detail="The scan service is temporarily down. Use search or try again later.",
+        ),
+    ):
+        response = await async_client.post(
+            "/api/scan/scan",
+            files={"image": ("card.png", b"image-bytes", "image/png")},
+        )
+
+    assert response.status_code == 503
+    assert response.json()[
+        "detail"] == "The scan service is temporarily down. Use search or try again later."

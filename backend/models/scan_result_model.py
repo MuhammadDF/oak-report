@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 from .card_model import CardIdentity
+from .card_search_model import CardPricingMatchModel
 
 
 class ScanResultModel(BaseModel):
@@ -15,3 +16,4 @@ class ScanResultModel(BaseModel):
     pricing: float = Field(ge=0.0)
     image_url: Optional[str] = "https://images.pokemontcg.io/sv03/203.png"
     set_name: Optional[str] = None
+    matches: list[CardPricingMatchModel] | None = None

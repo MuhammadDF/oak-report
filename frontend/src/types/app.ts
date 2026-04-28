@@ -21,6 +21,7 @@ export type ScanResult = {
   image_url?: string | null;
   set_name?: string | null;
   pricing: number;
+  matches?: CardPricingMatch[] | null;
 };
 
 export type CollectionCard = {

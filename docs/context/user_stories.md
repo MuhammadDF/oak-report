@@ -1,80 +1,72 @@
-# 1. User Personas
+# User Stories
 
-## Cal Collector
+These personas and stories describe the intended Oak Report product experience. Some capabilities are implemented today; others are roadmap context.
 
-● Role: An individual focused on building, maintaining, and protecting a personal Pokémon TCG collection.
+## Personas
 
-● Primary Goals:  
-○ Quickly identify card details with a single camera scan.  
-○ Track the current market value of cards already in their possession.  
-○ Maintain a digital inventory of their physical collection.
+### Cal Collector
 
-● Needs:  
-○ Fast, "low-friction" scanning via a smartphone camera.  
-○ A searchable library for general Pokémon card research.
+Cal maintains a personal Pokemon TCG collection and wants fast, low-friction tools for identification, valuation, and inventory.
 
-● Pain Points:  
-○ Difficulty matching obscure cards to the correct set without digital help.  
-○ Manual effort required to look up prices across multiple platforms like eBay and TCGPlayer.  
-○ The challenge of keeping a collection inventory up-to-date as market prices shift.
+Goals:
 
-## Sally Seller
+- Identify card details with a camera scan or image upload.
+- Track the current market value of owned cards.
+- Maintain a persistent digital collection.
 
-● Role: A user focused on leveraging the app’s data to accurately price cards for the secondary market.
+Pain points:
 
-● Primary Goals:  
-○ Obtain real-time, grounded pricing data to ensure competitive and fair listings.  
-○ Monitor market shifts to time the sale of specific cards.  
-○ Rapidly capture listing-ready details for inventory headed to market.
+- Matching obscure cards to the correct set is tedious.
+- Manual price research across marketplaces takes time.
+- Collection value changes as markets move.
 
-● Needs:  
-○ Live web grounding for price accuracy across multiple sources (Pricecharting, eBay, Google Shopping).  
-○ Clear summaries that explain the drivers behind the suggested price.  
-○ Efficient "Instant Appraisal" to process multiple cards quickly.
+### Sally Seller
 
-● Pain Points:  
-○ Static price charts that do not reflect "sold" data or sudden market spikes.  
-○ Risk of financial loss due to mispricing a high-value card.  
-○ Time-consuming manual research for pricing across different card conditions and sets.
+Sally prices cards for resale and needs accurate, current market context.
 
-## Alice Admin (Tentative)
+Goals:
 
-● Role: Administrative or Root User with master-level system-wide access.
+- Use grounded pricing data to make fair listings.
+- Compare pricing signals across sources.
+- Capture listing-ready details quickly.
 
-● Primary Goals:  
-○ Oversee and manage all user accounts within the system.  
-○ Modify or restrict access to specific features and functions for other users.  
-○ Facilitate account recovery and maintenance.
+Pain points:
 
-● Needs:  
-○ A centralized administrative dashboard to view and control user data.  
-○ Administrative tools to perform "overrides" on user settings or permissions.  
-○ A direct mechanism for triggered password resets.
+- Static price charts can lag market movement.
+- Mispricing high-value cards can be costly.
+- Manual research does not scale across many cards.
 
-● Pain Points:  
-○ Manual overhead associated with troubleshooting user access issues.  
-○ Lack of visibility into how individual users (Cal and Sally) are utilizing specific system functions.
+### Alice Admin
 
-# 2. User Stories
+Alice represents an administrative user responsible for access and support.
 
-## For Cal Collector
+Goals:
 
-● Valuation: As a Cal Collector, I want to point my camera at a card and receive an instant dollar value, so that I can understand the worth of my collection without manual research.
+- Review and manage user access.
+- Support account recovery or permission changes.
+- Monitor system integrity and data quality.
 
-● Collection Management: As a Cal Collector, I want to add, edit, and delete scanned cards in my personal "collection," so that I have a persistent digital record of my assets.
+Pain points:
 
-● Library Research: As a Cal Collector, I want to search a general library for any Pokémon card, so that I can find information on cards I do not yet own or have not scanned.
+- Manual access support is time-consuming.
+- Admins need visibility into users and feature access.
+- Bad library or pricing data may require human correction.
 
-## For Sally Seller
+## Stories
 
-● Live Pricing: As a Sally Seller, I want the app to use live web grounding (eBay/TCGPlayer), so that I can price my cards based on real-time market shifts rather than static data.
+### Cal Collector
 
-● Market Comparison: As a Sally Seller, I want the agent to search multiple pricing APIs simultaneously, so that I can identify the best platform on which to list a specific card for sale.
+- As Cal, I want to scan a card and receive an estimated value so I can understand its worth without manual research.
+- As Cal, I want to add, update, and remove cards from my collection so my digital inventory matches my physical collection.
+- As Cal, I want to search a Pokemon card library so I can research cards I do not own.
 
-## For Alice Admin (Tentative)
+### Sally Seller
 
-● Account Recovery: As an Alice Admin, I want to reset passwords for other users, so that I can resolve login issues and help them regain access to their collections.
+- As Sally, I want live pricing context so I can price cards from recent market behavior instead of static references.
+- As Sally, I want comparable pricing sources so I can choose where and how to list a card.
 
-● Feature Management: As an Alice Admin, I want to enable or disable specific features and functions for different users, so that I can manage system-wide access and control the scope of the MVP.
+### Alice Admin
 
-● User Oversight: As an Alice Admin, I want to have master control over all user-related data, so that I can ensure system integrity and provide support when users encounter errors in their "Memory Bank" or collection.
+- As Alice, I want to manage access roles so I can control who can use protected app areas.
+- As Alice, I want visibility into user/account state so I can help troubleshoot access issues.
+- As Alice, I want future tools for correcting bad data so the catalog remains trustworthy.

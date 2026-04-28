@@ -55,6 +55,12 @@ export function AppraiseScreen({
 	// Also clears any leftover search state so the modal shows only the scan.
 	useEffect(() => {
 		if (result) {
+			if ((result.matches?.length ?? 0) > 1) {
+				handleSearchResults(result.card.name, result.matches ?? []);
+				resetAppraisal();
+				return;
+			}
+
 			setIsReportOpen(true);
 		}
 	}, [result]);
