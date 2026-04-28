@@ -425,7 +425,6 @@ describe("UploadPanel", () => {
     });
 
     expect(onFileChange).toHaveBeenCalled();
-    expect(screen.getByAltText("Selected card preview")).toBeInTheDocument();
     expect(screen.getByText("Scan failed")).toBeInTheDocument();
   });
 

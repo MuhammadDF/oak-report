@@ -452,7 +452,6 @@ describe("AppraiseScreen", () => {
     render(<AppraiseScreen authToken="token-123" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Open camera search" }));
-    fireEvent.click(screen.getByText("Charizard # 6"));
 
     expect(await screen.findByText("Derived result: Charizard")).toBeInTheDocument();
   });
