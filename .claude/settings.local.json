@@ -11,7 +11,10 @@
       "Bash(npm --prefix frontend run test:coverage)",
       "Bash(xargs ls *)",
       "Bash(xargs cat *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(git -C \"/Users/zhihangyang/Code/Class Work/COMP 523/pokemon\" status --short)",
+      "Bash(git -C \"/Users/zhihangyang/Code/Class Work/COMP 523/pokemon\" branch --show-current)",
+      "Bash(git -C \"/Users/zhihangyang/Code/Class Work/COMP 523/pokemon\" log --oneline -5)"
     ]
   }
 }
