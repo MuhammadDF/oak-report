@@ -77,7 +77,7 @@ export function useAppraisal(authToken: string | null) {
   // Shared upload logic called by both entry points. Posts the image as
   // multipart/form-data to the backend scan endpoint and stores the result.
   // `previewForReport` is the blob URL to promote to reportPreviewUrl on
-  // success so the result modal has an image to display.
+  // success so the result modal has an image to display. 
   async function submitSelectedFile(
     selectedFile: File,
     previewForReport: string | null,
