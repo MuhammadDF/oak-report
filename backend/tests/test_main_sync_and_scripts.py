@@ -27,6 +27,7 @@ from backend.scripts.create_database import (
 from backend.scripts.reset_database import _reset_schema
 from backend.scripts.seed_data import _parse_price, seed_dev_data
 from backend.services.pricing_catalog_sync_service import (
+    PricingCatalogSyncResult,
     _as_bool,
     _parse_catalog_csv,
     _parse_loose_price,
@@ -94,10 +95,11 @@ async def test_run_pricing_catalog_refresh_once_skips_when_locked() -> None:
     await main_module._pricing_refresh_lock.acquire()
     try:
         with patch("backend.main.SessionLocal") as mock_session_local:
-            await _run_pricing_catalog_refresh_once()
+            result = await _run_pricing_catalog_refresh_once()
     finally:
         main_module._pricing_refresh_lock.release()
 
+    assert result == PricingCatalogSyncResult(rows_loaded=0)
     mock_session_local.assert_not_called()
 
 
@@ -105,16 +107,18 @@ async def test_run_pricing_catalog_refresh_once_skips_when_locked() -> None:
 async def test_run_pricing_catalog_refresh_once_refreshes_repository() -> None:
     session = MagicMock(name="session")
     repository = MagicMock(name="repository")
+    sync_result = PricingCatalogSyncResult(rows_loaded=2)
 
     with patch("backend.main.SessionLocal", return_value=_SessionContext(session)), patch(
         "backend.main.get_pricing_catalog_repository",
         return_value=repository,
     ) as mock_get_repository, patch(
         "backend.main.refresh_pricing_catalog",
-        new=AsyncMock(),
+        new=AsyncMock(return_value=sync_result),
     ) as mock_refresh:
-        await _run_pricing_catalog_refresh_once()
+        result = await _run_pricing_catalog_refresh_once()
 
+    assert result == sync_result
     mock_get_repository.assert_called_once_with(session)
     mock_refresh.assert_awaited_once_with(repository)
 

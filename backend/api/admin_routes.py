@@ -12,8 +12,13 @@ Coverage:
 Routes here will expose privileged operations guarded by RBAC/MFA once available.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import os
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 
 from ..auth.dependencies import require_admin
 from ..auth.jwt_service import AuthTokenPayload
@@ -30,6 +35,7 @@ from ..services.admin_service import (
 from ..services.pricing_catalog_sync_service import get_pricing_catalog_sync_settings
 
 router = APIRouter()
+scheduler_bearer_scheme = HTTPBearer(auto_error=True)
 
 
 class PricingCatalogStatusResponse(BaseModel):
@@ -38,6 +44,40 @@ class PricingCatalogStatusResponse(BaseModel):
 	run_on_startup: bool
 	row_count: int
 	last_refreshed_at: str | None
+
+
+class PricingCatalogRefreshResponse(BaseModel):
+	rows_loaded: int
+
+
+def _require_scheduler_identity(
+	request: Request,
+	credentials: HTTPAuthorizationCredentials = Depends(scheduler_bearer_scheme),
+) -> None:
+	expected_email = os.getenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL")
+	if not expected_email:
+		raise HTTPException(
+			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+			detail="Pricing catalog refresh identity is not configured.",
+		)
+
+	try:
+		claims = id_token.verify_oauth2_token(
+			credentials.credentials,
+			google_requests.Request(),
+			str(request.url),
+		)
+	except Exception as error:
+		raise HTTPException(
+			status_code=status.HTTP_401_UNAUTHORIZED,
+			detail="Invalid Cloud Scheduler token.",
+		) from error
+
+	if claims.get("email") != expected_email:
+		raise HTTPException(
+			status_code=status.HTTP_401_UNAUTHORIZED,
+			detail="Invalid Cloud Scheduler service account.",
+		)
 
 
 @router.get(
@@ -61,6 +101,20 @@ async def get_pricing_catalog_status(
 		row_count=row_count,
 		last_refreshed_at=last_refreshed_at.isoformat() if last_refreshed_at else None,
 	)
+
+
+@router.post(
+	"/pricing-catalog/refresh",
+	response_model=PricingCatalogRefreshResponse,
+	summary="Refresh the pricing catalog",
+)
+async def refresh_pricing_catalog_now(
+	_: None = Depends(_require_scheduler_identity),
+) -> PricingCatalogRefreshResponse:
+	from ..main import _run_pricing_catalog_refresh_once
+
+	result = await _run_pricing_catalog_refresh_once()
+	return PricingCatalogRefreshResponse(rows_loaded=result.rows_loaded)
 
 
 @router.get(

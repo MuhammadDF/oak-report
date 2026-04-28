@@ -299,7 +299,7 @@ gcloud run deploy pokemon-backend \
   --allow-unauthenticated \
   --port=8000 \
   --add-cloudsql-instances="$INSTANCE_CONNECTION_NAME" \
-  --set-env-vars="DATA_PROVIDER=postgres,POSTGRES_USER=postgres,POSTGRES_DB=pokemon,DATABASE_URL=postgresql+asyncpg://postgres:${DB_PASSWORD}@/pokemon?host=/cloudsql/${INSTANCE_CONNECTION_NAME},ALLOWED_ORIGINS=PLACEHOLDER" \
+  --set-env-vars="DATA_PROVIDER=postgres,POSTGRES_USER=postgres,POSTGRES_DB=pokemon,DATABASE_URL=postgresql+asyncpg://postgres:${DB_PASSWORD}@/pokemon?host=/cloudsql/${INSTANCE_CONNECTION_NAME},ALLOWED_ORIGINS=PLACEHOLDER,PRICING_CATALOG_REFRESH_ENABLED=false,PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL=pokemon-scheduler@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
   --set-secrets="JWT_SECRET=jwt-secret:latest,GOOGLE_CLIENT_ID=google-client-id:latest,PRICE_CHARTING=price-charting:latest,GEMINI_API_KEY=gemini-api-key:latest"
 ```
 
@@ -310,6 +310,8 @@ gcloud run deploy pokemon-backend \
 - `--add-cloudsql-instances` — mounts a Unix socket at `/cloudsql/INSTANCE_CONNECTION_NAME` inside the container.
 - `--set-env-vars` — plaintext env vars. The `DATABASE_URL` uses the socket host.
 - `--set-secrets` — pulls values from Secret Manager at container start and exposes them as env vars.
+- `PRICING_CATALOG_REFRESH_ENABLED=false` — disables the app's background refresh loop so Cloud Scheduler is the only production trigger.
+- `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL` — configures the service account identity the refresh endpoint expects in the OIDC token.
 - `ALLOWED_ORIGINS=PLACEHOLDER` — we'll set this properly in Phase 7 once we have the frontend URL.
 
 > ⚠️ The DB password appearing in plaintext inside `DATABASE_URL` is a known weak spot here. A better setup constructs `DATABASE_URL` in code from separate `POSTGRES_PASSWORD` (from Secret Manager) + host/db env vars. Worth cleaning up on a second pass.
@@ -323,6 +325,25 @@ gcloud run services describe pokemon-backend --region=us-central1 --format="valu
 Output: `https://pokemon-backend-XXXXX-uc.a.run.app`. Save as `$BACKEND_URL`.
 
 **✅ Success check:** Visit `$BACKEND_URL/docs` — FastAPI Swagger UI loads.
+
+### 5.4 Create the Cloud Scheduler job
+
+Schedule the refresh twice a week, on Tuesdays and Fridays. This example uses 09:00 UTC:
+
+```bash
+gcloud iam service-accounts create pokemon-scheduler
+
+gcloud scheduler jobs create http pricing-catalog-refresh \
+  --location=us-central1 \
+  --schedule="0 9 * * 2,5" \
+  --time-zone="Etc/UTC" \
+  --uri="$BACKEND_URL/api/admin/pricing-catalog/refresh" \
+  --http-method=POST \
+  --oidc-service-account-email="pokemon-scheduler@YOUR_PROJECT_ID.iam.gserviceaccount.com" \
+  --oidc-token-audience="$BACKEND_URL/api/admin/pricing-catalog/refresh"
+```
+
+If you use a different service account name, update `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL` and the scheduler job flags to match.
 
 ---
 

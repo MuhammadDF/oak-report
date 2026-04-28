@@ -423,29 +423,149 @@ def test_to_user_profile_handles_invalid_role_invalid_email_and_other_validation
 async def test_postgres_pricing_catalog_repository_covers_replace_count_and_last_refresh(
     db_session,
     db_session_factory,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        "backend.repositories.pricing_catalog_repository.PRICING_CATALOG_UPSERT_BATCH_SIZE",
+        2,
+    )
+    db_session.add(
+        PricingCatalogTable(
+            id="pc-repo-existing",
+            console_name="Old Set",
+            product_name="Old Charizard #4",
+            loose_price=1.0,
+            tcg_id="old",
+            image_url="https://example.com/old.jpg",
+        )
+    )
+    await db_session.commit()
+
     repository = PostgresPricingCatalogRepository(db_session)
     records = [
         PricingCatalogRecord(
-            id="pc-1",
+            id="pc-repo-existing",
             console_name="Pokemon Base Set",
             product_name="Charizard #4",
             loose_price=249.99,
             tcg_id="1234",
             image_url="https://example.com/card.jpg",
-        )
+        ),
+        PricingCatalogRecord(
+            id="pc-repo-new",
+            console_name="Pokemon Jungle",
+            product_name="Pikachu #25",
+            loose_price=9.99,
+            tcg_id=None,
+            image_url="",
+        ),
+        PricingCatalogRecord(
+            id="pc-repo-third",
+            console_name="Pokemon Fossil",
+            product_name="Gengar #5",
+            loose_price=19.99,
+            tcg_id="5678",
+            image_url="https://example.com/gengar.jpg",
+        ),
     ]
 
-    assert await repository.replace_all_rows(records) == 1
+    before_count = await repository.count_rows()
+    assert await repository.replace_all_rows(records) == 3
     assert await repository.replace_all_rows([]) == 0
-    assert await repository.replace_all_rows(records) == 1
-    assert await repository.count_rows() == 1
+    assert await repository.count_rows() == before_count + 2
 
     last_refreshed_at = await repository.get_last_refreshed_at()
     assert last_refreshed_at is not None
 
     async with db_session_factory() as verify_session:
-        row = (await verify_session.exec(select(PricingCatalogTable))).first()
-    assert row is not None
-    assert row.id == "pc-1"
-    assert row.refreshed_at == last_refreshed_at
+        existing_row = (
+            await verify_session.exec(
+                select(PricingCatalogTable).where(PricingCatalogTable.id == "pc-repo-existing")
+            )
+        ).first()
+        new_row = (
+            await verify_session.exec(
+                select(PricingCatalogTable).where(PricingCatalogTable.id == "pc-repo-new")
+            )
+        ).first()
+        third_row = (
+            await verify_session.exec(
+                select(PricingCatalogTable).where(PricingCatalogTable.id == "pc-repo-third")
+            )
+        ).first()
+
+    assert existing_row is not None
+    assert existing_row.console_name == "Pokemon Base Set"
+    assert existing_row.product_name == "Charizard #4"
+    assert existing_row.loose_price == 249.99
+    assert existing_row.tcg_id == "1234"
+    assert existing_row.image_url == "https://example.com/card.jpg"
+    assert existing_row.refreshed_at is not None
+    assert new_row is not None
+    assert new_row.product_name == "Pikachu #25"
+    assert third_row is not None
+    assert third_row.product_name == "Gengar #5"
+
+
+@pytest.mark.asyncio(loop_scope="session")
+async def test_postgres_pricing_catalog_repository_preserves_collection_references(
+    db_session,
+    db_session_factory,
+) -> None:
+    db_session.add(
+        UserTable(
+            id="repo-fk-user",
+            email="repo-fk@example.com",
+            display_name="Repo FK",
+            role="collector",
+            hashed_password="secret",
+            feature_flags={},
+        )
+    )
+    db_session.add(
+        PricingCatalogTable(
+            id="pc-repo-fk",
+            console_name="Pokemon Base Set",
+            product_name="Blastoise #2",
+            loose_price=100.0,
+            tcg_id=None,
+            image_url="",
+        )
+    )
+    await db_session.commit()
+
+    db_session.add(
+        CollectionItemTable(
+            owner_id="repo-fk-user",
+            card_id="repo-fk-card",
+            pricing_catalog_id="pc-repo-fk",
+            name="Blastoise",
+            set="Pokemon Base Set",
+            number="2",
+            price=100.0,
+            image="https://example.com/blastoise.jpg",
+            grade="NM",
+            quantity=1,
+        )
+    )
+    await db_session.commit()
+
+    repository = PostgresPricingCatalogRepository(db_session)
+
+    assert await repository.replace_all_rows([]) == 0
+
+    async with db_session_factory() as verify_session:
+        item = (
+            await verify_session.exec(
+                select(CollectionItemTable).where(CollectionItemTable.card_id == "repo-fk-card")
+            )
+        ).first()
+        catalog_row = (
+            await verify_session.exec(
+                select(PricingCatalogTable).where(PricingCatalogTable.id == "pc-repo-fk")
+            )
+        ).first()
+
+    assert item is not None
+    assert item.pricing_catalog_id == "pc-repo-fk"
+    assert catalog_row is not None

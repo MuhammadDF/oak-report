@@ -24,6 +24,7 @@ Fill in real values for secrets when needed:
 - `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` for Google sign-in.
 - `JWT_SECRET` for backend JWT signing.
 - `PRICE_CHARTING` for catalog refreshes.
+- `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL` for Cloud Scheduler OIDC refreshes.
 - `GEMINI_API_KEY` for Gemini-backed scan behavior.
 
 See [Operations](operations.md) for the full environment model and database switching details.

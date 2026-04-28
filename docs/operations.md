@@ -20,6 +20,7 @@ Important values:
 - `GOOGLE_CLIENT_ID`, `VITE_GOOGLE_CLIENT_ID`: Google sign-in client IDs.
 - `JWT_SECRET`: backend JWT signing secret.
 - `PRICE_CHARTING`: PriceCharting CSV/API token.
+- `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL`: service account email expected in the Cloud Scheduler OIDC token.
 - `GEMINI_API_KEY`: Gemini API key for scan behavior.
 
 ## Frontend API Routing
@@ -105,13 +106,16 @@ The backend maintains `pricing_catalog` from the PriceCharting custom CSV endpoi
 
 Settings:
 
+- `PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL` gates the refresh endpoint used by Cloud Scheduler.
 - `PRICING_CATALOG_REFRESH_ENABLED`, default `true`
 - `PRICING_CATALOG_REFRESH_INTERVAL_SECONDS`, default `604800`
 - `PRICING_CATALOG_REFRESH_ON_STARTUP`, default `true`
 
 Refresh behavior:
 
-- Full replace on each run.
+- Incoming PriceCharting rows are upserted by `pricing_catalog.id`.
+- Existing rows are updated, new rows are inserted, and rows missing from the incoming feed are preserved.
+- Stale or referenced rows remain in place so `collection_items.pricing_catalog_id` foreign keys stay valid.
 - Optional startup refresh runs asynchronously.
 - Scheduled refresh defaults to weekly.
 
@@ -122,6 +126,17 @@ GET /api/admin/pricing-catalog/status
 ```
 
 The endpoint reports scheduler settings, row count, and last refresh timestamp.
+
+Cloud Scheduler refresh endpoint:
+
+```text
+POST /api/admin/pricing-catalog/refresh
+Authorization: Bearer <Google OIDC token>
+```
+
+This endpoint runs the PriceCharting CSV sync once and returns `{"rows_loaded": <count>}`. The token must be minted by the configured Cloud Scheduler service account and issued for the refresh URL audience.
+
+Use the refresh URL itself as the OIDC audience when creating the Cloud Scheduler job.
 
 ## Deployment Operations
 
