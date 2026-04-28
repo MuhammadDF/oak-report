@@ -11,7 +11,7 @@ export function ProfileScreen({ user, onSignOut }: ProfileScreenProps) {
     <section className="screen profile-screen">
       <ScreenHeader
         eyebrow="Profile"
-        title="Your account."
+        title="Your Account"
         description="Review your information and sign out when needed."
       />
 

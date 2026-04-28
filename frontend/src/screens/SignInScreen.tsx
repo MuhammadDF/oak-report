@@ -2,48 +2,74 @@ import { useEffect, useRef } from "react";
 import { ScreenHeader } from "../components/common/ScreenHeader";
 
 type SignInScreenProps = {
+  isDark: boolean;
   isSubmitting: boolean;
   error: string | null;
   onCredentialReceived: (idToken: string) => Promise<void>;
 };
 
 export function SignInScreen({
+  isDark,
   isSubmitting,
   error,
   onCredentialReceived,
 }: SignInScreenProps) {
-  const buttonRef = useRef<HTMLDivElement | null>(null);
-  const hasInitialized = useRef(false);
+  const slotRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const google = window.google;
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!google || !clientId || !buttonRef.current || hasInitialized.current) {
-      return;
-    }
+    const slot = slotRef.current;
+    if (!google || !clientId || !slot) return;
 
     google.accounts.id.initialize({
       client_id: clientId,
       callback: async (response: { credential?: string }) => {
-        if (!response.credential) {
-          return;
-        }
+        if (!response.credential) return;
         await onCredentialReceived(response.credential);
       },
     });
 
-    const buttonWidth = Math.min(360, Math.max(220, window.innerWidth - 96));
+    const stripWrapperBackgrounds = () => {
+      slot.querySelectorAll<HTMLElement>("*:not(iframe)").forEach((el) => {
+        el.style.setProperty("background", "transparent", "important");
+        el.style.setProperty("background-color", "transparent", "important");
+        el.style.setProperty("box-shadow", "none", "important");
+      });
+    };
 
-    google.accounts.id.renderButton(buttonRef.current, {
-      theme: "filled_black",
-      size: "large",
-      text: "signin_with",
-      shape: "pill",
-      width: buttonWidth,
+    // Re-strip when GIS swaps its placeholder for the real iframe.
+    const mutationObserver = new MutationObserver(stripWrapperBackgrounds);
+    mutationObserver.observe(slot, { childList: true, subtree: true });
+
+    // GIS requires a pixel width. Observe the panel (not the slot) so the
+    // measurement comes from CSS layout, not from GIS's own injected DOM.
+    const panel = slot.closest<HTMLElement>(".auth-panel");
+    if (!panel) return;
+
+    let lastWidth = 0;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const width = Math.round(entries[0]?.contentRect.width ?? 0);
+      if (!width || width === lastWidth) return;
+      lastWidth = width;
+      slot.replaceChildren();
+      google.accounts.id.renderButton(slot, {
+        theme: isDark ? "filled_black" : "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "rectangular",
+        width: Math.min(400, Math.max(220, width)),
+      });
+      stripWrapperBackgrounds();
     });
-    google.accounts.id.prompt();
-    hasInitialized.current = true;
-  }, [onCredentialReceived]);
+    resizeObserver.observe(panel);
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      slot.replaceChildren();
+    };
+  }, [isDark, onCredentialReceived]);
 
   const isClientConfigured = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
@@ -69,7 +95,7 @@ export function SignInScreen({
           </p>
         ) : (
           <div className="auth-button-row">
-            <div className="google-button-slot" ref={buttonRef} />
+            <div className="google-button-slot" ref={slotRef} />
           </div>
         )}
 

@@ -128,6 +128,7 @@ export default function App() {
       ) : null}
       {!isAuthLoading && screen === "signin" ? (
         <SignInScreen
+          isDark={isDark}
           isSubmitting={isAuthSubmitting}
           error={authError}
           onCredentialReceived={handleCredentialReceived}
