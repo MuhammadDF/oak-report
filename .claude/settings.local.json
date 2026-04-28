@@ -2,6 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
+      "Bash(gcloud auth *)",
+      "Bash(gcloud config *)",
+      "Bash(gcloud run *)",
+      "Bash(git ls-tree *)",
       "Bash(bash scripts/run_qa.sh)",
       "Bash(bash /workspaces/pokemon/scripts/run_qa.sh)",
       "Bash(npm --prefix frontend run test:coverage)",

@@ -2,20 +2,6 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (options: unknown) => void;
-          renderButton: (element: HTMLElement, options: unknown) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
-}
-
 const createObjectURLMock = vi.fn(() => "blob:mock-url");
 const revokeObjectURLMock = vi.fn();
 const fetchMock = vi.fn();

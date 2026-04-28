@@ -233,7 +233,7 @@ describe("App", () => {
         id: "user-1",
         email: "ash@example.com",
         display_name: "Ash",
-        role: "collector",
+        role: "collector" as const,
       },
       isAuthLoading: false,
       isAuthSubmitting: false,
