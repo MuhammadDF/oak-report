@@ -609,7 +609,7 @@ describe("LiveCameraPanel", () => {
   });
 
   it("handles cancelled and non-dom getUserMedia failures", async () => {
-    let resolveStream: ((stream: MediaStream) => void) | null = null;
+    let resolveStream = null as ((stream: MediaStream) => void) | null;
     const stop = vi.fn();
     Object.defineProperty(navigator, "mediaDevices", {
       configurable: true,

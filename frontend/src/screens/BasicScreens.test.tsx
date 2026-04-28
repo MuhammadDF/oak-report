@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AccessRequiredScreen } from "./AccessRequiredScreen";
 import { ProfileScreen } from "./ProfileScreen";
 import { SignInScreen } from "./SignInScreen";
@@ -37,9 +37,12 @@ describe("ProfileScreen", () => {
 });
 
 describe("SignInScreen", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("renders a missing client id warning", () => {
-    const previous = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = "";
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "");
 
     render(
       <SignInScreen
@@ -52,13 +55,10 @@ describe("SignInScreen", () => {
     expect(
       screen.getByText("Missing VITE_GOOGLE_CLIENT_ID in frontend environment."),
     ).toBeInTheDocument();
-
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = previous;
   });
 
   it("initializes google identity when configured", () => {
-    const previous = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = "client-id";
+    vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "client-id");
     const onCredentialReceived = vi.fn();
 
     render(
@@ -83,7 +83,5 @@ describe("SignInScreen", () => {
     expect(onCredentialReceived).toHaveBeenCalledWith("google-token");
     initializeCall.callback({});
     expect(onCredentialReceived).toHaveBeenCalledTimes(1);
-
-    import.meta.env.VITE_GOOGLE_CLIENT_ID = previous;
   });
 });
