@@ -4,6 +4,11 @@ import { useAuthSession } from "./useAuthSession";
 import type { Screen } from "../types/app";
 import { mockFetchResponse } from "../test/testUtils";
 
+// Minimal JWT-like tokens where the payload encodes the role, so getJwtRole()
+// returns a matching role and the token-refresh branch is not triggered.
+const TOKEN_COLLECTOR = "fake." + btoa('{"role":"collector"}') + ".sig";
+const TOKEN_NA = "fake." + btoa('{"role":"na"}') + ".sig";
+
 describe("useAuthSession", () => {
   const setScreen = vi.fn();
 
@@ -27,7 +32,7 @@ describe("useAuthSession", () => {
   });
 
   it("restores a valid session from local storage", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -49,7 +54,7 @@ describe("useAuthSession", () => {
 
     expect(fetch).toHaveBeenCalledWith("/api/auth/me", {
       headers: {
-        Authorization: "Bearer token-123",
+        Authorization: `Bearer ${TOKEN_COLLECTOR}`,
       },
     });
     expect(setScreen).toHaveBeenCalledWith("profile");
@@ -79,7 +84,7 @@ describe("useAuthSession", () => {
       .mockResolvedValueOnce(
         mockFetchResponse({
           json: {
-            access_token: "new-token",
+            access_token: TOKEN_NA,
             token_type: "bearer",
             user: {
               id: "user-1",
@@ -116,7 +121,7 @@ describe("useAuthSession", () => {
       },
       body: JSON.stringify({ id_token: "google-id-token" }),
     });
-    expect(localStorage.getItem("oak_report_auth_token")).toBe("new-token");
+    expect(localStorage.getItem("oak_report_auth_token")).toBe(TOKEN_NA);
     expect(setScreen).toHaveBeenCalledWith("access_required");
   });
 
@@ -140,7 +145,7 @@ describe("useAuthSession", () => {
   });
 
   it("supports sign-out and guarded screen transitions", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -180,7 +185,7 @@ describe("useAuthSession", () => {
   });
 
   it("routes restricted and custom screen changes correctly", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_NA);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -210,7 +215,7 @@ describe("useAuthSession", () => {
   });
 
   it("redirects restricted initial screens for na users", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_NA);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -232,7 +237,7 @@ describe("useAuthSession", () => {
   });
 
   it("redirects library and access-required screens based on role", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -252,7 +257,7 @@ describe("useAuthSession", () => {
       expect(setScreen).toHaveBeenCalledWith("profile");
     });
 
-    localStorage.setItem("oak_report_auth_token", "token-456");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -274,7 +279,7 @@ describe("useAuthSession", () => {
   });
 
   it("redirects collectors away from access-required on initial load", async () => {
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {
@@ -311,7 +316,7 @@ describe("useAuthSession", () => {
     expect(setScreen).toHaveBeenCalledWith("signin");
     unmount();
 
-    localStorage.setItem("oak_report_auth_token", "token-123");
+    localStorage.setItem("oak_report_auth_token", TOKEN_COLLECTOR);
     vi.mocked(fetch).mockResolvedValueOnce(
       mockFetchResponse({
         json: {

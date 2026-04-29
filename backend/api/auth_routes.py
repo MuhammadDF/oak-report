@@ -83,6 +83,34 @@ async def get_current_user_profile(
     )
 
 
+@router.post("/token/refresh", response_model=AuthTokenResponse, summary="Re-issue a JWT with the current DB role")
+async def refresh_token(
+    user_repository: UserRepositoryDI,
+    current_user: AuthTokenPayload = Depends(get_current_user),
+) -> AuthTokenResponse:
+    user = await get_user_by_id(current_user.sub, user_repository)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User no longer available.",
+        )
+    access_token = issue_auth_token(
+        user_id=user.id,
+        email=user.email,
+        display_name=user.display_name,
+        role=user.role.value,
+    )
+    return AuthTokenResponse(
+        access_token=access_token,
+        user=AuthenticatedUser(
+            id=user.id,
+            email=user.email,
+            display_name=user.display_name,
+            role=user.role.value,
+        ),
+    )
+
+
 @router.post("/logout", summary="Client-side logout helper for stateless JWT flows")
 async def logout() -> dict[str, str]:
     return {"message": "Logout is handled client-side by discarding the token."}

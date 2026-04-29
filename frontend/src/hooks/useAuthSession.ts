@@ -4,6 +4,15 @@ import { AuthTokenResponse, AuthUser, Screen } from "../types/app";
 
 const AUTH_TOKEN_KEY = "oak_report_auth_token";
 
+function getJwtRole(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return typeof payload.role === "string" ? payload.role : null;
+  } catch {
+    return null;
+  }
+}
+
 type UseAuthSessionArgs = {
   screen: Screen;
   setScreen: (nextScreen: Screen) => void;
@@ -52,17 +61,36 @@ export function useAuthSession({
 
     async function bootstrapSession() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        const meResponse = await fetch(`${API_BASE_URL}/api/auth/me`, {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
         });
 
-        if (!response.ok) {
+        if (!meResponse.ok) {
           throw new Error("Session is no longer valid.");
         }
 
-        const user: AuthUser = await response.json();
+        const user: AuthUser = await meResponse.json();
+
+        // If the JWT role is stale, exchange it for a fresh one. This causes
+        // authToken to update, re-running this effect, which then takes the
+        // matching-role branch below and terminates cleanly.
+        if (getJwtRole(authToken) !== user.role) {
+          const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/token/refresh`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (refreshResponse.ok) {
+            const payload: AuthTokenResponse = await refreshResponse.json();
+            if (!cancelled) {
+              setStoredToken(payload.access_token);
+              setAuthUser(payload.user);
+            }
+            return;
+          }
+        }
+
         if (!cancelled) {
           setAuthUser(user);
         }
