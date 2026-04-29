@@ -204,8 +204,11 @@ img {
 
 .content {
   flex: 1;
-  padding: 28px;
-  padding-bottom: calc(72px + var(--mobile-nav-height));
+  /* Use device safe-area insets so content can extend under the
+     top search area and the bottom mobile nav while keeping readable
+     padding on devices with notches/rounded corners. Fallbacks ensure
+     desktop behavior remains unchanged. */
+  padding: max(12px, env(safe-area-inset-top, 12px)) 12px calc(16px + var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   height: 100%;
   min-height: 0;
@@ -1355,7 +1358,10 @@ img {
 
 .results-column {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  /* Allow the art column to grow so the card image can be larger
+     First column: at least 360px, otherwise expands to fill available space
+     Second column: capped to a sensible max width for details */
+  grid-template-columns: minmax(360px, 1fr) minmax(0, 520px);
   gap: 0;
   padding: 0;
   overflow: hidden;
@@ -1521,20 +1527,27 @@ img {
 
   .appraisal-art {
     order: 0;
-    flex: 1;
+    /* let artwork take more space on small screens so the image appears larger */
+    flex: 1.4 1 0%;
     min-height: 0;
     border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* give the art a generous viewport height on phones */
+    height: 60svh;
   }
 
   .appraisal-details {
     order: 1;
     flex: 0 0 auto;
-    padding: 0;
+    /* reduce padding so fields feel smaller on phones */
+    padding: 8px 12px;
     overflow: hidden;
   }
 
   .appraisal-name {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
   }
 
   .appraisal-separator {
@@ -1542,16 +1555,24 @@ img {
   }
 
   .appraisal-meta__row {
-    padding: 12px 0;
+    padding: 8px 0;
+  }
+
+  .appraisal-meta__row dt {
+    font-size: 0.64rem;
+  }
+
+  .appraisal-meta__row dd {
+    font-size: 0.92rem;
   }
 
   .appraisal-price {
-    margin-top: 12px;
-    padding: 14px 18px;
+    margin-top: 10px;
+    padding: 10px 14px;
   }
 
   .appraisal-price__value {
-    font-size: 1.7rem;
+    font-size: 1.4rem;
   }
 
   .appraisal-actions {
@@ -1559,7 +1580,8 @@ img {
   }
 
   .appraisal-cta {
-    padding: 14px;
+    padding: 10px;
+    font-size: 0.95rem;
   }
 }
 
