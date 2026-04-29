@@ -22,79 +22,78 @@ export function CollectionSelectionPanel({
   }
 
   return (
-    <section className="results-column collection-panel__wrap">
-      <article className="panel report-panel collection-panel">
-        <div className="report-panel__header collection-detail__header">
-          <div>
-            <p className="panel__eyebrow">Collection card</p>
-            <h2>{card.name}</h2>
+    <article className="panel report-modal__panel results-column">
+      <div className="appraisal-header">
+        {card.grade ? <span className="report-badge">{card.grade}</span> : null}
+        {onClose ? (
+          <button
+            aria-label="Close collection card"
+            className="report-modal__close"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
+      <div className="appraisal-art">
+        <img alt={card.name} src={card.image} />
+      </div>
+      <div className="appraisal-details">
+        <h2 className="appraisal-name">{card.name}</h2>
+        <div className="appraisal-separator" />
+        <dl className="appraisal-meta">
+          <div className="appraisal-meta__row">
+            <dt>Set</dt>
+            <dd>{card.set}</dd>
           </div>
-          <div className="collection-detail__actions">
-            {card.grade ? <span className="report-badge">{card.grade}</span> : null}
-            {onClose ? (
+          <div className="appraisal-meta__row">
+            <dt>Number</dt>
+            <dd>{card.number}</dd>
+          </div>
+          <div className="appraisal-meta__row">
+            <dt>Owned</dt>
+            <dd>×{card.quantity}</dd>
+          </div>
+        </dl>
+        <div className="appraisal-price appraisal-price--split">
+          <div>
+            <span className="appraisal-price__label">Last appraised</span>
+            <strong className="appraisal-price__value">{formatCurrency("USD", card.price)}</strong>
+          </div>
+          <div>
+            <span className="appraisal-price__label">Total held</span>
+            <strong className="appraisal-price__value">{formatCurrency("USD", totalHeld)}</strong>
+          </div>
+        </div>
+        <div className="appraisal-actions">
+          <div className="appraisal-actions__buttons">
+            <div className="quantity-stepper">
               <button
-                aria-label="Close collection card"
-                className="report-modal__close"
-                onClick={onClose}
+                aria-label="Decrease quantity"
+                onClick={() => handleAdjustQuantity(-1)}
+                type="button"
+                disabled={card.quantity === 0}
+              >
+                −
+              </button>
+              <strong>{card.quantity}</strong>
+              <button
+                aria-label="Increase quantity"
+                onClick={() => handleAdjustQuantity(1)}
                 type="button"
               >
-                Close
+                +
               </button>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="collection-detail">
-          <div className="collection-detail__art">
-            <img alt={card.name} src={card.image} />
-          </div>
-          <dl className="metric-list collection-detail__list">
-            <div>
-              <dt>Set</dt>
-              <dd>{card.set}</dd>
             </div>
-            <div>
-              <dt>Number</dt>
-              <dd>{card.number}</dd>
-            </div>
-            <div>
-              <dt>Last appraised</dt>
-              <dd>{formatCurrency("USD", card.price)}</dd>
-            </div>
-            <div>
-              <dt>Total held</dt>
-              <dd>{formatCurrency("USD", totalHeld)}</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="collection-quantity">
-          <span>Quantity owned</span>
-          <div className="quantity-stepper">
-            <button
-              aria-label="Decrease quantity"
-              onClick={() => handleAdjustQuantity(-1)}
-              type="button"
-              disabled={card.quantity === 0}
-            >
-              -
-            </button>
-            <strong>{card.quantity}</strong>
-            <button
-              aria-label="Increase quantity"
-              onClick={() => handleAdjustQuantity(1)}
-              type="button"
-            >
-              +
-            </button>
-            <button className="trash-button" onClick={onRemove} type="button">
+            <button className="danger-button appraisal-cta" onClick={onRemove} type="button">
               <TrashIcon />
-              <span className="sr-only">Remove card</span>
+              Remove
             </button>
           </div>
         </div>
-      </article>
-    </section>
+      </div>
+    </article>
   );
 }
 

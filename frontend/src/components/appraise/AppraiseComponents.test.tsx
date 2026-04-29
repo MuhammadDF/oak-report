@@ -189,7 +189,7 @@ describe("CollectionSelectionPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Increase quantity" }));
     fireEvent.click(screen.getByRole("button", { name: "Decrease quantity" }));
     fireEvent.click(screen.getByRole("button", { name: "Close collection card" }));
-    fireEvent.click(screen.getByRole("button", { name: /Remove card/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove/i }));
 
     expect(screen.getAllByText("$12.50")).toHaveLength(2);
     expect(onQuantityChange).toHaveBeenNthCalledWith(1, 2);

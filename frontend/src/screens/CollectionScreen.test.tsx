@@ -47,7 +47,7 @@ describe("CollectionScreen", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Increase quantity" }));
-    fireEvent.click(screen.getByRole("button", { name: /Remove card/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove/i }));
 
     expect(onCardQuantityChange).toHaveBeenCalledWith("card-1", 2);
     expect(onRemoveCard).toHaveBeenCalledWith("card-1");
