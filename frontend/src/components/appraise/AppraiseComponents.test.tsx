@@ -630,6 +630,79 @@ describe("LiveCameraPanel", () => {
     createObjectURL.mockRestore();
   });
 
+  it("clears the snapped frame after a scan error so another picture can be taken", async () => {
+    const stop = vi.fn();
+    const getUserMedia = vi.fn().mockResolvedValue({
+      getTracks: () => [{ stop }],
+    });
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:capture");
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const toBlob = vi.fn((callback: BlobCallback) =>
+      callback(new Blob(["image"], { type: "image/jpeg" })),
+    );
+    const drawImage = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    vi.spyOn(document, "createElement").mockImplementation(((tagName: string) => {
+      if (tagName === "canvas") {
+        return {
+          width: 0,
+          height: 0,
+          getContext: () => ({ drawImage }),
+          toBlob,
+        } as unknown as HTMLCanvasElement;
+      }
+
+      return originalCreateElement(tagName);
+    }) as typeof document.createElement);
+
+    const { container, rerender } = render(
+      <LiveCameraPanel
+        authToken="token-123"
+        error={null}
+        isAppraisalOpen={false}
+        loading={false}
+        onFileCaptured={vi.fn()}
+        onSearchResults={vi.fn()}
+      />,
+    );
+
+    const video = document.querySelector("video")!;
+    Object.defineProperty(video, "videoWidth", { configurable: true, value: 640 });
+    Object.defineProperty(video, "videoHeight", { configurable: true, value: 480 });
+    fireEvent.canPlay(video);
+    fireEvent.click(screen.getByRole("button", { name: "Capture" }));
+
+    await waitFor(() => {
+      expect(container.querySelector(".live-camera__capture-preview")).toBeInTheDocument();
+    });
+
+    rerender(
+      <LiveCameraPanel
+        authToken="token-123"
+        error="Scan failed"
+        isAppraisalOpen={false}
+        loading={false}
+        onFileCaptured={vi.fn()}
+        onSearchResults={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector(".live-camera__capture-preview")).not.toBeInTheDocument();
+    });
+
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:capture");
+
+    revokeObjectURL.mockRestore();
+    createObjectURL.mockRestore();
+  });
+
   it("falls back when facingMode is unsupported and safely bails without a 2d context", async () => {
     const stop = vi.fn();
     const overconstrained = new DOMException("bad constraint", "OverconstrainedError");

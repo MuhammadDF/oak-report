@@ -48,6 +48,12 @@ export function LiveCameraPanel({
   }, [capturedPreviewUrl, isAppraisalOpen]);
 
   useEffect(() => {
+    if (error && capturedPreviewUrl && !isAppraisalOpen) {
+      setCapturedPreviewUrl(null);
+    }
+  }, [capturedPreviewUrl, error, isAppraisalOpen]);
+
+  useEffect(() => {
     return () => {
       if (capturedPreviewUrl) {
         URL.revokeObjectURL(capturedPreviewUrl);

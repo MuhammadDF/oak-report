@@ -4,7 +4,11 @@ import { AuthTokenResponse, AuthUser, Screen } from "../types/app";
 
 const AUTH_TOKEN_KEY = "oak_report_auth_token";
 
-function getJwtRole(token: string): string | null {
+function getJwtRole(token: string | null): string | null {
+  if (!token) {
+    return null;
+  }
+
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return typeof payload.role === "string" ? payload.role : null;

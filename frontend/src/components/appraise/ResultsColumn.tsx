@@ -94,19 +94,21 @@ export function ResultsColumn({
               <strong className="appraisal-price__value">{formatCurrency("USD", result.pricing)}</strong>
             </div>
             <div className="appraisal-actions">
-              {hasBackToSearchPage ? (
-                <button className="secondary-button appraisal-cta" onClick={onBackToSearchPage} type="button">
-                  Back
+              <div className="appraisal-actions__buttons">
+                {hasBackToSearchPage ? (
+                  <button className="secondary-button appraisal-cta" onClick={onBackToSearchPage} type="button">
+                    Back
+                  </button>
+                ) : null}
+                <button
+                  className="primary-button appraisal-cta"
+                  disabled={collectionStatus === "loading" || !authToken}
+                  onClick={handleAddToCollection}
+                  type="button"
+                >
+                  {collectionStatus === "loading" ? "Adding..." : "Add to collection"}
                 </button>
-              ) : null}
-              <button
-                className="primary-button appraisal-cta"
-                disabled={collectionStatus === "loading" || !authToken}
-                onClick={handleAddToCollection}
-                type="button"
-              >
-                {collectionStatus === "loading" ? "Adding..." : "Add to collection"}
-              </button>
+              </div>
               {collectionStatus === "success" ? (
                 <span className="report-actions__status report-actions__status--success">
                   Saved to collection.

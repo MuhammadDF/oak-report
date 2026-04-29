@@ -1476,14 +1476,23 @@ img {
 
 .appraisal-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
   align-items: stretch;
   margin-top: 16px;
 }
 
-.appraisal-cta {
+.appraisal-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.appraisal-actions__buttons .appraisal-cta {
   flex: 1;
+}
+
+.appraisal-cta {
   border-radius: 16px;
   font-size: 1rem;
   font-weight: 700;
