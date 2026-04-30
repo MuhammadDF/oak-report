@@ -57,7 +57,7 @@ def _require_scheduler_identity(
 	expected_email = os.getenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL")
 	if not expected_email:
 		raise HTTPException(
-			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 			detail="Pricing catalog refresh identity is not configured.",
 		)
 
