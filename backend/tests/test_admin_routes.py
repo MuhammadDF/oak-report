@@ -47,6 +47,7 @@ async def test_pricing_catalog_refresh_accepts_cloud_scheduler_oidc_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL", "scheduler@example.iam.gserviceaccount.com")
+    monkeypatch.setenv("PRICING_CATALOG_REFRESH_AUDIENCE", "https://example.run.app/api/admin/pricing-catalog/refresh")
 
     with patch(
         "backend.api.admin_routes.id_token.verify_oauth2_token",
@@ -70,6 +71,7 @@ async def test_pricing_catalog_refresh_rejects_invalid_cloud_scheduler_oidc_toke
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL", "scheduler@example.iam.gserviceaccount.com")
+    monkeypatch.setenv("PRICING_CATALOG_REFRESH_AUDIENCE", "https://example.run.app/api/admin/pricing-catalog/refresh")
 
     with patch(
         "backend.api.admin_routes.id_token.verify_oauth2_token",
