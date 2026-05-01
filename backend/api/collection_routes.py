@@ -27,7 +27,7 @@ from ..services.collection_service import (
     update_collection_quantity,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Collection"])
 
 
 class AddScanRequest(BaseModel):

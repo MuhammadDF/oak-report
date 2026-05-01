@@ -70,6 +70,8 @@ Open:
 - API: `http://localhost:8000`
 - Swagger: `http://localhost:8000/docs`
 
+- Note: The API Swagger UI groups endpoints by function (tags). You'll see groups such as `Scan`, `Collection`, `Search`, `Auth`, `Library`, and `Admin` in the UI to help navigation.
+
 ## Docker Compose
 
 Start the full stack:

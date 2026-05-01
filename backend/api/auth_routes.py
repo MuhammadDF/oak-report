@@ -7,7 +7,7 @@ from ..auth.google_auth import verify_google_id_token
 from ..auth.jwt_service import AuthTokenPayload, issue_auth_token
 from ..services.auth_service import get_user_by_id, upsert_google_user
 
-router = APIRouter()
+router = APIRouter(tags=["Auth"])
 
 
 class GoogleAuthRequest(BaseModel):

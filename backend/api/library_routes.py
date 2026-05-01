@@ -6,7 +6,7 @@ from ..auth.dependencies import require_roles
 from ..auth.jwt_service import AuthTokenPayload
 from ..services.library_service import LibraryCardModel, list_library_cards
 
-router = APIRouter()
+router = APIRouter(tags=["Library"])
 
 
 @router.get(

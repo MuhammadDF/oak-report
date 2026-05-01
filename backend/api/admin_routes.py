@@ -84,6 +84,7 @@ def _require_scheduler_identity(
 	"/pricing-catalog/status",
 	response_model=PricingCatalogStatusResponse,
 	summary="Get pricing catalog synchronization status",
+	tags=["Admin - Pricing Catalog"],
 )
 async def get_pricing_catalog_status(
 	repository: PricingCatalogRepositoryDI,
@@ -107,6 +108,7 @@ async def get_pricing_catalog_status(
 	"/pricing-catalog/refresh",
 	response_model=PricingCatalogRefreshResponse,
 	summary="Refresh the pricing catalog",
+	tags=["Admin - Pricing Catalog"],
 )
 async def refresh_pricing_catalog_now(
 	_: None = Depends(_require_scheduler_identity),
@@ -121,6 +123,7 @@ async def refresh_pricing_catalog_now(
 	"/users",
 	response_model=AdminUserPage,
 	summary="List users with pagination, search, and role filtering",
+	tags=["Admin - Users"],
 )
 async def get_users(
 	repository: UserRepositoryDI,
@@ -144,6 +147,7 @@ async def get_users(
 	"/users/{user_id}/role",
 	response_model=AdminUserRecord,
 	summary="Update a user's role",
+	tags=["Admin - Users"],
 )
 async def patch_user_role(
 	user_id: str,

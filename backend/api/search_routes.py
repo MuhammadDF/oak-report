@@ -10,7 +10,7 @@ from ..models.card_search_model import (
 from ..services.pricing_service import get_all_card_info
 from ..services.search_service import search_cards
 
-router = APIRouter()
+router = APIRouter(tags=["Search"])
 
 
 @router.get(

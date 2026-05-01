@@ -52,6 +52,20 @@ Google sign-in depends on `GOOGLE_CLIENT_ID`. JWT creation depends on `JWT_SECRE
 
 Route tests commonly override auth dependencies, so preserve explicit dependency wiring instead of hiding auth checks inside unrelated helper code.
 
+## OpenAPI / Swagger UI
+
+- The FastAPI app exposes OpenAPI at `/openapi.json` and a Swagger UI at `/docs`.
+- Endpoints are organized in the Swagger UI by *tags* (functional groups). This repository assigns tags on each router so endpoints appear under groups such as `Scan`, `Collection`, `Search`, `Auth`, `Library`, and admin subgroups like `Admin - Pricing Catalog` and `Admin - Users`.
+- Security metadata in the OpenAPI spec is produced when route dependencies use FastAPI security helpers (for example, `fastapi.security.HTTPBearer`). The UI shows a lock icon for endpoints that declare a security dependency.
+
+- Protection model: routes are protected by dependencies. A typical pattern in this codebase is:
+
+	- `bearer_scheme = HTTPBearer(auto_error=True)` — parses the `Authorization: Bearer ...` header and returns credentials.
+	- `get_current_user()` — a dependency that calls `verify_auth_token(...)` to validate the JWT and raises `HTTPException(401)` for invalid/expired tokens.
+	- `require_roles(...)` — a dependency factory that wraps `get_current_user()` and raises `HTTPException(403)` if the role is not permitted.
+
+- Router-level protection: to apply a dependency to every route in a router, use `APIRouter(dependencies=[Depends(...)] )` or pass `dependencies=[Depends(...)]` to `app.include_router(...)`. For OpenAPI to include the security requirement in the generated spec, prefer `Security` or route-level security dependencies when necessary.
+
 ## Testing
 
 Backend tests use pytest, pytest-asyncio, HTTPX ASGI transport, and a Postgres test database derived from `DATABASE_URL`.

@@ -5,7 +5,7 @@ from ..auth.jwt_service import AuthTokenPayload
 from ..models.scan_result_model import ScanResultModel
 from ..services.scan_service import identify_card_from_image
 
-router = APIRouter()
+router = APIRouter(tags=["Scan"])
 
 
 @router.post(
