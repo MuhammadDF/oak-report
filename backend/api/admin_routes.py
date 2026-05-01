@@ -14,7 +14,7 @@ Routes here will expose privileged operations guarded by RBAC/MFA once available
 
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from google.auth.transport import requests as google_requests
@@ -51,13 +51,13 @@ class PricingCatalogRefreshResponse(BaseModel):
 
 
 def _require_scheduler_identity(
-	request: Request,
 	credentials: HTTPAuthorizationCredentials = Depends(scheduler_bearer_scheme),
 ) -> None:
 	expected_email = os.getenv("PRICING_CATALOG_REFRESH_SERVICE_ACCOUNT_EMAIL")
-	if not expected_email:
+	expected_audience = os.getenv("PRICING_CATALOG_REFRESH_AUDIENCE")
+	if not expected_email or not expected_audience:
 		raise HTTPException(
-			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
 			detail="Pricing catalog refresh identity is not configured.",
 		)
 
@@ -65,7 +65,7 @@ def _require_scheduler_identity(
 		claims = id_token.verify_oauth2_token(
 			credentials.credentials,
 			google_requests.Request(),
-			str(request.url),
+			expected_audience,
 		)
 	except Exception as error:
 		raise HTTPException(
